@@ -673,7 +673,7 @@ void parseCommand(LiveObject *player, char *text){
 		sscanf(args, "%d %d", &x, &y);
 		sprintf(s, "[SYSTEM]TELEPORTING TO %d %d", x, y);
 		makePlayerSay( player, s);
-		setBack(player->email, player->xd, player->yd);
+		setBack(player->email, player->xs, player->xs);
 		player->xs = x;
         player->ys = y;
         player->xd = x;
@@ -761,7 +761,7 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		sprintf(s, "[SYSTEM]TELEPORTING TO %d %d", x, y);
 		makePlayerSay( player, s);
-		setBack(player->email, player->xd, player->yd);
+		setBack(player->email, player->xs, player->xs);
 		player->xs = x;
         player->ys = y;
         player->xd = x;
@@ -781,7 +781,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]YOU HAVE NO PLACE TO GO BACK");
 		else { 
-			setBack(player->email, player->xd, player->yd);
+			setBack(player->email, player->xs, player->xs);
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
@@ -835,7 +835,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]YOU HAVE NO HOME SET");
 		else {
-			setBack(player->email, player->xd, player->yd);
+			setBack(player->email, player->xs, player->xs);
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
@@ -894,7 +894,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
 		else {
-			setBack(player->email, player->xd, player->yd);
+			setBack(player->email, player->xs, player->xs);
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;

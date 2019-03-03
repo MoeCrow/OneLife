@@ -500,6 +500,416 @@ typedef struct LiveObject {
         
     } LiveObject;
 
+static SimpleVector<char*> opList;
+static SimpleVector<char*> banList;
+
+
+typedef struct Spot {
+	char* name;
+	int x;
+	int y;
+	char* owner;
+} Spot;
+
+static SimpleVector<Spot*> warpSpot;
+static SimpleVector<Spot*> homeSpot;
+static SimpleVector<Spot*> backSpot;
+static SimpleVector<Spot*> deathSpot;
+
+static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOptionalID = 0);
+static void setPlayerDisconnected( LiveObject *inPlayer, const char *inReason );
+static void makePlayerSay( LiveObject *inPlayer, char *inToSay );
+
+static void writeSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotList)
+{
+	SimpleVector<char*> sequencedList;
+	for( int i=0; i<spotList->size(); i++ ) {
+		Spot* spot = *spotList->getElement(i);
+		if(spot->owner == NULL)
+			sequencedList.push_back(autoSprintf("%s %d %d", spot->name, spot->x, spot->y));
+		else
+			sequencedList.push_back(autoSprintf("%s %d %d %s", spot->name, spot->x, spot->y, spot->owner));
+	}
+	SettingsManager::setSetting(inSettingsName, &sequencedList);
+	
+}
+
+void readPhrases( const char *inSettingsName, 
+                  SimpleVector<char*> *inList );
+static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotList)
+{
+	spotList->deleteAll();
+	SimpleVector<char*> sequencedList;
+	readPhrases(inSettingsName, &sequencedList);
+	for( int i=0; i<sequencedList.size(); i++ ) 
+	{
+		char *str = *sequencedList.getElement(i);
+		Spot* spot = new Spot();
+		spot->name = new char[256];
+		spot->owner = NULL;
+		if(strcmp(inSettingsName, "warpSpot")==0) {
+			spot->owner = new char[256];
+			sscanf(str, "%s %d %d %s", spot->name, &spot->x, &spot->y, spot->owner);
+		}
+		else
+			sscanf(str, "%s %d %d", spot->name, &spot->x, &spot->y);
+		spotList->push_back(spot);
+	}
+	
+}
+
+static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
+{
+	for( int i=0; i<spotList->size(); i++ ) {
+		Spot* s = *spotList->getElement(i);
+		
+		if(strcmp(s->name, stringToUpperCase(spot->name))==0){
+			spotList->deleteElement(i);
+			delete s;
+			spotList->push_back(spot);
+			return;
+		}
+	}
+	spotList->push_back(spot);
+}
+
+static void setBack(char* name, int x, int y)
+{
+	Spot *spot = new Spot();
+	spot->name = new char[256];
+	strcpy(spot->name, stringToUpperCase(name));
+	spot->x = x;
+	spot->y = y;
+	replaceOrCreateSpot(&backSpot, spot);
+	writeSpotList("backSpot", &backSpot);
+}
+
+static void setDeath(char* name, int x, int y)
+{
+	Spot *spot = new Spot();
+	spot->name = new char[256];
+	strcpy(spot->name, stringToUpperCase(name));
+	spot->x = x;
+	spot->y = y;
+	replaceOrCreateSpot(&deathSpot, spot);
+	writeSpotList("deathSpot", &deathSpot);
+}
+
+static void setHome(char* name, int x, int y)
+{
+	Spot *spot = new Spot();
+	spot->name = new char[256];
+	strcpy(spot->name, stringToUpperCase(name));
+	spot->x = x;
+	spot->y = y;
+	replaceOrCreateSpot(&homeSpot, spot);
+	writeSpotList("homeSpot", &homeSpot);
+}
+
+static Spot* findSpot(SimpleVector<Spot*> *spotList, char* name)
+{
+	for( int i=0; i<spotList->size(); i++ ) {
+		Spot* s = *spotList->getElement(i);
+		if(strcmp(s->name, stringToUpperCase(name))==0){
+			return s;
+		}
+	}
+	return NULL;
+}
+
+static void delSpot(SimpleVector<Spot*> *spotList, char* name)
+{
+	for( int i=0; i<spotList->size(); i++ ) {
+		Spot* s = *spotList->getElement(i);
+		if(strcmp(s->name, stringToUpperCase(name))==0){
+			spotList->deleteElement(i);
+			return;
+		}
+	}
+	return;
+}
+
+static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
+{
+	Spot *spot = new Spot();
+	spot->name = new char[256];
+	strcpy(spot->name, stringToUpperCase(name));
+	spot->x = x;
+	spot->y = y;
+	spot->owner = new char[256];
+	strcpy(spot->owner, stringToUpperCase(owner));
+	Spot *oldSpot = findSpot(&warpSpot, name);
+	if(!isOp && oldSpot != NULL && *oldSpot->owner != '\0' && strcmp(spot->owner, oldSpot->owner) != 0) {
+		return false;
+	}
+	
+	replaceOrCreateSpot(&warpSpot, spot);
+	writeSpotList("warpSpot", &warpSpot);
+	return true;
+}
+
+char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
+
+void parseCommand(LiveObject *player, char *text){
+	int x = 0, y = 0, id = 0;
+	int a = 10000000, b = 99999999;
+	char cmd[64];
+	char args[256];
+	sscanf(text, ".%s %[^\n]", cmd, args);
+	bool isOp = isNamingSay(stringToUpperCase(player->email), &opList) != NULL;
+	int shutdownMode = SettingsManager::getIntSetting( "shutdownMode", 0 );
+		
+	
+	if(strcmp(cmd, "TP")==0){
+		if(shutdownMode) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			return;
+		}
+		if(!isOp){
+			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			return;
+		}
+		char s[256];
+		sscanf(args, "%d %d", &x, &y);
+		sprintf(s, "[SYSTEM]TELEPORTING TO %d %d", x, y);
+		makePlayerSay( player, s);
+		setBack(player->email, player->xd, player->yd);
+		player->xs = x;
+        player->ys = y;
+        player->xd = x;
+        player->yd = y;
+		setDeathReason( player, s);
+		setPlayerDisconnected( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "PUT")==0){
+		if(!isOp){
+			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			return;
+		}
+		char s[256];
+		if(sscanf(args, "%d %d %d", &x, &y, &id) != 3) {
+			sprintf(s, "[SYSTEM]NEED THREE ARGS");
+		} else {
+			ObjectRecord *o = getObject( id );
+			if( o == NULL && id != 0) {
+				makePlayerSay( player, "[SYSTEM]OBJECT ID NOT FOUND.");
+				return;
+			}
+			setMapObject( x, y, id );
+			sprintf(s, "[SYSTEM]OBJECT PUT.");
+		}
+		
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "PUTHERE")==0){
+		if(!isOp){
+			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			return;
+		}
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "[SYSTEM]NEED ONE ARGS");
+		} else {
+			ObjectRecord *o = getObject( id );
+			if( o == NULL && id != 0) {
+				makePlayerSay( player, "[SYSTEM]OBJECT ID NOT FOUND.");
+				return;
+			}
+			setMapObject( player->xs, player->ys, id );
+			sprintf(s, "[SYSTEM]OBJECT PUT.");
+		}
+		
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "PUTSOUTH")==0){
+		if(!isOp){
+			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			return;
+		}
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "[SYSTEM]NEED ONE ARGS");
+		} else {
+			ObjectRecord *o = getObject( id );
+			if( o == NULL && id != 0) {
+				makePlayerSay( player, "[SYSTEM]OBJECT ID NOT FOUND.");
+				return;
+			}
+			setMapObject( player->xs, player->ys - 1, id );
+			sprintf(s, "[SYSTEM]OBJECT PUT.");
+		}
+		
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	
+	if(strcmp(cmd, "TPR")==0){
+		if(shutdownMode) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			return;
+		}
+		srand(time(NULL));
+		x = (rand() % (b-a+1))+ a;
+		y = (rand() % (b-a+1))+ a;
+		char s[256];
+		sprintf(s, "[SYSTEM]TELEPORTING TO %d %d", x, y);
+		makePlayerSay( player, s);
+		setBack(player->email, player->xd, player->yd);
+		player->xs = x;
+        player->ys = y;
+        player->xd = x;
+        player->yd = y;
+		setDeathReason( player, s);
+		setPlayerDisconnected( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "BACK")==0){
+		if(shutdownMode) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			return;
+		}
+		char s[256];
+		Spot* spot = findSpot(&backSpot, player->email);
+		if(spot == NULL)
+			sprintf(s, "[SYSTEM]YOU HAVE NO PLACE TO GO BACK");
+		else { 
+			setBack(player->email, player->xd, player->yd);
+			player->xs = spot->x;
+			player->ys = spot->y;
+			player->xd = spot->x;
+			player->yd = spot->y;
+			sprintf(s, "[SYSTEM]TELEPORTING TO LAST PLACE AT %d %d", spot->x, spot->y);
+			setDeathReason( player, s);
+			setPlayerDisconnected( player, s);
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "POS")==0){
+		char s[256];
+		sprintf(s, "[SYSTEM]%d %d", player->xs, player->ys);
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "SETHOME")==0){
+		char s[256];
+		setHome(player->email, player->xs, player->ys);
+		sprintf(s, "[SYSTEM]HOME SET AT %d %d", player->xs, player->ys);
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "EMAIL")==0){
+		char s[256];
+		sprintf(s, "[SYSTEM]%s", player->email);
+		makePlayerSay( player, s);
+		printf(s);
+		return;
+	}
+	
+	if(strcmp(cmd, "TEST")==0){
+		char s[256];
+		sprintf(s, "[SYSTEM]测试中文%s", player->email);
+		makePlayerSay( player, s);
+		printf(s);
+		return;
+	}
+	
+	if(strcmp(cmd, "HOME")==0){
+		if(shutdownMode) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			return;
+		}
+		char s[256];
+		Spot* spot = findSpot(&homeSpot, player->email);
+		if(spot == NULL)
+			sprintf(s, "[SYSTEM]YOU HAVE NO HOME SET");
+		else {
+			setBack(player->email, player->xd, player->yd);
+			player->xs = spot->x;
+			player->ys = spot->y;
+			player->xd = spot->x;
+			player->yd = spot->y;
+			sprintf(s, "[SYSTEM]TELEPORTING TO HOME AT %d %d", spot->x, spot->y);
+			setDeathReason( player, s);
+			setPlayerDisconnected( player, s);
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "SETWARP")==0){
+		char s[256], name[64];
+		if(sscanf(args, "%s", name) == 0) {
+			sprintf(s, "[SYSTEM]WARP NAME SHOULD NOT BE EMPTY");
+		}
+		else {
+			sprintf(s, "[SYSTEM]WARP '%s' SET AT %d %d", name, player->xs, player->ys);
+			if(!setWarp(name, player->email, player->xs, player->ys, isOp))
+				sprintf(s, "[SYSTEM]WARP NAMED '%s' IS NOT OWNED BY YOU", name);
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "DELWARP")==0){
+		char s[256], name[64];
+		
+		sscanf(args, "%s", name);
+		Spot* spot = findSpot(&warpSpot, name);
+		if(spot == NULL)
+			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
+		else {
+			if(!isOp && strcmp(spot->owner, stringToUpperCase(player->email)) != 0) {
+				sprintf(s, "[SYSTEM]WARP NAMED '%s' IS NOT OWNED BY YOU", name);
+			} else {
+				delSpot(&warpSpot, name);
+				writeSpotList("warpSpot", &warpSpot);
+				sprintf(s, "[SYSTEM]WARP NAMED '%s' HAS BEEN REMOVED", name);
+			}
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "WARP")==0){
+		if(shutdownMode) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			return;
+		}
+		char s[256], name[64];
+		
+		sscanf(args, "%s", name);
+		Spot* spot = findSpot(&warpSpot, name);
+		if(spot == NULL)
+			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
+		else {
+			setBack(player->email, player->xd, player->yd);
+			player->xs = spot->x;
+			player->ys = spot->y;
+			player->xd = spot->x;
+			player->yd = spot->y;
+			sprintf(s, "[SYSTEM]TELEPORTING TO HOME AT %d %d", spot->x, spot->y);
+			setDeathReason( player, s);
+			setPlayerDisconnected( player, s);
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	makePlayerSay( player, "[SYSTEM]UNKNOWN COMMAND");
+}
+
 
 
 SimpleVector<LiveObject> players;
@@ -7492,6 +7902,7 @@ int main() {
                     nextPlayer->gotPartOfThisFrame = true;
                     }
                 
+				setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                 // don't worry about num sent
                 // it's the last message to this client anyway
                 setDeathReason( nextPlayer, 
@@ -7506,7 +7917,7 @@ int main() {
             for( int i=0; i<players.size(); i++ ) {
                 LiveObject *nextPlayer = players.getElement( i );
                 if( ! nextPlayer->error && ! nextPlayer->connected ) {
-                    
+                    setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                     setDeathReason( nextPlayer, 
                                     "disconnect_shutdown" );
                     
@@ -9653,6 +10064,10 @@ int main() {
                              Time::getCurrentTime() - 
                              nextPlayer->lastSayTimeSeconds > 
                              minSayGapInSeconds ) {
+								 
+								 if(m.saidText[0]=='.'){
+								parseCommand(nextPlayer, m.saidText);
+							}else {
                         
                         nextPlayer->lastSayTimeSeconds = 
                             Time::getCurrentTime();
@@ -9876,6 +10291,7 @@ int main() {
                             }
                         
                         makePlayerSay( nextPlayer, m.saidText );
+							}
                         }
                     else if( m.type == KILL ) {
                         // send update even if action fails (to let them
@@ -12082,6 +12498,7 @@ int main() {
 
                 
                 if( ! nextPlayer->isTutorial ) {
+					setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                     logDeath( nextPlayer->id,
                               nextPlayer->email,
                               nextPlayer->isEve,
@@ -12243,6 +12660,7 @@ int main() {
                         }
                     
                     if( ! nextPlayer->isTutorial ) {    
+						setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                         logDeath( nextPlayer->id,
                                   nextPlayer->email,
                                   nextPlayer->isEve,
@@ -13284,6 +13702,7 @@ int main() {
                         
                         if( ! decrementedPlayer->deathLogged &&
                             ! decrementedPlayer->isTutorial ) {    
+							setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                             logDeath( decrementedPlayer->id,
                                       decrementedPlayer->email,
                                       decrementedPlayer->isEve,

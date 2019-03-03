@@ -5563,6 +5563,12 @@ int processLoggedInPlayer( Socket *inSock,
             startY = 
                 SettingsManager::getIntSetting( "forceEveLocationY", 0 );
             }
+			
+		Spot* spot = findSpot(&deathSpot, newObject.email);
+		if(spot != NULL) { 
+			startX = spot->x;
+			startY = spot->y;
+		}	
         
         
         newObject.xs = startX;

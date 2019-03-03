@@ -2221,7 +2221,7 @@ double getAgeRate() {
 
 
 static void setDeathReason( LiveObject *inPlayer, const char *inTag,
-                            int inOptionalID = 0 ) {
+                            int inOptionalID ) {
     
     if( inPlayer->deathReason != NULL ) {
         delete [] inPlayer->deathReason;

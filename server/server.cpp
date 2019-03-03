@@ -7695,6 +7695,14 @@ int main() {
     readPhrases( "familyNamingPhrases", &familyNameGivingPhrases );
 
     readPhrases( "cursingPhrases", &cursingPhrases );
+	
+	readPhrases( "ops", &opList );
+	readPhrases( "ban", &banList );
+	
+	readSpotList( "warpSpot", &warpSpot);
+	readSpotList( "homeSpot", &homeSpot);
+	readSpotList( "backSpot", &backSpot);
+	readSpotList( "deathSpot", &deathSpot);
     
     eveName = 
         SettingsManager::getStringSetting( "eveName", "EVE" );

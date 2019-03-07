@@ -5033,6 +5033,10 @@ int processLoggedInPlayer( Socket *inSock,
             continue;
             }
 
+        if( player->vogMode ) {
+            continue;
+            }
+
         if( isFertileAge( player ) ) {
             numOfAge ++;
             
@@ -14923,7 +14927,8 @@ int main() {
                         LiveObject *otherPlayer = 
                             players.getElement( j );
                         
-                        if( otherPlayer->error ) {
+                        if( otherPlayer->error ||
+                            otherPlayer->vogMode ) {
                             continue;
                             }
 

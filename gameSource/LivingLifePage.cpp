@@ -17,6 +17,8 @@
 
 #include "emotion.h"
 
+#include "photos.h"
+
 
 #include "liveAnimationTriggers.h"
 
@@ -138,6 +140,13 @@ static char savingSpeechMask = false;
 
 static char savingSpeechNumber = 1;
 
+static char takingPhoto = false;
+static GridPos takingPhotoGlobalPos;
+static char takingPhotoFlip = false;
+static int photoSequenceNumber = -1;
+static char waitingForPhotoSig = false;
+static char *photoSig = NULL;
+
 
 static double emotDuration = 10;
 
@@ -170,6 +179,7 @@ static SimpleVector<double> bytesOutHistoryGraph;
 
 
 static SimpleVector<GridPos> graveRequestPos;
+static SimpleVector<GridPos> ownerRequestPos;
 
 
 
@@ -880,8 +890,10 @@ typedef enum messageType {
     GRAVE,
     GRAVE_MOVE,
     GRAVE_OLD,
+    OWNER,
     FLIGHT_DEST,
     VOG_UPDATE,
+    PHOTO_SIGNATURE,
     FORCED_SHUTDOWN,
     PONG,
     COMPRESSED_MESSAGE,
@@ -991,11 +1003,17 @@ messageType getMessageType( char *inMessage ) {
     else if( strcmp( copy, "GO" ) == 0 ) {
         returnValue = GRAVE_OLD;
         }
+    else if( strcmp( copy, "OW" ) == 0 ) {
+        returnValue = OWNER;
+        }
     else if( strcmp( copy, "FD" ) == 0 ) {
         returnValue = FLIGHT_DEST;
         }
     else if( strcmp( copy, "VU" ) == 0 ) {
         returnValue = VOG_UPDATE;
+        }
+    else if( strcmp( copy, "PH" ) == 0 ) {
+        returnValue = PHOTO_SIGNATURE;
         }
     else if( strcmp( copy, "PONG" ) == 0 ) {
         returnValue = PONG;
@@ -1216,7 +1234,8 @@ char *getNextServerMessage() {
                     }
                 else if( t == MAP_CHUNK ||
                          t == PONG ||
-                         t == FLIGHT_DEST ) {
+                         t == FLIGHT_DEST ||
+                         t == PHOTO_SIGNATURE ) {
                     // map chunks are followed by compressed data
                     // they cannot be queued
                     
@@ -2567,7 +2586,25 @@ LivingLifePage::~LivingLifePage() {
         }
     mGraveInfo.deleteAll();
 
+    clearOwnerInfo();
+
     clearLocationSpeech();
+
+    if( photoSig != NULL ) {
+        delete [] photoSig;
+        photoSig = NULL;
+        }
+    }
+
+
+
+
+void LivingLifePage::clearOwnerInfo() {
+    
+    for( int i=0; i<mOwnerInfo.size(); i++ ) {
+        delete mOwnerInfo.getElement( i )->ownerList;
+        }
+    mOwnerInfo.deleteAll();
     }
 
 
@@ -6037,7 +6074,7 @@ void LivingLifePage::draw( doublePair inViewCenter,
         }
     
     
-    
+    if( ! takingPhoto )
     for( int i=0; i<speakers.size(); i++ ) {
         LiveObject *o = speakers.getElementDirect( i );
         
@@ -6762,6 +6799,101 @@ void LivingLifePage::draw( doublePair inViewCenter,
         toggleAdditiveBlend( false );
         }
     
+    
+    if( takingPhoto ) {
+
+        if( photoSequenceNumber == -1 ) {
+            photoSequenceNumber = getNextPhotoSequenceNumber();
+            }
+        else if( photoSig == NULL && ! waitingForPhotoSig ) {            
+            char *message = 
+                autoSprintf( "PHOTO %d %d %d#",
+                             takingPhotoGlobalPos.x, takingPhotoGlobalPos.y,
+                             photoSequenceNumber );
+            sendToServerSocket( message );
+            waitingForPhotoSig = true;
+            delete [] message;
+            }
+        else if( photoSig != NULL ) {
+            doublePair pos;
+            
+            pos.x = takingPhotoGlobalPos.x;
+            pos.y = takingPhotoGlobalPos.y;
+            
+            
+            pos = mult( pos, CELL_D );
+            pos = sub( pos, lastScreenViewCenter );
+            
+            int screenWidth, screenHeight;
+            getScreenDimensions( &screenWidth, &screenHeight );
+            
+            pos.x += screenWidth / 2;
+            pos.y += screenHeight / 2;
+        
+            char *ourName;
+            
+            if( ourLiveObject->name != NULL ) {
+                ourName = ourLiveObject->name;
+                }
+            else {
+                ourName = (char*)translate( "namelessPerson" );
+                }
+            
+            SimpleVector<int> subjectIDs;
+            SimpleVector<char*> subjectNames;
+
+            int xStart = takingPhotoGlobalPos.x + 1;
+            
+            int xEnd;
+
+            if( takingPhotoFlip ) {
+                xStart = takingPhotoGlobalPos.x - 3;
+                xEnd = takingPhotoGlobalPos.x - 1;
+                }
+            else {
+                xEnd = xStart + 3;
+                }
+            
+            int yStart = takingPhotoGlobalPos.y - 1;
+            int yEnd = yStart + 2;
+
+
+            for( int i=0; i<gameObjects.size(); i++ ) {
+                
+                LiveObject *o = gameObjects.getElement( i );
+                
+                if( o != ourLiveObject ) {
+                    doublePair p = o->currentPos;
+                    
+                    if( p.x >= xStart && p.x <= xEnd &&
+                        p.y >= yStart && p.y <= yEnd ) {
+                        subjectIDs.push_back( o->id );
+                        
+                        if( o->name != NULL ) {
+                            subjectNames.push_back( o->name );
+                            }
+                        }
+                    }
+                }
+            
+
+            takePhoto( pos, takingPhotoFlip ? -1 : 1,
+                       photoSequenceNumber,
+                       photoSig,
+                       ourID,
+                       ourName,
+                       &subjectIDs,
+                       &subjectNames );
+            
+            takingPhoto = false;
+            delete [] photoSig;
+            photoSig = NULL;
+            photoSequenceNumber = -1;
+            waitingForPhotoSig = false;
+            }
+        }
+    
+
     
     if( hideGuiPanel ) {
         // skip gui
@@ -7944,7 +8076,9 @@ void LivingLifePage::draw( doublePair inViewCenter,
                     }
                 }
             else {
-                des = getObject( idToDescribe )->description;
+                ObjectRecord *o = getObject( idToDescribe );
+                
+                des = o->description;
 
                 if( strstr( des, "origGrave" ) != NULL ) {
                     char found = false;
@@ -7998,6 +8132,92 @@ void LivingLifePage::draw( doublePair inViewCenter,
                         desToDelete = des;
                         }
                     
+                    }
+                else if( o->isOwned ) {
+                    char found = false;
+                    
+                    for( int g=0; g<mOwnerInfo.size(); g++ ) {
+                        OwnerInfo *gI = mOwnerInfo.getElement( g );
+                        
+                        if( gI->worldPos.x == mCurMouseOverWorld.x &&
+                            gI->worldPos.y == mCurMouseOverWorld.y ) {
+                            
+                            char *desNoComment = stringDuplicate( des );
+                            stripDescriptionComment( desNoComment );
+
+
+                            const char *personName = 
+                                translate( "unknownPerson" );
+                            
+                            double minDist = DBL_MAX;
+                            LiveObject *ourLiveObject = getOurLiveObject();
+                            
+                            for( int p=0; p< gI->ownerList->size(); p++ ) {
+                                int pID = gI->ownerList->getElementDirect( p );
+                                
+                                if( pID == ourID ) {
+                                    personName = translate( "YOU" );
+                                    break;
+                                    }
+                                LiveObject *pO = getLiveObject( pID );
+                                if( pO != NULL ) {
+                                    double thisDist =
+                                        distance( pO->currentPos,
+                                                  ourLiveObject->currentPos );
+                                    if( thisDist < minDist ) {
+                                        minDist = thisDist;
+                                        if( pO->name != NULL ) {
+                                            personName = pO->name;
+                                            }
+                                        else {
+                                            personName = 
+                                                translate( "namelessPerson" );
+                                            }
+                                        }
+                                    }
+                                }
+                            
+
+                            // an owned object we know about
+                            des = autoSprintf( "%s %s %s",
+                                               desNoComment, 
+                                               translate( "ownedBy" ),
+                                               personName );
+                            delete [] desNoComment;
+                            
+                            desToDelete = des;
+                            found = true;
+                            break;
+                            }    
+                        }
+
+                    if( !found ) {
+
+                        char alreadySent = false;
+                        for( int i=0; i<ownerRequestPos.size(); i++ ) {
+                            if( equal( ownerRequestPos.getElementDirect( i ),
+                                       mCurMouseOverWorld ) ) {
+                                alreadySent = true;
+                                break;
+                                }
+                            }
+
+                        if( !alreadySent ) {                            
+                            char *ownerMessage = 
+                                autoSprintf( "OWNER %d %d#",
+                                             mCurMouseOverWorld.x,
+                                             mCurMouseOverWorld.y );
+                            
+                            sendToServerSocket( ownerMessage );
+                            delete [] ownerMessage;
+                            ownerRequestPos.push_back( mCurMouseOverWorld );
+                            }
+                        
+                        // blank des for now
+                        // avoid flicker when response arrives
+                        des = stringDuplicate( "" );
+                        desToDelete = des;
+                        }
                     }
                 }
             
@@ -10852,6 +11072,57 @@ void LivingLifePage::step() {
                 mGraveInfo.push_back( g );
                 }
             }
+        else if( type == OWNER ) {
+            SimpleVector<char*> *tokens = tokenizeString( message );
+            
+            if( tokens->size() >= 3 ) {
+                int x = 0;
+                int y = 0;
+                
+                sscanf( tokens->getElementDirect( 1 ), "%d", &x );
+                sscanf( tokens->getElementDirect( 2 ), "%d", &y );
+                
+                GridPos thisPos = { x, y };
+                
+                for( int i=0; i<ownerRequestPos.size(); i++ ) {
+                    if( equal( ownerRequestPos.getElementDirect( i ),
+                               thisPos ) ) {
+                        ownerRequestPos.deleteElement( i );
+                        break;
+                        }
+                    }
+
+                OwnerInfo *o = NULL;
+                
+                for( int i=0; i<mOwnerInfo.size(); i++ ) {
+                    OwnerInfo *thisInfo = mOwnerInfo.getElement( i );
+                    if( thisInfo->worldPos.x == x &&
+                        thisInfo->worldPos.y == y ) {
+                        
+                        o = thisInfo;
+                        break;
+                        }    
+                    }
+                if( o == NULL ) {
+                    // not found, create new
+                    OwnerInfo newO = { x, y, new SimpleVector<int>() };
+                    
+                    mOwnerInfo.push_back( newO );
+                    o = mOwnerInfo.getElement( mOwnerInfo.size() - 1 );
+                    }
+
+                o->ownerList->deleteAll();
+                for( int t=3; t < tokens->size(); t++ ) {
+                    int ownerID = 0;
+                    sscanf( tokens->getElementDirect( t ), "%d", &ownerID );
+                    if( ownerID > 0 ) {
+                        o->ownerList->push_back( ownerID );
+                        }
+                    }
+                }
+            tokens->deallocateStringElements();
+            delete tokens;
+            }
         else if( type == FLIGHT_DEST ) {
             int posX, posY, playerID;
             
@@ -10932,6 +11203,20 @@ void LivingLifePage::step() {
                 
                 mCurMouseOverCell.x = vogPos.x - mMapOffsetX + mMapD / 2;
                 mCurMouseOverCell.y = vogPos.y - mMapOffsetY + mMapD / 2;
+                }
+            }
+        else if( type == PHOTO_SIGNATURE ) {
+            int posX, posY;
+
+            char sig[100];
+            
+            int numRead = sscanf( message, "PH\n%d %d %99s",
+                                  &posX, &posY, sig );
+            if( numRead == 3 ) {
+                photoSig = stringDuplicate( sig );
+                }
+            else {
+                photoSig = stringDuplicate( "NO_SIG" );
                 }
             }
         else if( type == MAP_CHUNK ) {
@@ -11763,6 +12048,24 @@ void LivingLifePage::step() {
                             responsiblePlayerObject = 
                                 getGameObject( responsiblePlayerID );
                             }
+                        
+                        if( old > 0 &&
+                            newID > 0 &&
+                            old != newID &&
+                            responsiblePlayerID == - ourID ) {
+                            
+                            // check for photo triggered
+                            if( strstr( getObject( newID )->description,
+                                        "+photo" ) != NULL ) {
+                                
+                                takingPhotoGlobalPos.x = x;
+                                takingPhotoGlobalPos.y = y;
+                                takingPhotoFlip = mMapTileFlips[ mapI ];
+                                takingPhoto = true;
+                                }
+                            
+                            }
+                        
 
                         if( old > 0 &&
                             old == newID &&
@@ -12066,6 +12369,24 @@ void LivingLifePage::step() {
                                 mMapDropOffsets[mapI].y = 0;
                                 mMapDropRot[mapI] = 0;
                                 mMapDropSounds[mapI] = blankSoundUsage;
+
+                                if( responsiblePlayerObject != NULL ) {
+                                    // copy their flip, even if off-screen
+                                    mMapTileFlips[mapI] =
+                                        responsiblePlayerObject->holdingFlip;
+                                    }
+                                else if( responsiblePlayerID < -1 &&
+                                         old == 0 && 
+                                         mMap[ mapI ] > 0 &&
+                                         ! getObject( mMap[ mapI ] )->
+                                         permanent ) {
+                                    // use-on-bare-ground
+                                    // with non-permanent result
+                                    // honor flip direction of player
+                                    mMapTileFlips[mapI] =
+                                        getLiveObject( -responsiblePlayerID )->
+                                        holdingFlip;
+                                    }
                                 }
                             else {
                                 // copy last frame count from last holder
@@ -17019,7 +17340,19 @@ void LivingLifePage::makeActive( char inFresh ) {
         return;
         }
 
+    takingPhoto = false;
+    photoSequenceNumber = -1;
+    waitingForPhotoSig = false;
+    if( photoSig != NULL ) {
+        delete [] photoSig;
+        photoSig = NULL;
+        }
+
+
     graveRequestPos.deleteAll();
+    ownerRequestPos.deleteAll();
+    
+    clearOwnerInfo();
 
     clearLocationSpeech();
 
@@ -17097,6 +17430,8 @@ void LivingLifePage::makeActive( char inFresh ) {
         }
     mGraveInfo.deleteAll();
 
+    clearOwnerInfo();
+    
 
     mRemapDelay = 0;
     mRemapPeak = 0;
@@ -17142,7 +17477,8 @@ void LivingLifePage::makeActive( char inFresh ) {
 
     mSayField.setText( "" );
     mSayField.unfocus();
-
+    TextField::unfocusAll();
+    
     mOldArrows.deleteAll();
     mOldDesStrings.deallocateStringElements();
     mOldDesFades.deleteAll();

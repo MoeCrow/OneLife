@@ -1,4 +1,4 @@
-int versionNumber = 215;
+int versionNumber = 219;
 int dataVersionNumber = 0;
 
 int binVersionNumber = versionNumber;
@@ -74,6 +74,7 @@ CustomRandomSource randSource( 34957197 );
 #include "groundSprites.h"
 
 #include "emotion.h"
+#include "photos.h"
 
 
 #include "FinalMessagePage.h"
@@ -171,7 +172,7 @@ double viewHeight = 720;
 // then we will put letterbox bars on the sides
 // Usually, if screen is not 16:9, it will be taller, not wider,
 // and we will put letterbox bars on the top and bottom 
-const double visibleViewWidth = viewWidth;
+double visibleViewWidth = viewWidth;
 
 
 
@@ -741,7 +742,9 @@ void freeFrameDrawer() {
     
     freeMusicPlayer();
     freeEmotion();
-
+    
+    freePhotos();
+    
 
     if( reflectorURL != NULL ) {
         delete [] reflectorURL;
@@ -1322,6 +1325,9 @@ void drawFrame( char inUpdate ) {
     stepSoundBank();
     
     stepMusicPlayer();
+    
+    stepPhotos();
+    
 
     if( currentGamePage != NULL ) {
         currentGamePage->base_step();
@@ -1590,6 +1596,7 @@ void drawFrame( char inUpdate ) {
                     
 
                     initEmotion();
+                    initPhotos();
                     
                     initMusicPlayer();
                     setMusicLoudness( musicLoudness );

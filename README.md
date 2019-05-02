@@ -19,6 +19,6 @@ transition改动:https://github.com/moeonelife/OneLifeData7
 
 回家 .home
 
-返回上一个地点 .back（存在问题，暂时禁用）
+返回上一个地点 .back
 
 随机传送 .tpr

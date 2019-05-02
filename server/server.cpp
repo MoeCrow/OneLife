@@ -687,9 +687,9 @@ void parseCommand(LiveObject *player, char *text){
 		}
 		char s[256];
 		sscanf(args, "%d %d", &x, &y);
-		sprintf(s, "[SYSTEM]TELEPORTING TO %d %d", x, y);
+		sprintf(s, "[SYSTEM]TELEPORTING");
 		makePlayerSay( player, s);
-		setBack(player->email, player->xs, player->xs);
+		setBack(player->email, player->xs, player->ys);
 		player->xs = x;
         player->ys = y;
         player->xd = x;
@@ -775,9 +775,9 @@ void parseCommand(LiveObject *player, char *text){
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;
 		char s[256];
-		sprintf(s, "[SYSTEM]TELEPORTING TO %d %d", x, y);
+		sprintf(s, "[SYSTEM]TELEPORTING");
 		makePlayerSay( player, s);
-		setBack(player->email, player->xs, player->xs);
+		setBack(player->email, player->xs, player->ys);
 		player->xs = x;
         player->ys = y;
         player->xd = x;
@@ -797,12 +797,14 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]YOU HAVE NO PLACE TO GO BACK");
 		else { 
-			setBack(player->email, player->xs, player->xs);
+			int tx = player->xs;
+			int ty = player->ys;
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
 			player->yd = spot->y;
-			sprintf(s, "[SYSTEM]TELEPORTING TO LAST PLACE AT %d %d", spot->x, spot->y);
+			setBack(player->email, tx, ty);
+			sprintf(s, "[SYSTEM]TELEPORTING");
 			setDeathReason( player, s);
 			setPlayerDisconnected( player, s);
 		}
@@ -851,12 +853,12 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]YOU HAVE NO HOME SET");
 		else {
-			setBack(player->email, player->xs, player->xs);
+			setBack(player->email, player->xs, player->ys);
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
 			player->yd = spot->y;
-			sprintf(s, "[SYSTEM]TELEPORTING TO HOME AT %d %d", spot->x, spot->y);
+			sprintf(s, "[SYSTEM]TELEPORTING");
 			setDeathReason( player, s);
 			setPlayerDisconnected( player, s);
 		}
@@ -910,12 +912,12 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
 		else {
-			setBack(player->email, player->xs, player->xs);
+			setBack(player->email, player->xs, player->ys);
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
 			player->yd = spot->y;
-			sprintf(s, "[SYSTEM]TELEPORTING TO HOME AT %d %d", spot->x, spot->y);
+			sprintf(s, "[SYSTEM]TELEPORTING");
 			setDeathReason( player, s);
 			setPlayerDisconnected( player, s);
 		}

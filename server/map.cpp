@@ -194,6 +194,22 @@ static int maxEveLocationUsage = 3;
 static double eveAngle = 2 * M_PI;
 
 
+static int evePrimaryLocSpacing = 0;
+static int evePrimaryLocObjectID = -1;
+static SimpleVector<int> eveSecondaryLocObjectIDs;
+
+static GridPos lastEvePrimaryLocation = {0,0};
+
+static SimpleVector<GridPos> recentlyUsedPrimaryEvePositions;
+// when they were place, so they can time out
+static SimpleVector<double> recentlyUsedPrimaryEvePositionTimes;
+// one hour
+static double recentlyUsedPrimaryEvePositionTimeout = 3600;
+
+static int eveHomeMarkerObjectID = -1;
+
+
+
 
 // what human-placed stuff, together, counts as a camp
 static int campRadius = 20;
@@ -236,6 +252,18 @@ static int *biomes;
 // one vector per biome
 static SimpleVector<int> *naturalMapIDs;
 static SimpleVector<float> *naturalMapChances;
+
+typedef struct MapGridPlacement {
+        int id;
+        int spacing;
+        int phase;
+        int wiggleScale;
+        SimpleVector<int> permittedBiomes;
+    } MapGridPlacement;
+
+static SimpleVector<MapGridPlacement> gridPlacements;
+
+
 
 static SimpleVector<int> allNaturalMapIDs;
 
@@ -996,6 +1024,55 @@ static int getBaseMap( int inX, int inY ) {
         }
     
     getBaseMapCallCount ++;
+
+
+    // see if any of our grids apply
+    setXYRandomSeed( 9753 );
+
+    for( int g=0; g < gridPlacements.size(); g++ ) {
+        MapGridPlacement *gp = gridPlacements.getElement( g );
+
+
+        /*
+        double gridWiggleX = getXYFractal( inX / gp->spacing, 
+                                           inY / gp->spacing, 
+                                           0.1, 0.25 );
+        
+        double gridWiggleY = getXYFractal( inX / gp->spacing, 
+                                           inY / gp->spacing + 392387, 
+                                           0.1, 0.25 );
+        */
+        // turn wiggle off for now
+        double gridWiggleX = 0;
+        double gridWiggleY = 0;
+
+        if( ( inX + gp->phase + lrint( gridWiggleX * gp->wiggleScale ) ) 
+            % gp->spacing == 0 &&
+            ( inY + gp->phase + lrint( gridWiggleY * gp->wiggleScale ) ) 
+            % gp->spacing == 0 ) {
+            
+            // hits this grid
+
+            // make sure this biome is on the list for this object
+            int secondPlace;
+            double secondPlaceGap;
+        
+            int pickedBiome = getMapBiomeIndex( inX, inY, &secondPlace,
+                                                &secondPlaceGap );
+        
+            if( pickedBiome == -1 ) {
+                mapCacheInsert( inX, inY, 0 );
+                return 0;
+                }
+
+            if( gp->permittedBiomes.getElementIndex( pickedBiome ) != -1 ) {
+                mapCacheInsert( inX, inY, gp->id );
+                return gp->id;
+                }
+            }    
+        }
+             
+
 
     setXYRandomSeed( 5379 );
     
@@ -2394,6 +2471,10 @@ char initMap() {
     speechPipesOut = new SimpleVector<GridPos>[ numSpeechPipes ];
     
 
+    eveSecondaryLocObjectIDs.deleteAll();
+    recentlyUsedPrimaryEvePositionTimes.deleteAll();
+    recentlyUsedPrimaryEvePositions.deleteAll();
+    
 
     initDBCaches();
     initBiomeCache();
@@ -3040,26 +3121,75 @@ char initMap() {
         }
     
 
+    CustomRandomSource phaseRandSource( randSeed );
+
     
     for( int i=0; i<numObjects; i++ ) {
         ObjectRecord *o = allObjects[i];
+
+        if( strstr( o->description, "eveSecondaryLoc" ) != NULL ) {
+            eveSecondaryLocObjectIDs.push_back( o->id );
+            }
+        if( strstr( o->description, "eveHomeMarker" ) != NULL ) {
+            eveHomeMarkerObjectID = o->id;
+            }
+        
+
 
         float p = o->mapChance;
         if( p > 0 ) {
             int id = o->id;
             
             allNaturalMapIDs.push_back( id );
-            
-            for( int j=0; j< o->numBiomes; j++ ) {
-                int b = o->biomes[j];
 
-                int bIndex = getBiomeIndex( b );
+            char *gridPlacementLoc =
+                strstr( o->description, "gridPlacement" );
                 
-            
-                naturalMapIDs[bIndex].push_back( id );
-                naturalMapChances[bIndex].push_back( p );
-            
-                totalChanceWeight[bIndex] += p;
+            if( gridPlacementLoc != NULL ) {
+                // special grid placement
+                
+                int spacing = 10;
+                sscanf( gridPlacementLoc, "gridPlacement%d", &spacing );
+                
+                if( strstr( o->description, "evePrimaryLoc" ) != NULL ) {
+                    evePrimaryLocObjectID = id;
+                    evePrimaryLocSpacing = spacing;
+                    }
+
+                SimpleVector<int> permittedBiomes;
+                for( int b=0; b<o->numBiomes; b++ ) {
+                    permittedBiomes.push_back( 
+                        getBiomeIndex( o->biomes[ b ] ) );
+                    }
+
+                int wiggleScale = 4;
+                
+                if( spacing > 12 ) {
+                    wiggleScale = spacing / 3;
+                    }
+                
+                MapGridPlacement gp =
+                    { id, spacing,
+                      0,
+                      //phaseRandSource.getRandomBoundedInt( 0, 
+                      //                                     spacing - 1 ),
+                      wiggleScale,
+                      permittedBiomes };
+                
+                gridPlacements.push_back( gp );
+                }
+            else {
+                // regular fractal placement
+                
+                for( int j=0; j< o->numBiomes; j++ ) {
+                    int b = o->biomes[j];
+                    
+                    int bIndex = getBiomeIndex( b );
+                    naturalMapIDs[bIndex].push_back( id );
+                    naturalMapChances[bIndex].push_back( p );
+                    
+                    totalChanceWeight[bIndex] += p;
+                    }
                 }
             }
         }
@@ -5049,9 +5179,29 @@ int getMapObjectRaw( int inX, int inY ) {
                 }
             else if( getObjectHeight( result ) < CELL_D ) {
                 // a short object should be here
-                // make sure there's not a tall object below already
+                // make sure there's not any semi-short objects below already
 
+                // this avoids vertical stacking of short objects
+                // and ensures that the map is sparse with short object
+                // clusters, even in very dense map areas
+                // (we don't want the floor tiled with berry bushes)
+
+                // this used to be an unintentional bug, but it was in place
+                // for a year, and we got used to it.
+
+                // when the bug was fixed, the map became way too dense
+                // in short-object areas
                 
+                // actually, fully replicate the bug for now
+                // only block short objects with objects to the south
+                // that extend above the tile midline
+
+                // So we can have clusters of very short objects, like stones
+                // but not less-short ones like berry bushes, rabbit holes, etc.
+
+                // use the old buggy "2 pixels" and "3 pixels" above the
+                // midline measure just to keep the map the same
+
                 // south
                 int sID = getBaseMap( inX, inY - 1 );
                         
@@ -6759,15 +6909,171 @@ void getEvePosition( const char *inEmail, int *outX, int *outY,
         // player has never been an Eve that survived to old age before
         // or such repawning forbidden by caller
 
+        maxEveLocationUsage = 
+            SettingsManager::getIntSetting( "maxEveStartupLocationUsage", 10 );
+
+        
+        // first try new grid placement method
+        if( eveLocationUsage >= maxEveLocationUsage
+            && evePrimaryLocObjectID > 0 ) {
+            
+
+            GridPos tryP = lastEvePrimaryLocation;
+            char found = false;
+            GridPos foundP = tryP;
+            
+            double curTime = Time::getCurrentTime();
+            
+            int r;
+            
+            for( r=1; r<5; r++ ) {
+                
+                for( int y=-r; y<=r; y++ ) {
+                    for( int x=-r; x<=r; x++ ) {
+                        tryP = lastEvePrimaryLocation;
+                        
+                        tryP.x += x * evePrimaryLocSpacing;
+                        tryP.y += y * evePrimaryLocSpacing;
+                        
+                        char existsAlready = false;
+                        
+                        printf( "%d recenly used\n",
+                                recentlyUsedPrimaryEvePositions.size() );
+
+                        for( int p=0; p<recentlyUsedPrimaryEvePositions.size();
+                             p++ ) {
+                            if( curTime -
+                                recentlyUsedPrimaryEvePositionTimes.
+                                getElementDirect( p )
+                                > recentlyUsedPrimaryEvePositionTimeout ) {
+                                // timed out
+                                recentlyUsedPrimaryEvePositions.
+                                    deleteElement( p );
+                                recentlyUsedPrimaryEvePositionTimes.
+                                    deleteElement( p );
+                                printf( "Timed out!\n" );
+                                p--;
+                                continue;
+                                }
+
+                            GridPos pos =
+                                recentlyUsedPrimaryEvePositions.
+                                getElementDirect( p );
+                            
+                            if( equal( pos, tryP ) ) {
+                                existsAlready = true;
+                                printf( "exists already\n" );
+                                break;
+                                }
+                            }
+                        
+                        if( existsAlready ) {
+                            printf( "really exists already, skipping %d,%d\n",
+                                    tryP.x, tryP.y );
+                            
+                            continue;
+                            }
+                        else {
+                            printf( "does not exists already, checking %d,%d\n",
+                                    tryP.x, tryP.y );
+                            }
+                        
+                                     
+                        int mapID = getMapObject( tryP.x, tryP.y );
+
+                        if( mapID == evePrimaryLocObjectID ) {
+                            printf( "Found primary at %d,%d\n",
+                                    tryP.x, tryP.y );
+                            found = true;
+                            foundP = tryP;
+                            }
+                        else if( eveSecondaryLocObjectIDs.getElementIndex( 
+                                     mapID ) != -1 ) {
+                            // a secondary ID, allowed
+                            printf( "Found secondary at %d,%d\n",
+                                    tryP.x, tryP.y );
+                            found = true;
+                            foundP = tryP;
+                            }
+                        }
+                
+                    if( found ) break;
+                    }
+                if( found ) break;
+                }
+
+            if( found ) {
+                printf( "Found = true!\n" );
+                
+                if( r > 5 ) {
+                    // exhausted window around last eve center
+                    // save this as the new eve center
+                    // next time, we'll search a window around that
+                    lastEvePrimaryLocation = foundP;
+                    }
+
+                printf( "Sticking Eve at unused primary grid pos "
+                        "of %d,%d\n",
+                        foundP.x, foundP.y );
+                
+                recentlyUsedPrimaryEvePositions.push_back( foundP );
+                recentlyUsedPrimaryEvePositionTimes.push_back( curTime );
+
+                // stick Eve directly to south
+                *outX = foundP.x;
+                *outY = foundP.y - 1;
+                
+                if( eveHomeMarkerObjectID > 0 ) {
+                    // stick home marker there
+                    setMapObject( *outX, *outY, eveHomeMarkerObjectID );
+                    }
+                else {
+                    // make it empty
+                    setMapObject( *outX, *outY, 0 );
+                    }
+                
+                // clear a few more objects to the south, to make
+                // sure Eve's spring doesn't spawn behind a tree
+                setMapObject( *outX, *outY - 1, 0 );
+                setMapObject( *outX, *outY - 2, 0 );
+                setMapObject( *outX, *outY - 3, 0 );
+
+                // exact placement, not radius
+                return;
+                }
+            }
+        
+
         // New method:
         GridPos eveLocToUse = eveLocation;
         
-        maxEveLocationUsage = 
-            SettingsManager::getIntSetting( "maxEveStartupLocationUsage", 10 );
 
         if( eveLocationUsage < maxEveLocationUsage ) {
             eveLocationUsage++;
             // keep using same location
+
+            printf( "Reusing same eve start-up location "
+                    "of %d,%d for %dth time\n",
+                    eveLocation.x, eveLocation.y, eveLocationUsage );
+            
+
+            // remember it for when we exhaust it
+            if( evePrimaryLocObjectID > 0 &&
+                evePrimaryLocSpacing > 0 ) {
+
+                lastEvePrimaryLocation = eveLocation;
+                // round to nearest whole spacing multiple
+                lastEvePrimaryLocation.x /= evePrimaryLocSpacing;
+                lastEvePrimaryLocation.y /= evePrimaryLocSpacing;
+                
+                lastEvePrimaryLocation.x *= evePrimaryLocSpacing;
+                lastEvePrimaryLocation.y *= evePrimaryLocSpacing;
+            
+                printf( "Saving eve start-up location close grid pos "
+                        "of %d,%d for later\n",
+                        lastEvePrimaryLocation.x, lastEvePrimaryLocation.y );
+                }
+
             }
         else {
             // post-startup eve location has been used too many times

@@ -3,6 +3,90 @@ This file only list changes to game code.  Changes to content can be found here:
 http://onehouronelife.com/updateLog.php
 
 
+
+Server Fixes:
+
+--Timeout to re-use previously-used Eve spring locations is 1 hour instead of 3.
+
+--New map, with bug fix, too dense.  Restored old map spacing.
+
+
+
+
+Version 223    2019-May-10
+
+--Fixed bug that was causing inherited home marker position (closest marker
+  visible on screen during spawn) to get deleted.
+
+
+
+
+Server Fixes:
+
+--Manually-triggered server object survey (objects around living players).
+
+--Handled case where ticket server check not required, and thus curse status of
+  player might be unknown (birth of a baby was blocked in that case, forcing
+  all players to be Eve).
+
+--Fixed bug in unblocked path detection that was allowing arrows to shoot
+  through walls on diagonals.  Thanks Tarr.
+
+--Different Eve lines speak different languages with bi-directional filter.
+
+--New Eve placement on natural spring grid, with auto-home-marker for Eve.
+
+--childSameRaceLikelihood now 100%.  Races with 3 members are not forced to
+  have children of the neighboring race.
+
+--Support for deadly objects that work on other family only.
+
+
+
+
+Version 221    2019-May-5
+
+--Server now reports death-age in GRAVE_OLD message, and client now displays
+  how long person has been dead on grave mouse-over.
+
+--Temporarily disable mushroom sprite remap effect when taking photos.
+
+--PaperThreshold slider in import editor allows better control of feathering on
+  transparent sprite edges.
+
+--New protocol for server to tell client about valley spacing.
+
+
+
+Server Fixes:
+
+--Daily mass disconnect issue:  rolling the servers log.txt over was using a
+  copy operation, and for a 2.9 GB log file, this was stalling the server for
+  20 seconds.  Switched to a move operation instead, which is instantaneous.
+
+--Fixed a bunch of bugs in way old graves and moving graves are tracked.
+
+--Map pull mode now deals in absolute coordinates.
+
+--Map pull mode now prevents player starvation.
+
+--Fixed bug in removing owners that was causing the OW message detailing
+  ownership change to be sent over and over (every server frame, which can be
+  hundreds of times per second) during the 5-second grace period before we
+  disconnect the dead player.  This overloaded the socket buffer for clients,
+  causing them to disconnect.  Fixes #286
+
+--Support for gridPlacement objects that are spread evenly on map (ponds).
+
+--Fixed RIDICULOUS bug in map placement algorithm (that was mis-measuring tall
+  objects to the south that would block placement of short objects, effectively
+  blocking placement of short objects in the two tiles to the north of any
+  object that sticks up above the tile center).  Map is now much fuller than it
+  used to be.
+
+
+
+
 Version 219    2019-April-27
 
 --Fixed bug that cause chat sheet to not appear if another field was focused.

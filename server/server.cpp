@@ -777,7 +777,6 @@ void parseCommand(LiveObject *player, char *text){
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
 		}
-		srand(time(NULL));
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;
 		char s[256];

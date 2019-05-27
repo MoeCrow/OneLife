@@ -315,6 +315,11 @@ static char graveDBOpen = false;
 static DB eveDB;
 static char eveDBOpen = false;
 
+static DB ecoDB;
+static char ecoDBOpen = false;
+
+static DB shopDB;
+static char shopDBOpen = false;
 
 static DB metaDB;
 static char metaDBOpen = false;
@@ -642,6 +647,75 @@ static void eveDBPut( const char *inEmail, int inX, int inY, int inRadius ) {
     
     DB_put( &eveDB, key, value );
     }
+
+
+static int ecoDBGet( const char *inEmail, float *money) 
+{
+   unsigned char key[50];
+    
+    unsigned char value[12];
+
+
+    emailToKey( inEmail, key );
+	
+	int tmp;
+    
+    int result = DB_get( &ecoDB, key, value );
+    
+    if( result == 0 ) {
+        // found
+        tmp = valueToInt( &( value[0] ) );
+		memcpy(money, &tmp, 4);
+        return 1;
+        }
+    else {
+        return -1;
+        }
+    }
+
+
+static void ecoDBPut( const char *inEmail, float money ) {
+    unsigned char key[50];
+    unsigned char value[12];
+    
+	int tmp;
+    emailToKey( inEmail, key );
+	memcpy(&tmp, &money, 4);
+    
+    intToValue( tmp, &( value[0] ) );
+    intToValue( 0, &( value[4] ) );
+    intToValue( 0, &( value[8] ) );
+            
+    
+    DB_put( &ecoDB, key, value );
+    }
+
+
+static char shopDBGet( int inX, int inY, unsigned char *inBuffer ) {
+    // look up in metadata DB
+    unsigned char key[8];    
+	intPairToKey( inX, inY, key);
+    int result = DB_get( &shopDB, key, inBuffer );
+
+    if( result == 0 ) {
+        return true;
+        }
+
+    return false;
+}
+
+float getPlayerMoney(const char *inEmail) {
+	float money;
+	int result = ecoDBGet(inEmail, &money);
+	if(result == 1) {
+		return money;
+	}
+	return 0;
+}
+
+void setPlayerMoney(const char *inEmail, float money) {
+	ecoDBPut(inEmail, money);
+}
 
 
 
@@ -3026,8 +3100,81 @@ char initMap() {
         }
     
     eveDBOpen = true;
+	
+	
+	error = DB_open( &ecoDB, 
+                         "eco.db", 
+                         KISSDB_OPEN_MODE_RWCREAT,
+                         // this can be a lot smaller than other DBs
+                         // it's not performance-critical, and the keys are
+                         // much longer, so stackdb will waste disk space
+                         5000,
+                         50, // first 50 characters of email address
+                             // append spaces to the end if needed 
+                         12 // one int,  eco
+                         );
+    
+    if( error ) {
+        AppLog::errorF( "Error %d opening eco KissDB", error );
+        return false;
+        }
+    
+    ecoDBOpen = true;
+	
+	unsigned char key[50];
+    unsigned char value[12];
+	int ecoVer = 0;
+	emailToKey("[version]", key);
+	int result = DB_get( &ecoDB, key, value );
+    
+    if( result == 0 ) {
+        // found
+        ecoVer = valueToInt( &( value[0] ) );
+    }
+	
+	if(ecoVer == 0) {
+		AppLog::infoF( 
+        "Economy DB version is %d ,upgrading!",
+        ecoVer );
+		
+		unsigned char keyEco[50];
+		unsigned char valueEco[12];
+		
+		DB_Iterator ecoIterator;
+		DB_Iterator_init( &ecoDB, &ecoIterator );
+		while( DB_Iterator_next( &ecoIterator, keyEco, valueEco ) > 0 ) {
+			int tmp = valueToInt( &( valueEco[0] ) );
+			float money = static_cast<float>(tmp);
+			memcpy(&tmp, &money, 4);
+			intToValue( tmp, &( valueEco[0] ) );
+			DB_put( &ecoDB, keyEco, valueEco );
+		}
+		
+		ecoVer = 1;
+		intToValue( ecoVer, &( value[0] ) );
+		DB_put( &ecoDB, key, value );
+		AppLog::infoF( 
+        "Economy DB upgrade to version %d!",
+        ecoVer );
+	}
 
 
+	error = DB_open( &shopDB, 
+                     "shop.db", 
+                     KISSDB_OPEN_MODE_RWCREAT,
+                     // starting size doesn't matter here
+                     500,
+                     4, // one 32-bit int as key
+                     // data
+                     64
+                     );
+    
+    if( error ) {
+        AppLog::errorF( "Error %d opening shop KissDB", error );
+        return false;
+        }
+    
+    shopDBOpen = true;
 
 
     error = DB_open( &metaDB, 
@@ -3681,6 +3828,17 @@ void freeMap( char inSkipCleanup ) {
         DB_close( &eveDB );
         eveDBOpen = false;
         }
+		
+	if( ecoDBOpen ) {
+        DB_close( &ecoDB );
+        ecoDBOpen = false;
+        }
+
+	if( shopDBOpen ) {
+        DB_close( &shopDB );
+        shopDBOpen = false;
+        }
+
 
     if( metaDBOpen ) {
         DB_close( &metaDB );

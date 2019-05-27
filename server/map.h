@@ -65,6 +65,8 @@ void getEvePosition( const char *inEmail, int inID, int *outX, int *outY,
 // near them if they are ever Eve again
 void mapEveDeath( const char *inEmail, double inAge, GridPos inDeathMapPos );
 
+float getPlayerMoney(const char *inEmail);
+void setPlayerMoney(const char *inEmail, float money);
 
 
 

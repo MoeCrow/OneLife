@@ -777,6 +777,7 @@ void parseCommand(LiveObject *player, char *text){
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
 		}
+		srand(time(NULL) + rand()); 
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;
 		char s[256];
@@ -817,12 +818,109 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
+	if(strcmp(cmd, "LOCK")==0){
+		if(!isOp){
+			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			return;
+		}
+		char s[256];
+		sprintf(s, "[SYSTEM]%d %d LOCKED", player->xs, player->ys);
+		makePlayerSay( player, s);
+		return;
+	}
+	
 	if(strcmp(cmd, "POS")==0){
 		char s[256];
 		sprintf(s, "[SYSTEM]%d %d", player->xs, player->ys);
 		makePlayerSay( player, s);
 		return;
 	}
+	
+	if(strcmp(cmd, "BAL")==0){
+		char s[256];
+		float money = getPlayerMoney(player->email);
+		sprintf(s, "[SYSTEM]YOU HAVE %.2f COINS", money);
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "CHQ")==0){
+		char s[256];
+		float num;
+		float money = getPlayerMoney(player->email);
+		if(player->holdingID != 1619) {
+			sprintf(s, "[SYSTEM]YOU HAVE TO HOLD PAPER TO MAKE CHEQUE!");
+			makePlayerSay( player, s);
+			return;
+		}
+		
+		if(sscanf(args, "%f", &num) != 1) {
+			sprintf(s, "[SYSTEM]WRONG NUMBER");
+		} else {
+			if(num <= money) {
+				player->holdingID = 1615;
+				unsigned char metaData[ MAP_METADATA_LENGTH ];
+				char chequeStr[50];
+				sprintf(chequeStr, "[CHEQUE] %.2f COINS", num);
+				int len = strlen( chequeStr );
+				
+				memset( metaData, 0, MAP_METADATA_LENGTH );
+				memcpy( metaData, chequeStr, len + 1 );
+				
+				player->holdingID = addMetadata( player->holdingID,
+                                                 metaData );
+				
+				sprintf(s, "[SYSTEM]YOU MAKE CHEQUE OF %.2f COINS", num);
+				money -= num;
+				setPlayerMoney(player->email, money);
+			} else {
+				sprintf(s, "[SYSTEM]YOU ONLY HAVE %.2f COINS", money);
+			}
+		}
+		
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	/**
+	unsigned char metaData[ MAP_METADATA_LENGTH ];
+                            int len = strlen( m.saidText );
+                            
+                            if( nextPlayer->holdingID > 0 &&
+                                len < MAP_METADATA_LENGTH &&
+                                getObject( 
+                                    nextPlayer->holdingID )->writable &&
+                                // and no metadata already on it
+                                ! getMetadata( nextPlayer->holdingID, 
+                                               metaData ) ) {
+
+                                memset( metaData, 0, MAP_METADATA_LENGTH );
+                                memcpy( metaData, m.saidText, len + 1 );
+                                
+                                nextPlayer->holdingID = 
+                                    addMetadata( nextPlayer->holdingID,
+                                                 metaData );
+
+                                TransRecord *writingHappenTrans =
+                                    getMetaTrans( 0, nextPlayer->holdingID );
+                                
+                                if( writingHappenTrans != NULL &&
+                                    writingHappenTrans->newTarget > 0 &&
+                                    getObject( writingHappenTrans->newTarget )
+                                        ->written ) {
+                                    // bare hands transition going from
+                                    // writable to written
+                                    // use this to transform object in 
+                                    // hands as we write
+                                    handleHoldingChange( 
+                                        nextPlayer,
+                                        writingHappenTrans->newTarget );
+                                    playerIndicesToSendUpdatesAbout.
+                                        push_back( i );
+                                    }                    
+                                }    
+                            }**/
+	
 	
 	if(strcmp(cmd, "SETHOME")==0){
 		char s[256];
@@ -11567,6 +11665,49 @@ int main() {
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
                         
+						/**
+							物品左键 USE
+							空手 REMV
+							物品右键 DROP
+						**/
+						// 在这里中断操作
+						bool isBanned = isNamingSay(stringToUpperCase(nextPlayer->email), &banList) != NULL;
+						if(isBanned)
+							continue; 
+						
+						int checkTarget = getMapObject( m.x, m.y );
+						if(checkTarget == 2482) {
+							ObjectRecord *holdO = getObject( nextPlayer->holdingID );
+							if(nextPlayer->holdingID == 326) {
+								float money = getPlayerMoney(nextPlayer->email);
+								setPlayerMoney(nextPlayer->email, money + 1);
+								nextPlayer->holdingID = 0;
+							}
+							else if(nextPlayer->holdingID == 0) {
+								float money = getPlayerMoney(nextPlayer->email);
+								if(money >= 1) {
+									setPlayerMoney(nextPlayer->email, money - 1);
+									nextPlayer->holdingID = 326;
+								}
+							}
+							else if(holdO->written) {
+								char metaData[ MAP_METADATA_LENGTH ];
+								char found = getMetadata( nextPlayer->holdingID, 
+                                      (unsigned char*)metaData );
+								if( found ) {
+									char *chequeStr = autoSprintf( "%s", metaData );
+									char cqTitle[50];
+									float cqM;
+									if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2 && strcmp(cqTitle, "[CHEQUE]")==0){
+										float money = getPlayerMoney(nextPlayer->email);
+										setPlayerMoney(nextPlayer->email, money + cqM);
+										nextPlayer->holdingID = 1619;
+									}
+								}
+							}
+							continue;
+						}
+						
                         // track whether this USE resulted in something
                         // new on the ground in case of placing a grave
                         int newGroundObject = -1;
@@ -11605,7 +11746,7 @@ int main() {
                                 }
                             }
                         
-
+						
                         if( distanceUseAllowed 
                             ||
                             isGridAdjacent( m.x, m.y,
@@ -13212,6 +13353,7 @@ int main() {
                         // send update even if action fails (to let them
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
+						
 
                         char canDrop = true;
                         
@@ -13512,6 +13654,7 @@ int main() {
                         // send update even if action fails (to let them
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
+						
                         
                         char handEmpty = ( nextPlayer->holdingID == 0 );
                         

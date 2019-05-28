@@ -537,6 +537,7 @@ static SimpleVector<Spot*> warpSpot;
 static SimpleVector<Spot*> homeSpot;
 static SimpleVector<Spot*> backSpot;
 static SimpleVector<Spot*> deathSpot;
+static SimpleVector<Spot*> confirmSpot;
 
 static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOptionalID = 0);
 static void setPlayerDisconnected( LiveObject *inPlayer, const char *inReason );
@@ -593,6 +594,38 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 		}
 	}
 	spotList->push_back(spot);
+}
+
+static bool isConfirmed(char* name, int x, int y) {
+	for( int i=0; i<confirmSpot.size(); i++ ) {
+		Spot* s = *confirmSpot.getElement(i);
+		
+		if(strcmp(name, s->name)==0){
+			return s->x == x && s->y == y;
+		}
+	}
+    return false;
+}
+
+static void setConfirm(char* name, int x, int y) {
+    Spot *spot = new Spot();
+    spot->name = new char[50];
+    strcpy(spot->name, name);
+    spot->x = x;
+    spot->y = y;
+    replaceOrCreateSpot(&confirmSpot, spot);
+}
+
+static void delConfirm(char* name) {
+	for( int i=0; i<confirmSpot.size(); i++ ) {
+		Spot* s = *confirmSpot.getElement(i);
+		
+		if(strcmp(name, s->name)==0){
+			confirmSpot.deleteElement(i);
+			delete s;
+			return;
+		}
+	}
 }
 
 static void setBack(char* name, int x, int y)
@@ -818,6 +851,57 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
+	if(strcmp(cmd, "SHOP")==0){
+		char s[256];
+		char shopType;
+		float price;
+		if(sscanf(args, "%d %f", &shopType, &price) != 2) {
+			sprintf(s, "[SYSTEM]NEED TWO ARGS, EX .SHOP 0 1.5");
+		} else {
+			if(price < 0) {
+				sprintf(s, "[SYSTEM]PRICE SHOULD NOT BE NEGATIVE");
+			} else {
+			
+				char tEmail[50];
+				x = player->xs;
+				y = player->ys - 1;
+				if(getShop(x, y, tEmail, &shopType, &price)){
+					sprintf(s, "[SYSTEM]SHOP AT %d %d IS OWNED BY %s", x, y, tEmail);
+				} else {
+					if ( shopType < 0 || shopType > 1 ) {
+						sprintf(s, "[SYSTEM]SHOP TYPE NOT CORRECT, MUST BE {0,1}");
+					} else {
+						setShop(x, y, player->email, shopType, price);
+						sprintf(s, "[SYSTEM]SHOP CREATED AT %d %d", x, y);
+					}
+				}
+			}
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "DELSHOP")==0){
+		char s[256];
+		char tEmail[50];
+		char shopType;
+		float price;
+		x = player->xs;
+		y = player->ys - 1;
+		if(getShop(x, y, tEmail, &shopType, &price)){
+			if(strcmp(player->email, tEmail) == 0) {
+				delShop(x, y);
+				sprintf(s, "[SYSTEM]SHOP AT %d %d DELETED", x, y);
+			} else {
+				sprintf(s, "[SYSTEM]SHOP AT %d %d IS OWNED BY %s", x, y, tEmail);
+			}
+		} else {
+			sprintf(s, "[SYSTEM]SHOP AT %d %d NOT FOUND", x, y);
+		}
+		makePlayerSay( player, s);
+		return;
+	}
+	
 	if(strcmp(cmd, "LOCK")==0){
 		if(!isOp){
 			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
@@ -854,7 +938,7 @@ void parseCommand(LiveObject *player, char *text){
 			return;
 		}
 		
-		if(sscanf(args, "%f", &num) != 1) {
+		if(sscanf(args, "%f", &num) != 1 || num < 0) {
 			sprintf(s, "[SYSTEM]WRONG NUMBER");
 		} else {
 			if(num <= money) {
@@ -881,46 +965,6 @@ void parseCommand(LiveObject *player, char *text){
 		makePlayerSay( player, s);
 		return;
 	}
-	
-	/**
-	unsigned char metaData[ MAP_METADATA_LENGTH ];
-                            int len = strlen( m.saidText );
-                            
-                            if( nextPlayer->holdingID > 0 &&
-                                len < MAP_METADATA_LENGTH &&
-                                getObject( 
-                                    nextPlayer->holdingID )->writable &&
-                                // and no metadata already on it
-                                ! getMetadata( nextPlayer->holdingID, 
-                                               metaData ) ) {
-
-                                memset( metaData, 0, MAP_METADATA_LENGTH );
-                                memcpy( metaData, m.saidText, len + 1 );
-                                
-                                nextPlayer->holdingID = 
-                                    addMetadata( nextPlayer->holdingID,
-                                                 metaData );
-
-                                TransRecord *writingHappenTrans =
-                                    getMetaTrans( 0, nextPlayer->holdingID );
-                                
-                                if( writingHappenTrans != NULL &&
-                                    writingHappenTrans->newTarget > 0 &&
-                                    getObject( writingHappenTrans->newTarget )
-                                        ->written ) {
-                                    // bare hands transition going from
-                                    // writable to written
-                                    // use this to transform object in 
-                                    // hands as we write
-                                    handleHoldingChange( 
-                                        nextPlayer,
-                                        writingHappenTrans->newTarget );
-                                    playerIndicesToSendUpdatesAbout.
-                                        push_back( i );
-                                    }                    
-                                }    
-                            }**/
-	
 	
 	if(strcmp(cmd, "SETHOME")==0){
 		char s[256];
@@ -3992,8 +4036,11 @@ char isMapSpotEmptyOfPlayers( int inX, int inY ) {
 // checks both grid of objects and live, non-moving player positions
 char isMapSpotEmpty( int inX, int inY, char inConsiderPlayers = true ) {
     int target = getMapObject( inX, inY );
-    
-    if( target != 0 ) {
+    char tEmail[50];
+	char shopType;
+	float price;
+	
+    if( target != 0 || getShop(inX, inY, tEmail, &shopType, &price)) {
         return false;
         }
     
@@ -4306,7 +4353,7 @@ GridPos findClosestEmptyMapSpot( int inX, int inY, int inMaxPointsToCheck,
     for( int i=0; i<inMaxPointsToCheck; i++ ) {
         GridPos p = getSpriralPoint( center, i );
 
-        if( isMapSpotEmpty( p.x, p.y, false ) ) {    
+        if( isMapSpotEmpty( p.x, p.y, false )) {    
             *outFound = true;
             return p;
             }
@@ -10527,6 +10574,7 @@ int main() {
                         playerIndicesToSendUpdatesAbout.push_back( i );
                         }
                     else if( m.type == MOVE ) {
+						delConfirm(nextPlayer->email);
                         //Thread::staticSleep( 1000 );
 
                         /*
@@ -11706,6 +11754,96 @@ int main() {
 								}
 							}
 							continue;
+						}
+						
+						
+						{
+							char s[256];
+							char email[50];
+							char type;
+							float price;
+							ObjectRecord *targetObj =
+                                            getObject( checkTarget );
+							if(getShop(m.x, m.y, email, &type, &price)) {
+								if(strcmp(email, nextPlayer->email)!=0){
+								if(type == 0) {
+									if(targetObj && ! targetObj->permanent &&
+									 targetObj->minPickupAge <=
+									 computeAge( nextPlayer ) ||
+									 checkTarget == 774 || checkTarget == 779) {
+										if(nextPlayer->holdingID == 0) {
+											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+												float money = getPlayerMoney(nextPlayer->email);
+												if(money >= price) {
+													money -= price;
+													setPlayerMoney(nextPlayer->email, money);
+													
+													float skMoney = getPlayerMoney(email);
+													setPlayerMoney(email, skMoney + price);
+													sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
+													makePlayerSay(nextPlayer, s);
+													delConfirm(nextPlayer->email);
+												} else {
+													sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+													makePlayerSay(nextPlayer, s);
+													delConfirm(nextPlayer->email);
+													continue;
+												}
+											} else {
+												sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO BUY ONE", price);
+												makePlayerSay(nextPlayer, s);
+												setConfirm(nextPlayer->email, m.x, m.y);
+												continue;
+											}
+										} else
+											continue;
+									} else {
+										char s[256];
+										sprintf(s, "[SHOP]PRICE:%.2f", price);
+										makePlayerSay(nextPlayer, s);
+										continue;
+									}
+								}
+								
+								if(type == 1) {
+									if(nextPlayer->holdingID == 0) {
+										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+											float money = getPlayerMoney(nextPlayer->email);
+											if(money >= price) {
+												money -= price;
+												setPlayerMoney(nextPlayer->email, money);
+												
+												float skMoney = getPlayerMoney(email);
+												setPlayerMoney(email, skMoney + price);
+												sprintf(s, "[SHOP]YOU USE THIS FOR %.2f COINS", price);
+												makePlayerSay(nextPlayer, s);
+												delConfirm(nextPlayer->email);
+											} else {
+												sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+												makePlayerSay(nextPlayer, s);
+												delConfirm(nextPlayer->email);
+												continue;
+											}
+										} else {
+											sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO USE", price);
+											makePlayerSay(nextPlayer, s);
+											setConfirm(nextPlayer->email, m.x, m.y);
+											continue;
+										}
+									} else {
+										char s[256];
+										sprintf(s, "[SHOP]PRICE:%.2f", price);
+										makePlayerSay(nextPlayer, s);
+										continue;
+									}
+								}
+								
+								} else {
+									char s[256];
+									sprintf(s, "[SHOP]PRICE:%.2f", price);
+									makePlayerSay(nextPlayer, s);
+								}
+							}
 						}
 						
                         // track whether this USE resulted in something
@@ -13354,6 +13492,14 @@ int main() {
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
 						
+						{
+							char email[50];
+							char type;
+							float price;
+							if(getShop(m.x, m.y, email, &type, &price) && strcmp(email, nextPlayer->email)!=0) {
+								continue;
+							}
+						}
 
                         char canDrop = true;
                         
@@ -13655,6 +13801,61 @@ int main() {
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
 						
+						{
+							char email[50];
+							char type;
+							float price;
+							int checkTarget = getMapObject( m.x, m.y );
+							if(getShop(m.x, m.y, email, &type, &price)) {
+								char s[256];
+								if(strcmp(email, nextPlayer->email)!=0) {
+									if(type == 0) {
+										if(checkTarget == 434) {
+											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+												if(getNumContained(m.x, m.y)>0) {
+													float money = getPlayerMoney(nextPlayer->email);
+													if(money >= price) {
+														money -= price;
+														setPlayerMoney(nextPlayer->email, money);
+														
+														float skMoney = getPlayerMoney(email);
+														setPlayerMoney(email, skMoney + price);
+														sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
+														makePlayerSay(nextPlayer, s);
+														delConfirm(nextPlayer->email);
+													} else {
+														sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+														makePlayerSay(nextPlayer, s);
+														delConfirm(nextPlayer->email);
+														continue;
+													}
+												} else {
+													sprintf(s, "[SHOP]THIS SHOP IS EMPTY");
+													makePlayerSay(nextPlayer, s);
+													continue;
+												}
+											} else {
+												sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO BUY ONE", price);
+												makePlayerSay(nextPlayer, s);
+												setConfirm(nextPlayer->email, m.x, m.y);
+												continue;
+											}
+										} else {
+											sprintf(s, "[SHOP]PRICE:%.2f", price);
+											makePlayerSay(nextPlayer, s);
+											continue;
+										}
+									} else {
+										sprintf(s, "[SHOP]PRICE:%.2f", price);
+										makePlayerSay(nextPlayer, s);
+										continue;
+									}
+								} else {
+									sprintf(s, "[SHOP]PRICE:%.2f", price);
+									makePlayerSay(nextPlayer, s);
+								}
+							}
+						}
                         
                         char handEmpty = ( nextPlayer->holdingID == 0 );
                         
@@ -14010,7 +14211,7 @@ int main() {
                     int n = 0;
                     GridPos centerDropPos = dropPos;
                     
-                    while( oldObject != 0 && n < 4 ) {
+                    while( false && oldObject != 0 && n < 4 ) {
                         
                         // don't combine graves
                         if( ! isGrave( oldObject ) ) {

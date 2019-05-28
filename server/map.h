@@ -68,7 +68,9 @@ void mapEveDeath( const char *inEmail, double inAge, GridPos inDeathMapPos );
 float getPlayerMoney(const char *inEmail);
 void setPlayerMoney(const char *inEmail, float money);
 
-
+char getShop( int inX, int inY, char *email, char *shopType, float *price);
+void setShop( int inX, int inY, char *email, char shopType, float price);
+void delShop(int inX, int inY);
 
 
 // returns properly formatted chunk message for chunk in rectangle shape

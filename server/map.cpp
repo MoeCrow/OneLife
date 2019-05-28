@@ -692,7 +692,6 @@ static void ecoDBPut( const char *inEmail, float money ) {
 
 
 static char shopDBGet( int inX, int inY, unsigned char *inBuffer ) {
-    // look up in metadata DB
     unsigned char key[8];    
 	intPairToKey( inX, inY, key);
     int result = DB_get( &shopDB, key, inBuffer );
@@ -702,6 +701,41 @@ static char shopDBGet( int inX, int inY, unsigned char *inBuffer ) {
         }
 
     return false;
+}
+
+static void shopDBPut( int inX, int inY, unsigned char *inBuffer ) {
+    unsigned char key[8];
+	intPairToKey( inX, inY, key);
+    DB_put( &shopDB, key, inBuffer );
+    }
+	
+char getShop( int inX, int inY, char *email, char *shopType, float *price) {
+	unsigned char value[64];
+	char found = shopDBGet(inX, inY, value);
+	if(found) {
+		memcpy(email, value, 50);
+		if(email[0]==0)
+			return false;
+		memcpy(shopType, &( value[50] ), 1);
+		memcpy(price, &( value[51] ), 4);
+		return true;
+	}
+	return false;
+}
+
+void setShop( int inX, int inY, char *email, char shopType, float price) {
+	unsigned char value[64];
+	memset(value, 0, 64 );
+	memcpy(value, email, strlen(email));
+	memcpy(&( value[50] ), &shopType, 1);
+	memcpy(&( value[51] ), &price, 4);
+	shopDBPut(inX, inY, value);
+}
+
+void delShop(int inX, int inY) {
+	unsigned char value[64];
+	value[0] = 0;
+	shopDBPut(inX, inY, value);
 }
 
 float getPlayerMoney(const char *inEmail) {
@@ -3164,8 +3198,7 @@ char initMap() {
                      KISSDB_OPEN_MODE_RWCREAT,
                      // starting size doesn't matter here
                      500,
-                     4, // one 32-bit int as key
-                     // data
+                     8,
                      64
                      );
     

@@ -22,3 +22,9 @@ transition改动:https://github.com/moeonelife/OneLifeData7
 返回上一个地点 .back
 
 随机传送 .tpr
+
+查询钢余额 .bal
+
+写支票 拿着白纸输入.chq 数字
+
+银行使用说明：拿着钢点天启存钢，空手点击取出，支票点天启兑换。

@@ -28,3 +28,7 @@ transition改动:https://github.com/moeonelife/OneLifeData7
 写支票 拿着白纸输入.chq 数字
 
 银行使用说明：拿着钢点天启存钢，空手点击取出，支票点天启兑换。
+
+创建商店 站在商店上面一格 .shop 类型(0:出售 1:使用 2:未实装) 价格
+
+删除商店 站在商店上面一格 .delshop

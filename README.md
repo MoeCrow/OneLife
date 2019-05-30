@@ -7,13 +7,15 @@ transition改动:https://github.com/moeonelife/OneLifeData7
 
 ## 指令
 
-以下所有传送的指令输入后必须断线一次才能成功。查询坐标：.pos
+以下所有传送的指令输入后必须断线一次才能成功。
 
-设置地标 .setwarp+空格+自定义名称
+查询坐标：.pos
 
-传送到地标: .warp+空格+名称
+设置地标 .setwarp <warp>
 
-删除地标: .delwarp+空格+名称
+传送到地标: .warp <warp>
+
+删除地标: .delwarp <warp>
 
 设置家 .sethome
 
@@ -25,10 +27,25 @@ transition改动:https://github.com/moeonelife/OneLifeData7
 
 查询钢余额 .bal
 
-写支票 拿着白纸输入.chq 数字
+写支票 拿着白纸输入.chq <number>
 
 银行使用说明：拿着钢点天启存钢，空手点击取出，支票点天启兑换。
 
-创建商店 站在商店上面一格 .shop 类型(0:出售 1:使用 2:未实装) 价格
+创建商店 站在商店上面一格 .shop <type>(0:出售 1:使用 2:未实装) <price>
 
 删除商店 站在商店上面一格 .delshop
+
+查询当前邮箱 .email
+
+## OP指令
+坐标传送 .tp <x> <y>
+放置物体 .put <x> <y> <id>
+放置在当前位置 .puthere <id>
+放置在下面一格 .putsouth <id>
+在下面一格放置地板 .floor <id>
+删除地标 .delwarp <warp>
+删除商店 .delshop
+
+## 配置
+ban.ini 封禁列表(列入其中的玩家无法进行USE操作)
+ops.ini op列表，允许其使用op指令

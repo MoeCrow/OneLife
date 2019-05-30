@@ -17,6 +17,7 @@
 #include "minorGems/system/Time.h"
 
 #include "minorGems/formats/encodingUtils.h"
+#include "../gameSource/objectBank.h"
 
 #include "kissdb.h"
 //#include "stackdb.h"
@@ -320,6 +321,12 @@ static char ecoDBOpen = false;
 
 static DB shopDB;
 static char shopDBOpen = false;
+
+static DB globalDB;
+static char globalDBOpen = false;
+
+static DB playerDB;
+static char playerDBOpen = false;
 
 static DB metaDB;
 static char metaDBOpen = false;
@@ -688,7 +695,22 @@ static void ecoDBPut( const char *inEmail, float money ) {
             
     
     DB_put( &ecoDB, key, value );
-    }
+}
+
+
+float getPlayerMoney(const char *inEmail) {
+	float money;
+	int result = ecoDBGet(inEmail, &money);
+	if(result == 1) {
+		return money;
+	}
+	return 0;
+}
+
+
+void setPlayerMoney(const char *inEmail, float money) {
+	ecoDBPut(inEmail, money);
+}
 
 
 static char shopDBGet( int inX, int inY, unsigned char *inBuffer ) {
@@ -703,11 +725,13 @@ static char shopDBGet( int inX, int inY, unsigned char *inBuffer ) {
     return false;
 }
 
+
 static void shopDBPut( int inX, int inY, unsigned char *inBuffer ) {
     unsigned char key[8];
 	intPairToKey( inX, inY, key);
     DB_put( &shopDB, key, inBuffer );
-    }
+}
+	
 	
 char getShop( int inX, int inY, char *email, char *shopType, float *price) {
 	unsigned char value[64];
@@ -723,6 +747,7 @@ char getShop( int inX, int inY, char *email, char *shopType, float *price) {
 	return false;
 }
 
+
 void setShop( int inX, int inY, char *email, char shopType, float price) {
 	unsigned char value[64];
 	memset(value, 0, 64 );
@@ -732,23 +757,138 @@ void setShop( int inX, int inY, char *email, char shopType, float price) {
 	shopDBPut(inX, inY, value);
 }
 
+
 void delShop(int inX, int inY) {
 	unsigned char value[64];
 	value[0] = 0;
 	shopDBPut(inX, inY, value);
 }
 
-float getPlayerMoney(const char *inEmail) {
-	float money;
-	int result = ecoDBGet(inEmail, &money);
-	if(result == 1) {
-		return money;
-	}
-	return 0;
+
+char playerDBGet( const char *inEmail, int *displayID,
+	double *age, int *x, int *y, int *hunger, int *holding,
+	int *hat, int *tunic, int *frontShoe, int *backShoe, int *bottom, int *bp,
+	int *numContained, int **containedIDs, SimpleVector<int> **subContainedIDs,
+	SimpleVector<int> *clothingContained
+	) 
+{
+   unsigned char key[50];
+    
+    unsigned char value[512];
+
+
+    emailToKey( inEmail, key );
+    
+    int result = DB_get( &playerDB, key, value );
+    //if(true) return false;
+    if( result == 0 ) {
+        *displayID = valueToInt( &( value[0] ) );
+		memcpy(age, &( value[4] ), 4);
+        *x = valueToInt( &( value[4] ) );
+        *y = valueToInt( &( value[8] ) );
+		*hunger = valueToInt( &( value[12] ) );
+		*holding = valueToInt( &( value[16] ) );
+		
+		*hat = valueToInt( &( value[20] ) );
+		*tunic = valueToInt( &( value[24] ) );
+		*frontShoe = valueToInt( &( value[28] ) );
+		*backShoe = valueToInt( &( value[32] ) );
+		*bottom = valueToInt( &( value[36] ) );
+		*bp = valueToInt( &( value[40] ) );
+		
+		*numContained = valueToInt( &( value[44] ) );
+		int lastI = 48;
+		*containedIDs = new int[*numContained];
+		for(int i = 0; i < *numContained; i++) {
+			(*containedIDs)[i] = valueToInt( &( value[lastI] ) );
+			lastI += 4;
+		}
+		
+		*subContainedIDs = new SimpleVector<int>[*numContained];
+		for(int i = 0; i < *numContained; i++) {
+			//(*subContainedIDs)[i] = new SimpleVector<int>();
+			int subCN = valueToInt( &( value[lastI] ) );
+			lastI += 4;
+			for(int j = 0; j < subCN; j++) {
+				(*subContainedIDs)[i].push_back(valueToInt( &( value[lastI] ) ));
+				lastI += 4;
+			}
+		}
+		
+		//*clothingContained = new SimpleVector<int>[NUM_CLOTHING_PIECES];
+		for(int i = 0; i < NUM_CLOTHING_PIECES; i++) {
+			//(*subContainedIDs)[i] = new SimpleVector<int>();
+			int ccNum = valueToInt( &( value[lastI] ) );
+			lastI += 4;
+			for(int j = 0; j < ccNum; j++) {
+				clothingContained[i].push_back(valueToInt( &( value[lastI] ) ));
+				lastI += 4;
+			}
+		}
+		
+        return true;
+        }
+    else {
+        return false;
+        }
 }
 
-void setPlayerMoney(const char *inEmail, float money) {
-	ecoDBPut(inEmail, money);
+
+void playerDBPut( const char *inEmail, int displayID,
+	double age, int x, int y, int hunger, int holding,
+	int hat, int tunic, int frontShoe, int backShoe, int bottom, int bp,
+	int numContained, int *containedIDs, SimpleVector<int> *subContainedIDs,
+	SimpleVector<int> *clothingContained
+	) 
+{
+    unsigned char key[50];
+    unsigned char value[512];
+	
+    emailToKey( inEmail, key );
+    //if(true) return;
+    intToValue( displayID, &( value[0] ) );
+	memcpy(&( value[4] ), &age, 4);
+    intToValue( x, &( value[4] ) );
+    intToValue( y, &( value[8] ) );
+	intToValue( hunger, &( value[12] ) );
+	intToValue( holding, &( value[16] ) );
+	
+	intToValue( hat, &( value[20] ) );
+	intToValue( tunic, &( value[24] ) );
+	intToValue( frontShoe, &( value[28] ) );
+	intToValue( backShoe, &( value[32] ) );
+	intToValue( bottom, &( value[36] ) );
+	intToValue( bp, &( value[40] ) );
+            
+	intToValue( numContained, &( value[44] ) );
+	int lastI = 48;
+	for(int i = 0; i < numContained; i++) {
+		intToValue( containedIDs[i], &( value[lastI] ) );
+		lastI += 4;
+	}
+	
+	
+	for(int i = 0; i < numContained; i++) {
+		int subCN = subContainedIDs[i].size();
+		intToValue( subCN, &( value[lastI] ) );
+		lastI += 4;
+		for(int j = 0; j < subCN; j++) {
+			intToValue( *subContainedIDs[i].getElement(j), &( value[lastI] ) );
+			lastI += 4;
+		}
+	}
+	
+	for(int i = 0; i < NUM_CLOTHING_PIECES; i++) {
+		int ccNum = clothingContained[i].size();
+		intToValue( ccNum, &( value[lastI] ) );
+		lastI += 4;
+		for(int j = 0; j < ccNum; j++) {
+			intToValue( *clothingContained[i].getElement(j), &( value[lastI] ) );
+			lastI += 4;
+		}
+	}
+    
+    DB_put( &playerDB, key, value );
 }
 
 
@@ -3208,6 +3348,55 @@ char initMap() {
         }
     
     shopDBOpen = true;
+	
+	
+	error = DB_open( &globalDB, 
+                     "global.db", 
+                     KISSDB_OPEN_MODE_RWCREAT,
+                     // starting size doesn't matter here
+                     500,
+                     8, // x,y cordinates int, int
+                     64
+					 // created timestamp
+					 // last interact
+                     );
+    
+    if( error ) {
+        AppLog::errorF( "Error %d opening global KissDB", error );
+        return false;
+        }
+    
+    globalDBOpen = true;
+	
+	
+	error = DB_open( &playerDB, 
+                     "player.db", 
+                     KISSDB_OPEN_MODE_RWCREAT,
+                     // starting size doesn't matter here
+                     20000,
+                     50, // x,y cordinates int, int
+                     512
+					 // displayID
+					 // age
+					 // pos x
+					 // pos y
+					 // hunger
+					 // holding id					 
+					 // hat tunic frontShoe backShoe bottom backpack
+					 // num contained
+					 // contained
+					 // subcontained
+					 
+					 // clothingContained
+					 
+                     );
+    
+    if( error ) {
+        AppLog::errorF( "Error %d opening player KissDB", error );
+        return false;
+        }
+    
+    playerDBOpen = true;
 
 
     error = DB_open( &metaDB, 
@@ -3870,6 +4059,11 @@ void freeMap( char inSkipCleanup ) {
 	if( shopDBOpen ) {
         DB_close( &shopDB );
         shopDBOpen = false;
+        }
+		
+	if( playerDBOpen ) {
+        DB_close( &playerDB );
+        playerDBOpen = false;
         }
 
 

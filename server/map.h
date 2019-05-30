@@ -72,6 +72,19 @@ char getShop( int inX, int inY, char *email, char *shopType, float *price);
 void setShop( int inX, int inY, char *email, char shopType, float price);
 void delShop(int inX, int inY);
 
+char playerDBGet( const char *inEmail, int *displayID,
+	double *age, int *x, int *y, int *hunger, int *holding,
+	int *hat, int *tunic, int *frontShoe, int *backShoe, int *bottom, int *bp,
+	int *numContained, int **containedIDs, SimpleVector<int> **subContainedIDs,
+	SimpleVector<int> *clothingContained
+	) ;
+void playerDBPut( const char *inEmail, int displayID,
+	double age, int x, int y, int hunger, int holding,
+	int hat, int tunic, int frontShoe, int backShoe, int bottom, int bp,
+	int numContained, int *containedIDs, SimpleVector<int> *subContainedIDs,
+	SimpleVector<int> *clothingContained
+	) ;
+
 
 // returns properly formatted chunk message for chunk in rectangle shape
 // with bottom-left corner at x,y

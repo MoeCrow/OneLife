@@ -536,8 +536,8 @@ typedef struct Spot {
 static SimpleVector<Spot*> warpSpot;
 static SimpleVector<Spot*> homeSpot;
 static SimpleVector<Spot*> backSpot;
-static SimpleVector<Spot*> deathSpot;
 static SimpleVector<Spot*> confirmSpot;
+static SimpleVector<Spot*> deathSpot;
 
 static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOptionalID = 0);
 static void setPlayerDisconnected( LiveObject *inPlayer, const char *inReason );
@@ -639,17 +639,6 @@ static void setBack(char* name, int x, int y)
 	writeSpotList("backSpot", &backSpot);
 }
 
-static void setDeath(char* name, int x, int y)
-{
-	Spot *spot = new Spot();
-	spot->name = new char[256];
-	strcpy(spot->name, stringToUpperCase(name));
-	spot->x = x;
-	spot->y = y;
-	replaceOrCreateSpot(&deathSpot, spot);
-	writeSpotList("deathSpot", &deathSpot);
-}
-
 static void setHome(char* name, int x, int y)
 {
 	Spot *spot = new Spot();
@@ -716,6 +705,11 @@ void parseCommand(LiveObject *player, char *text){
 		
 	
 	if(strcmp(cmd, "TP")==0){
+		if(player->heldByOther || player->holdingID < 0) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			return;
+		}
+		
 		if(shutdownMode) {
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
@@ -782,6 +776,28 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
+	if(strcmp(cmd, "FLOOR")==0){
+		if(!isOp){
+			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			return;
+		}
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "[SYSTEM]NEED ONE ARGS");
+		} else {
+			ObjectRecord *o = getObject( id );
+			if( id != 0 && (o == NULL || !o->floor) ) {
+				makePlayerSay( player, "[SYSTEM]FLOOR ID NOT FOUND.");
+				return;
+			}
+			setMapFloor( player->xs, player->ys - 1, id );
+			sprintf(s, "[SYSTEM]FLOOR PUT.");
+		}
+		
+		makePlayerSay( player, s);
+		return;
+	}
+	
 	if(strcmp(cmd, "PUTSOUTH")==0){
 		if(!isOp){
 			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
@@ -806,6 +822,11 @@ void parseCommand(LiveObject *player, char *text){
 	
 	
 	if(strcmp(cmd, "TPR")==0){
+		if(player->heldByOther || player->holdingID < 0) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			return;
+		}
+		
 		if(shutdownMode) {
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
@@ -827,6 +848,11 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "BACK")==0){
+		if(player->heldByOther || player->holdingID < 0) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			return;
+		}
+		
 		if(shutdownMode) {
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
@@ -889,7 +915,7 @@ void parseCommand(LiveObject *player, char *text){
 		x = player->xs;
 		y = player->ys - 1;
 		if(getShop(x, y, tEmail, &shopType, &price)){
-			if(strcmp(player->email, tEmail) == 0) {
+			if(strcmp(player->email, tEmail) == 0 || isOp) {
 				delShop(x, y);
 				sprintf(s, "[SYSTEM]SHOP AT %d %d DELETED", x, y);
 			} else {
@@ -991,6 +1017,11 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "HOME")==0){
+		if(player->heldByOther || player->holdingID < 0) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			return;
+		}
+		
 		if(shutdownMode) {
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
@@ -1048,6 +1079,11 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "WARP")==0){
+		if(player->heldByOther || player->holdingID < 0) {
+			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			return;
+		}
+		
 		if(shutdownMode) {
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
@@ -5620,10 +5656,10 @@ int processLoggedInPlayer( Socket *inSock,
         newObject.lifeStartTimeSeconds -= 14 * ( 1.0 / getAgeRate() );
 
         
-        int femaleID = getRandomFemalePersonObject();
+        int personID = getRandomPersonObject();
         
-        if( femaleID != -1 ) {
-            newObject.displayID = femaleID;
+        if( personID != -1 ) {
+            newObject.displayID = personID;
             }
         }
     
@@ -6111,13 +6147,95 @@ int processLoggedInPlayer( Socket *inSock,
             newObject.yd = pos.y;
             newObject.xs = pos.x;
             newObject.ys = pos.y;
-            newObject.xd = pos.x;
             
             newObject.holdingID = getTriggerPlayerHolding( inEmail );
             newObject.clothing = getTriggerPlayerClothing( inEmail );
             }
         }
-    
+    newObject.numContained = 0;
+    newObject.containedIDs = NULL;
+	newObject.subContainedIDs = NULL;
+	newObject.containedEtaDecays = NULL;
+    newObject.subContainedEtaDecays = NULL;
+	{
+		// restore player status here
+		int displayID, xd, yd, hunger, holding,
+			hat, tunic, frontShoe, backShoe, bottom, backPack;
+		double age;
+		
+		if(playerDBGet(
+						newObject.email,
+						&displayID, &age, &xd, &yd, &hunger,
+						&holding, &hat, &tunic, &frontShoe,
+						&backShoe, &bottom, &backPack,
+						&newObject.numContained,
+						&newObject.containedIDs,
+						&newObject.subContainedIDs,
+						newObject.clothingContained
+		)) {
+		
+			newObject.xd = xd;
+			newObject.yd = yd;
+			newObject.xs = xd;
+			newObject.ys = yd;
+			
+			if(holding > 0)
+			switch(holding) {
+				case 797:
+				case 798:
+				case 1363:
+				case 1367:
+				case 1366:
+				case 1380:
+				case 1381:
+				case 1382:
+				case 1383:
+				case 1364:
+				case 1377:
+				case 1384:
+				case 1365:
+				case 2155:
+					newObject.holdingID = 0;
+					break;
+				default:
+					newObject.holdingID = holding;
+			} else
+				newObject.holdingID = 0;
+			
+			
+			newObject.clothing = getEmptyClothingSet();
+			newObject.clothing.hat = getObject(hat);
+			newObject.clothing.tunic = getObject(tunic);
+			newObject.clothing.frontShoe = getObject(frontShoe);
+			newObject.clothing.backShoe = getObject(backShoe);
+			newObject.clothing.bottom = getObject(bottom);
+			newObject.clothing.backpack = getObject(backPack);
+			
+			newObject.containedEtaDecays = new timeSec_t[newObject.numContained];
+			newObject.subContainedEtaDecays = new SimpleVector<timeSec_t>[newObject.numContained];
+			
+			for(int i = 0; i < newObject.numContained; i++) {
+				newObject.containedEtaDecays[i] = 0;
+			}
+		
+			for(int i = 0; i < newObject.numContained; i++) {
+				for(int j = 0; j < newObject.subContainedIDs[i].size(); j++) {
+					newObject.subContainedEtaDecays[i].push_back(0);
+				}
+			}
+			
+			for(int i = 0; i < NUM_CLOTHING_PIECES; i++) {
+				newObject.clothingContainedEtaDecays[i].deleteAll();
+				for(int j = 0; j < newObject.clothingContained[i].size(); j++) {
+					newObject.clothingContainedEtaDecays[i].push_back(0);
+				}
+			}
+		}
+		float randAge = ((rand() % 100) < 30 ? 3.f : 14.f);
+		
+		newObject.lifeStartTimeSeconds = 
+                Time::getCurrentTime() - randAge * ( 1.0 / getAgeRate() );
+	}
     
     newObject.lineage = new SimpleVector<int>();
     
@@ -6162,11 +6280,6 @@ int processLoggedInPlayer( Socket *inSock,
     newObject.heldGravePlayerID = 0;
     
     newObject.heldTransitionSourceID = -1;
-    newObject.numContained = 0;
-    newObject.containedIDs = NULL;
-    newObject.containedEtaDecays = NULL;
-    newObject.subContainedIDs = NULL;
-    newObject.subContainedEtaDecays = NULL;
     newObject.embeddedWeaponID = 0;
     newObject.embeddedWeaponEtaDecay = 0;
     newObject.murderSourceID = 0;
@@ -8574,7 +8687,6 @@ int main() {
                     nextPlayer->gotPartOfThisFrame = true;
                     }
                 
-				setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                 // don't worry about num sent
                 // it's the last message to this client anyway
                 setDeathReason( nextPlayer, 
@@ -8589,7 +8701,6 @@ int main() {
             for( int i=0; i<players.size(); i++ ) {
                 LiveObject *nextPlayer = players.getElement( i );
                 if( ! nextPlayer->error && ! nextPlayer->connected ) {
-                    setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                     setDeathReason( nextPlayer, 
                                     "disconnect_shutdown" );
                     
@@ -9780,7 +9891,8 @@ int main() {
                 }
             
             
-            if( message != NULL ) {
+            if( message != NULL ) {				
+				
                 someClientMessageReceived = true;
                 
                 AppLog::infoF( "Got client message from %d: %s",
@@ -10574,6 +10686,9 @@ int main() {
                         playerIndicesToSendUpdatesAbout.push_back( i );
                         }
                     else if( m.type == MOVE ) {
+						/**char s[256];
+						sprintf(s, "[!!!]ID:%d", nextPlayer->holdingID);
+						makePlayerSay(nextPlayer, s);**/
 						delConfirm(nextPlayer->email);
                         //Thread::staticSleep( 1000 );
 
@@ -11738,7 +11853,7 @@ int main() {
 									nextPlayer->holdingID = 326;
 								}
 							}
-							else if(holdO->written) {
+							else if(holdO != NULL && holdO->written) {
 								char metaData[ MAP_METADATA_LENGTH ];
 								char found = getMetadata( nextPlayer->holdingID, 
                                       (unsigned char*)metaData );
@@ -11806,7 +11921,7 @@ int main() {
 								}
 								
 								if(type == 1) {
-									if(nextPlayer->holdingID == 0) {
+									if(true || nextPlayer->holdingID == 0) {
 										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
 											float money = getPlayerMoney(nextPlayer->email);
 											if(money >= price) {
@@ -13811,6 +13926,9 @@ int main() {
 								if(strcmp(email, nextPlayer->email)!=0) {
 									if(type == 0) {
 										if(checkTarget == 434) {
+											if(getNumContained(m.x, m.y) == 0) {
+												delShop(m.x, m.y);
+											} else
 											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
 												if(getNumContained(m.x, m.y)>0) {
 													float money = getPlayerMoney(nextPlayer->email);
@@ -13823,6 +13941,9 @@ int main() {
 														sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
 														makePlayerSay(nextPlayer, s);
 														delConfirm(nextPlayer->email);
+														if(getNumContained(m.x, m.y) == 1) {
+															delShop(m.x, m.y);
+														}
 													} else {
 														sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
 														makePlayerSay(nextPlayer, s);
@@ -13832,6 +13953,7 @@ int main() {
 												} else {
 													sprintf(s, "[SHOP]THIS SHOP IS EMPTY");
 													makePlayerSay(nextPlayer, s);
+													delShop(m.x, m.y);
 													continue;
 												}
 											} else {
@@ -13963,7 +14085,33 @@ int main() {
                 if( m.bugText != NULL ) {
                     delete [] m.bugText;
                     }
-                }
+					
+				{
+					// save player status here
+					playerDBPut(
+						nextPlayer->email,
+						nextPlayer->displayID,
+						nextPlayer->lifeStartTimeSeconds,
+						nextPlayer->xd,
+						nextPlayer->yd,
+						nextPlayer->foodStore,
+						nextPlayer->holdingID,
+						
+						nextPlayer->clothing.hat!=NULL?nextPlayer->clothing.hat->id:0,
+						nextPlayer->clothing.tunic!=NULL?nextPlayer->clothing.tunic->id:0,
+						nextPlayer->clothing.frontShoe!=NULL?nextPlayer->clothing.frontShoe->id:0,
+						nextPlayer->clothing.backShoe!=NULL?nextPlayer->clothing.backShoe->id:0,
+						nextPlayer->clothing.bottom!=NULL?nextPlayer->clothing.bottom->id:0,
+						nextPlayer->clothing.backpack!=NULL?nextPlayer->clothing.backpack->id:0,
+						
+						nextPlayer->numContained,
+						nextPlayer->containedIDs,
+						nextPlayer->subContainedIDs,
+						nextPlayer->clothingContained
+					);
+				}	
+            }
+				
             }
 
 
@@ -13986,7 +14134,6 @@ int main() {
 
                 
                 if( ! nextPlayer->isTutorial ) {
-					setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
                     logDeath( nextPlayer->id,
                               nextPlayer->email,
                               nextPlayer->isEve,
@@ -14081,7 +14228,7 @@ int main() {
                         }
                     }
                 
-
+				if(false) {
                 GridPos dropPos;
                 
                 if( nextPlayer->xd == 
@@ -14154,8 +14301,7 @@ int main() {
                         disconnect = false;
                         }
                     
-                    if( ! nextPlayer->isTutorial ) {    
-						setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
+                    if( ! nextPlayer->isTutorial ) {
                         logDeath( nextPlayer->id,
                                   nextPlayer->email,
                                   nextPlayer->isEve,
@@ -14465,6 +14611,8 @@ int main() {
                         }
                     }
                 }
+				
+			}
             else if( ! nextPlayer->error ) {
                 // other update checks for living players
                 
@@ -15207,8 +15355,7 @@ int main() {
                             }
                         
                         if( ! decrementedPlayer->deathLogged &&
-                            ! decrementedPlayer->isTutorial ) {    
-							setDeath(nextPlayer->email, nextPlayer->xd, nextPlayer->yd);
+                            ! decrementedPlayer->isTutorial ) {  
                             logDeath( decrementedPlayer->id,
                                       decrementedPlayer->email,
                                       decrementedPlayer->isEve,

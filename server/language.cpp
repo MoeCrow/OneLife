@@ -373,6 +373,8 @@ static char *remapWordNew( char *inWord,
     char *wordWorkingOrig = stringDuplicate( inWord );
 
     char *wordWorking = wordWorkingOrig;
+	
+	if(true) return wordWorking;
     
 
     // first, find start cons cluster, if there is one

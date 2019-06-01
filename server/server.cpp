@@ -543,6 +543,35 @@ static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOption
 static void setPlayerDisconnected( LiveObject *inPlayer, const char *inReason );
 static void makePlayerSay( LiveObject *inPlayer, char *inToSay );
 
+static void savePlayerStatus(LiveObject *player) {
+	// save player status here
+	playerDBPut(
+		player->email,
+		player->displayID,
+		player->lifeStartTimeSeconds,
+		player->xd,
+		player->yd,
+		player->foodStore,
+		player->holdingID,
+		
+		player->clothing.hat!=NULL?player->clothing.hat->id:0,
+		player->clothing.tunic!=NULL?player->clothing.tunic->id:0,
+		player->clothing.frontShoe!=NULL?player->clothing.frontShoe->id:0,
+		player->clothing.backShoe!=NULL?player->clothing.backShoe->id:0,
+		player->clothing.bottom!=NULL?player->clothing.bottom->id:0,
+		player->clothing.backpack!=NULL?player->clothing.backpack->id:0,
+		
+		player->numContained,
+		player->containedIDs,
+		player->subContainedIDs,
+		player->clothingContained
+	);
+}
+
+static void loadPlayerStatus() {
+	
+}
+
 static void writeSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotList)
 {
 	SimpleVector<char*> sequencedList;
@@ -820,6 +849,19 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
+	if(strcmp(cmd, "ID")==0){
+		char s[256];
+		sprintf(s, "[SYSTEM]%d", getMapObjectRaw(player->xd, player->yd));
+		makePlayerSay( player, s);
+		return;
+	}
+	
+	if(strcmp(cmd, "IDS")==0){
+		char s[256];
+		sprintf(s, "[SYSTEM]%d", getMapObjectRaw(player->xd, player->yd - 1));
+		makePlayerSay( player, s);
+		return;
+	}
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {
@@ -4710,6 +4752,7 @@ void handleDrop( int inX, int inY, LiveObject *inDroppingPlayer,
             if( inDroppingPlayer->numContained != 0 ) {
                 clearPlayerHeldContained( inDroppingPlayer );
                 }
+			savePlayerStatus(inDroppingPlayer);
             return;
             }            
         }
@@ -4759,6 +4802,7 @@ void handleDrop( int inX, int inY, LiveObject *inDroppingPlayer,
         inDroppingPlayer->heldOriginY = 0;
         inDroppingPlayer->heldTransitionSourceID = -1;
         
+		savePlayerStatus(inDroppingPlayer);
         return;
         }
     
@@ -4789,7 +4833,7 @@ void handleDrop( int inX, int inY, LiveObject *inDroppingPlayer,
         handleMapChangeToPaths( targetX, targetY, droppedObject,
                                 inPlayerIndicesToSendUpdatesAbout );
         }
-    
+    savePlayerStatus(inDroppingPlayer);
     
     }
 
@@ -9891,7 +9935,7 @@ int main() {
                 }
             
             
-            if( message != NULL ) {				
+            if( message != NULL ) {		
 				
                 someClientMessageReceived = true;
                 
@@ -11839,6 +11883,10 @@ int main() {
 							continue; 
 						
 						int checkTarget = getMapObject( m.x, m.y );
+						if(checkTarget == 434 || checkTarget == 3065)
+							if(getNumContained(m.x, m.y) == 0) {
+								delShop(m.x, m.y);
+							}
 						if(checkTarget == 2482) {
 							ObjectRecord *holdO = getObject( nextPlayer->holdingID );
 							if(nextPlayer->holdingID == 326) {
@@ -13611,6 +13659,11 @@ int main() {
 							char email[50];
 							char type;
 							float price;
+							int checkTarget = getMapObject( m.x, m.y );
+							if(checkTarget == 434 || checkTarget == 3065)
+								if(getNumContained(m.x, m.y) == 0) {
+									delShop(m.x, m.y);
+								}
 							if(getShop(m.x, m.y, email, &type, &price) && strcmp(email, nextPlayer->email)!=0) {
 								continue;
 							}
@@ -13925,7 +13978,7 @@ int main() {
 								char s[256];
 								if(strcmp(email, nextPlayer->email)!=0) {
 									if(type == 0) {
-										if(checkTarget == 434) {
+										if(checkTarget == 434 || checkTarget == 3065) {
 											if(getNumContained(m.x, m.y) == 0) {
 												delShop(m.x, m.y);
 											} else
@@ -14086,30 +14139,7 @@ int main() {
                     delete [] m.bugText;
                     }
 					
-				{
-					// save player status here
-					playerDBPut(
-						nextPlayer->email,
-						nextPlayer->displayID,
-						nextPlayer->lifeStartTimeSeconds,
-						nextPlayer->xd,
-						nextPlayer->yd,
-						nextPlayer->foodStore,
-						nextPlayer->holdingID,
-						
-						nextPlayer->clothing.hat!=NULL?nextPlayer->clothing.hat->id:0,
-						nextPlayer->clothing.tunic!=NULL?nextPlayer->clothing.tunic->id:0,
-						nextPlayer->clothing.frontShoe!=NULL?nextPlayer->clothing.frontShoe->id:0,
-						nextPlayer->clothing.backShoe!=NULL?nextPlayer->clothing.backShoe->id:0,
-						nextPlayer->clothing.bottom!=NULL?nextPlayer->clothing.bottom->id:0,
-						nextPlayer->clothing.backpack!=NULL?nextPlayer->clothing.backpack->id:0,
-						
-						nextPlayer->numContained,
-						nextPlayer->containedIDs,
-						nextPlayer->subContainedIDs,
-						nextPlayer->clothingContained
-					);
-				}	
+				savePlayerStatus(nextPlayer);
             }
 				
             }

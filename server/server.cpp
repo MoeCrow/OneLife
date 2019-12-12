@@ -7496,13 +7496,7 @@ static int getNextBabyFamilyLineageEveIDFewestFemales() {
 
 
         int famGirls = countGirls( lineageEveID );
-        
-		// 随机化出生人物
-        int personID = getRandomPersonObject();
-        
-        if( personID != -1 ) {
-            newObject.displayID = personID;
-			
+	
         int famFemales = famMothers + famGirls;
         
         if( famMothers > 0 ) {
@@ -8235,7 +8229,6 @@ int processLoggedInPlayer( char inAllowReconnect,
 
 	startX =	SettingsManager::getIntSetting( "forceEveLocationX", 0 );
 	startY =	SettingsManager::getIntSetting( "forceEveLocationY", 0 );
-	}
 		
 	Spot* spot = findSpot(&deathSpot, newObject.email);
 	if(spot != NULL) { 
@@ -8253,6 +8246,10 @@ int processLoggedInPlayer( char inAllowReconnect,
     
     newObject.killPosseSize = 0;
 
+	// 随机化出生人物性别
+    int personID = getRandomPersonObject();
+    if(personID != -1)
+		newObject.displayID = personID;
     newObject.displayID = getRandomPersonObject();
     
     newObject.isEve = false;

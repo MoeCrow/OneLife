@@ -68,7 +68,25 @@ Where challenge_string is an ascii string, less than 150 characters long.
 
 2.  The client MUST respond with the following login message:
 
-LOGIN email password_hash account_key_hash tutorial_number twin_code_hash twin_count#
+LOGIN client_tag email password_hash account_key_hash tutorial_number twin_code_hash twin_count#
+
+
+client_tag must contain only A-Za-z0-9 plus _ and - 
+(alphanumeric, underscore, and hyphen).
+To be processed correctly, it must start with the string client_
+Mods MUST describe themselves honestly and uniquely.  Examples:
+
+client_official  (reserved for the official client)
+
+client_custom_john
+
+client_hetuw
+
+cleint_awbz
+
+client_wondible
+
+client_milkweed
 
 
 password_hash is based on the server access password, and is computed by:
@@ -102,6 +120,12 @@ ACCEPTED
 REJECTED
 #
 
+-or-
+
+NO_LIFE_TOKENS
+REJECTED
+#
+
 
 After ACCEPTED, normal client-server messaging commences.
 
@@ -124,6 +148,8 @@ PLAYER_UPDATE  (PU)
 PLAYER_MOVES_START (PM)
 
 PLAYER_OUT_OF_RANGE (PO)
+
+BABY_WIGGLE (BW)
 
 PLAYER_SAYS (PS)
 
@@ -149,6 +175,8 @@ DYING (DY)
 
 HEALED (HE)
 
+POSSE_JOIN (PJ)
+
 MONUMENT_CALL (MN)
 
 GRAVE (GV)
@@ -158,6 +186,10 @@ GRAVE_MOVE (GM)
 GRAVE_OLD (GO)
 
 OWNER_LIST (OW)
+
+FOLLOWING (FW)
+
+EXILED (EX) 
 
 VALLEY_SPACING (VS)
 
@@ -169,11 +201,19 @@ CURSE_SCORE_CHANGE (CS)
 
 FLIGHT_DEST (FD)
 
+BAD_BIOMES (BB)
+
 VOG_UPDATE (VU)
 
 PHOTO_SIGNATURE (PH)
 
 FORCED_SHUTDOWN (SD)
+
+GLOBAL_MESSAGE (MS)
+
+WAR_REPORT (WR)
+
+LEARNED_TOOL_REPORT (LR)
 
 FRAME (FM)
 
@@ -257,12 +297,12 @@ Check the code in map.cpp for details.
 
 
 PU
-p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum
-p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum
-p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum
-p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum
+p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum held_learned
+p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum held_learned
+p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum held_learned
+p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum held_learned
 ...
-p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum
+p_id po_id facing action action_target_x action_target_y o_id o_origin_valid o_origin_x o_origin_y o_transition_source_id heat done_moving_seqNum force x y age age_r move_speed clothing_set just_ate last_ate_id responsible_id held_yum held_learned
 #
 
 List of player ids with their display object ids, facing direction, action
@@ -338,6 +378,8 @@ local walk).  Current examples involve feeding and clothing a baby.
 
 held_yum is 1 if held item is yummy food, 0 otherwise
 
+held_learned is 1 if the held item is a learned tool (or non-tool), 0 otherwise
+ 
 
 NOTE:
 If a baby wriggles out of an adult's arms, there is no PU sent about
@@ -392,6 +434,15 @@ they have moved out of range.
 
 
 
+BW
+p_id
+p_id
+...
+p_id
+#
+
+A list of player IDs that are babies who just started wiggling.
+
 
 
 
@@ -439,6 +490,19 @@ LS
 
 
 
+
+BB
+bID DISPLAY_NAME
+bID DISPLAY_NAME
+...
+bID DISPLAY_NAME
+#
+
+Lists bad biome IDs for a player, along with their display names IN_THIS_FORMAT
+
+
+
+
 VU
 x y
 #
@@ -468,13 +532,16 @@ PE
 1432 4
 1501 6 30
 1448 1
+1449 17 -1
 #
 
 
 ttl_sec is optional, and specifies how long the emote should be shown, in
 seconds, client-side.  If it is omitted, the client should display the emotion
-for the standard amount of time.
+for the standard amount of time.  If ttl is -1, this emot is permanent and
+should layer with other permanent and non-permanent emots.
 
+If ttl is -2, the emot is permanent but not new, so sound shoudl be skipped.
 
 
 
@@ -545,19 +612,23 @@ when the next yummy food is eaten.
 
 
 HX
-heat#
+heat food_time indoor_bonus#
 
-Tells player about their current heat value.
+Tells player about their current heat value, food drain time, and indoor bonus.
+
+Food drain time and indoor bonus are in seconds.
+
+Food drain time is total including bonus.
 
 
 
 
 LN
-p_id mother_id grandmother_id great_grandmother_id ... eve_id
-p_id mother_id grandmother_id great_grandmother_id ... eve_id
-p_id mother_id grandmother_id great_grandmother_id ... eve_id
+p_id mother_id grandmother_id great_grandmother_id ... eve_id eve=eve_id
+p_id mother_id grandmother_id great_grandmother_id ... eve_id eve=eve_id
+p_id mother_id grandmother_id great_grandmother_id ... eve_id eve=eve_id
 ...
-p_id mother_id grandmother_id great_grandmother_id ... eve_id
+p_id mother_id grandmother_id great_grandmother_id ... eve_id eve=eve_id
 #
 
 
@@ -568,6 +639,10 @@ back to Eve is.
 
 Also, if lineages get very long (like hundreds of links), the server may
 cut them off beyond some point.
+
+For long lineages, they may not go all the way back to eve_id.  To cover
+these cases, the actual eve_id, even if the provided lineage doesn't reach it,
+is included at the end with the eve= tag in front of it.
 
 This message describes known lineages.
 
@@ -637,6 +712,13 @@ Indicates that the listed players have been healed and are no longer dying.
 
 
 
+PJ
+p_id_killer p_id_target
+#
+
+Indicates that killer joined posse of target.
+If target = 0, killer has left the posse.
+
 
 
 
@@ -663,16 +745,19 @@ Grave at x y belongs to player p_id.
 
 
 GM
-xs ys xd yd
+xs ys xd yd swap_dest
 #
 
 
 Grave at xs,ys moved to xd,yd.
 
+If optional swap_dest parameter is 1, it means that some other grave at 
+destination is in mid-air.  If 0, not
+
 
 
 GO
-x y p_id po_id death_age underscored_name mother_id grandmother_id great_grandmother_id ... eve_id
+x y p_id po_id death_age underscored_name mother_id grandmother_id great_grandmother_id ... eve_id eve=eve_id
 #
 
 
@@ -684,6 +769,8 @@ If player has no name, this will be ~ character instead.
 
 death_age is how long the player has been dead (in in-game years)
 
+Same semantics for eve= tag at end as for LN message.
+
 
 
 OW
@@ -692,6 +779,34 @@ x y p_id p_id p_id ... p_id
 
 
 Provides owner list for position x y
+
+
+
+
+FW
+follower_id leader_id
+follower_id leader_id
+...
+follower_id leader_id
+#
+
+Provides list of people following other people.
+If leader is -1, that person follows no one
+
+
+
+
+EX
+exile_target_id exiler_id
+exile_target_id exiler_id
+exile_target_id exiler_id
+...
+exile_target_id exiler_id
+#
+
+Provides list of people exiled by another person.
+
+
 
 
 
@@ -759,6 +874,41 @@ chance to hear about this and close connection before connection is
 force-closed by server.
 
 
+MS
+some_message_text_with_space_replaced_by_underscore
+#
+
+Server sending a global message to be displayed by all non-tutorial clients.
+
+
+
+
+
+WR
+eve_id_a eve_id_b status
+eve_id_c eve_id_d status
+...
+eve_id_e eve_id_f status
+#
+
+Full report of families that are at war or peace.  Unlisted families are
+neutral.
+
+status is either:
+war
+peace
+
+
+
+
+LR
+tool_id tool_id ... tool_id 
+#
+
+Report about new tool objects that have just been learned
+
+Each tool_id is an object id.
+
 
 
 FM
@@ -793,7 +943,7 @@ parameters, and no leading spaces.
 
 
 KA x y#
-USE x y#
+USE x y id#
 BABY x y#
 BABY x y id#
 SELF x y i#
@@ -835,6 +985,9 @@ DROP is for setting held object down on empty grid square OR
 USE  is for bare-hand or held-object action on target object in non-empty 
      grid square, including picking something up (if there's no bare-handed 
      action), and picking up a container.
+     id parameter is optional, and is used by server to differentiate 
+     intentional use-on-bare-ground actions from use actions (in case
+     where target animal moved out of the way).
 
 SELF is special case of USE action taken on self (to eat what we're holding
      or add/remove clothing).
@@ -888,6 +1041,7 @@ JUMP is used by a baby to jump out of its mother's arms.  The x and y
      MOVE ambiguous in the case of jump-out (for example, if the baby
      has already been dropped by the time the MOVE arrives, the server will
      interpret it as a legitimate move attempt).
+     JUMP is also used to make an immobile baby wiggle on the ground.
 
 EMOT is used to specify an emotion to display.  The x and y coordinates are
      ignored.  e is the emotion index.

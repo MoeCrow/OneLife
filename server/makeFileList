@@ -53,6 +53,14 @@ curseLog.cpp \
 spiral.cpp \
 objectSurvey.cpp \
 language.cpp \
+familySkipList.cpp \
+lifeTokens.cpp \
+fitnessScore.cpp \
+CoordinateTimeTracking.cpp \
+arcReport.cpp \
+curseDB.cpp \
+eveMovingGrid.cpp \
+specialBiomes.cpp \
 
 
 
@@ -90,4 +98,5 @@ NEEDED_MINOR_GEMS_OBJECTS = \
  ${PRINT_LOG_O} \
  ${PRINT_UTILS_O} \
  ${DOUBLE_PAIR_O} \
- ${STRING_TREE_O}
+ ${STRING_TREE_O} \
+ ${CRC32_O}

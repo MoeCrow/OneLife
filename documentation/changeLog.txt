@@ -3,6 +3,1646 @@ This file only list changes to game code.  Changes to content can be found here:
 http://onehouronelife.com/updateLog.php
 
 
+Version 294     ???
+
+--Moved Bell home arrow to bottom of screen, by scooting other paper elements
+  down there closer together.  Looked out of place on top.  Added BELL word to
+  it to make it clear.  Thanks Twisted.
+
+
+
+
+Version 292     2019-December-6
+
+--Finally found a work-around for the Steam lingering process bug (when the
+  game launches a web browser to view family trees, and the user leaves the
+  browser open after they quit the game).
+
+--Object editor allows shift-right-click to insert other object with sprites
+  interleaved with existing.  Useful for making a feasting table that gets
+  emptied evenly across the different foods in parallel.
+
+--Fixed DRINK translation.  Fixes #457
+
+--Fixed remaining inconsistencies with biome-crossing sicknesses.  You now lose
+  you sickness as soon as your move ends outside a bad biome (before, unless
+  you stepped out directly from edge, sickness would linger until your next
+  move).  You now correctly change sicknesses when crossing between two bad
+  biomes (your character forces you to stop in the separating good biome before
+  entering the second bad biome).  Fixes #449
+
+--Fixed a bug with lingering home positions in next life.  Related to #455
+  
+--Bell tower directional arrow now show separately at top of screen.
+  Fixes #455 
+
+--Fixed a memory leak.
+
+
+
+Server Fixes
+
+--Right-click-on-ground-around-permanent, which is mapped to USE, no longer
+  bypasses biome lock (example:  planting rubber cutting).  Fixes #458
+
+--Fixed so that donkeytown Eve placement, tutorial twin placement, and flight
+  crash landing placement don't advance Eve placement grid.  This will prevent
+  Eves from getting more spread out than they need to be.  Fixes #442.  Similar
+  to pull request #459
+
+--Fixed so that when growing, any bonus food is used to fill empty food bars
+  that are added.  This prevents building up an unnaturally huge food bonus
+  when growing.  Fixes #440.  Similar to pull request #461
+
+--Fixed so that putting a tool in a container that it could be used on doesn't
+  count as using a tool slot (like putting the saw in a box).  Fixed so that
+  tool usage that's blocked due to hungryWork doesn't use a tool slot (like
+  failing to chop a tree, which used to make you learn the axe).  Similar to
+  pull request #462
+
+--Fixed calculation of average lifespan on genetic fitness server.  Before, we
+  were averaging past 10 lives, and padding that average with 30-year lives if
+  we didn't have 10 lives for that player.  However, we were also discarding
+  too many lives from the history buffer, generally not having 10 lives stored
+  for each player.  So most player's averages were getting padded.  Fixed by
+  keeping at least 10 lives for each player in the history buffer.  Fixes #463
+
+
+
+
+Version 290     2019-November-26
+
+
+--Added support for +frontWall object tag, to fix glitch with open door behind
+  wall shelf.  Don't decide whether a wall should be drawn in front of other
+  walls based on whether the wall has slots.  This was the old test put in
+  place to detect wall signs, but really, slots isn't the thing... sticking out
+  beyond the normal wall boundaries is the thing.
+
+--Support for +drink tag in objects, showing DRANK instead of ATE and DRINK
+  instead of ATE and EAT for tool tips in client.
+
+
+
+
+Server Fixes
+
+--Not stuck dropping immobile horse after snake encounter in bad biome.  If the
+  object you're holding is permanent and has a speed multiplier of 0, you're
+  allowed to drop it in an otherwise bad biome.  Fixes #453
+
+--Support for drunkenness, which slurs and confuses speech, but also reduces
+  the language barrier.  The speech of a more and more drunk person is easier
+  and easier to understand for a foreigner.
+
+--Fixed so you can't drop a biome sickness object on the ground.  Fixes #456
+
+
+
+
+Version 288     2019-November-23
+
+--Fixed bug in temp meter tool tip text.
+
+--When reading a map or way stone, you speak a distance estimate along with
+  the map name.
+
+--Fixed kerning on _ character in Futura font.
+  
+--Fixed glitch preventing intentionally entering bad biome from left side.
+
+--Client no longer makes you pause before entering bad biome when riding.
+
+
+
+
+Server Fixes
+
+--Support for negative scores in offspring table.  Fixes #447
+
+--Eve injection baby/mother ratio is 1.0 (was 2.0).  Reduce the number of
+  babies per mother to lighten the load of new players coming in.
+
+--Eating bonus 4 (was 2.0), to help out all the new players.
+
+--Min food decrement time 4 (was 2.0), to help out all the new players.
+
+--Suddenly some lineage server queries were using the wrong index and taking
+  600+ seconds to execute, bringing the whole lineage server down.  Something
+  about the influx of new users caused this, tipping MySQL's query execution
+  strategy toward the wrong index.  Fixed this by only joining on users table
+  if we need to.
+
+--Added a (user_id,death_time) index to speed up lineage server queries for
+  users that have a lot of lives.
+
+--Got rid of unnecessary server table joins in lineage server.
+
+--Indoor bonus no longer a fixed value, but instead based on the average
+  R-value of the surrounding walls for the room that you're in.  Better walls
+  (and doors and floors) mean a bigger indoor bonus.
+
+--New foodScaleFactor server setting, allowing all food values to be scaled up
+  or down.
+
+--Support for written metadata on an object that can be duplicated through a
+  transition (for copying maps onto way stones).  Support for reading
+  permanent objects by touching them.
+
+--Whoops, low pop servers now have tool learning slots disabled.
+  Thanks Spoonwood.
+
+--Support for objects that affect auto-orientation of other objects without 
+  having multiple orientations themselves (example:  wall shelves).
+
+--For tool groups, like +toolSewing, the group tag is used in the YOU LEARNED
+  message to avoid confusion (YOU LEARNED SEWING.).  Fixed article use (THE) in
+  messaging when tool group ends in ING.  YOU LEARNED THE BOW DRILL vs YOU
+  LEARNED SEWING.
+
+--Riding something (horse, car) prevents you from getting sick in a bad biome.
+  You cannot dismount in there, however.
+
+--Support for +autoDefaultTrans tag on objects, which means that default
+  transition is triggered when player path will cross that object.  For
+  spring-loaded doors that auto-open.
+
+--Closed the exploit where you suicide as a baby to reap your mother and
+  grandmother's long life genetic score.  Now your mother and grandmother
+  (etc.) only count toward your genetic score if you survive past age 3 and they
+  die while you are still alive.  Dying early on purpose won't let you reap the
+  benefit of their long lives.
+
+--Fixed so that a tool laying on the ground that is not permanent counts as a
+  used tool if it becomes permanent.  Now building stakes count as a tool
+  properly.
+
+--Personal curses now last 30 days (was 7 days).
+
+--Changed tool slot formula (based on fitness) to use a sigmoid curve and avoid
+  infinite tool slots for high scores.  Now slot range is between 5 and 19 for
+  positive scores, or between 4 and 3 for negative scores.
+
+--Support for +noBackAccess tag to prevent wall shelf access through back wall.
+
+--Fitness server now supports manual, global score reset.
+
+
+
+
+Version 286    2019-November-18
+
+--Fixed client to not hang on loading if an expected sound file is missing.
+
+--Fixed crash if server sends an emot index that we don't have.
+
+--Fixed mouse-over tips when mousing over floor-protected bad biome.
+
+--Character will now pathfind around bad biomes (even along roads and floors)
+  whenever possible.  The only way to enter a bad biome is to stand right at
+  the edge and click into the bad biome directly.
+
+--Scene editor supports multiple emot layers.
+
+
+
+
+Server Fixes
+
+--Support for +neverDrop object tag for murder weapons, which prevents them
+  from being dropped in bad biomes.  Fixes #444
+
+--Fixed new bug that was preventing animals from spawning.
+
+--Wait per mom before sending another baby to the weakest family made a live
+  setting and set to 4 minutes (was 1.5 minutes).  Further reducing Eve getting
+  hammered with too many babies.
+
+--Made Y placement gap between tutorials larger to make room for skip-tutorial
+  hallway.  Fixes jasonrohrer/OneLifeData7#507
+
+--No more arc messages when Eve injection on.  Fixes #441
+
+--Fixed default object behavior of force-spawn clothing.
+
+--Fixed so that a long path through a bad biome that ends outside of it still
+  makes you sick.  Can no longer "skip across" a bad biome with a long path.
+
+--New genetic score forumula based on offspring's lifespan compared to their
+  average lifespan.  Helping any player live longer than their normal will
+  boost your score.  Reduces randomness.  Scores no longer bounded in [0-60]
+  range.  New players start with an assumed score of 30.
+
+--New Eves always spawn in least-represented skin tones.  Fixes #446
+
+
+
+
+
+Version 283   2019-November-15
+
+--Fixed crash when sprite .tga file exists but .txt file doesn't (either in
+  folder or in stale caches).
+
+--Sane behavior in unexpected situation:  clear sprite .txt file cache.fcz
+  whenver we rebuild .tga file bin_cache.fcz  There's a chance that Steam
+  doesn't properly update cache.fcz, leaving it outdated.
+
+--More graceful handling of objects that refer to sprites that don't exist.
+  Draw them without that sprite.  Used to wait forever for that sprite to load.
+
+--Making sure cache.fcz has exactly same list of files as corresponding folder.
+  Checks file names only, not contents.  On mismatch, cache.fcz is rebuilt.
+
+--No more crash if server sends us an unknown object ID.  Instead, we show a
+  MISSING OBJECT placeholder in client.  This is an extremely unlikely case,
+  but could happen if there's some error in the update process.
+
+--Support for permanent emots, for things like tatoos, piercings, makeup, etc.
+
+
+
+Server Fixes
+
+--Fixed so that one weak family isn't hammered with too many incoming babies.
+  Let 1.5 minutes pass bewteen each baby per mother.  Otherwise, Eve, who is
+  always the weakest family, gets hammered with incoming babies.
+
+--Max baby/mom ratio before eve injection now 2 (was 3).
+
+--Max player/fam ratio pushed up to 13 (was 9), meaning fewer, bigger families.
+
+--Map change log now includes playerID responsible for each change.
+
+--Biome placement on map now uses a 64-bit seed (was 32-bits) to make brute-
+  force seed guessing, based on map samples, impractical.
+
+--Fixed a memory leak in map reseeding.
+
+--Map change logs now roll over every 24 hours and don't include biome seed.
+
+--Fixed cache size inconsistency.
+
+--Map biome seed now logged in separate file along with map change logs, but
+  that seed file is only published after the map is reseeded (if it ever is,
+  due to a wipe or player-triggered apocalypse).
+
+--Min fertile females per family (when girl babies are forces) is 4 (was 6).
+
+--Eve moving grid jump is now 200 (was 320), making it a perfect tight fit with
+  well tap-out of 160.
+
+--Specialty biomes limited to specific skin tones.  Other skin tones get sick 
+  there.
+
+--Language learning change:  instead of busy-work with a baby (blabbering lots
+  of phrases to cover different phonemes), each generation that is around a
+  language learns it at a fixed rate (10% of remaning phoneme clusters by
+  frequency weight).  After roughly 10 generations of coexistence, full
+  language learning will be realized.
+
+--Disabled second-place-biome object placement along biome boundaries (though
+  looking at parameters in code for ring biomes, it looks like this was
+  impossible anyway).
+
+--Support for +biomeReq and +biomeBlock in object descriptions, only allowing
+  an object to be made in specific biomes or blocking it from specific biomes.
+
+--Support for +noWait tag on 'weapons' like snowballs and tatoo needles.  No 
+  murder mouth, and no waiting period before execution.  Target still gasps.
+
+--Support for polylingual skin tones.
+
+
+
+
+Version 280   2019-November-8
+
+--Fixed crash when person making an off-screen sound dies.
+
+--Fixed so that filtering for /HUBBARD SQUASH doesn't trigger /HUBBA emote.
+
+--Handling probability sets in object depth measurement and produces map so
+  that /HUBBARD SQUASH and /PUMPKIN filters work (and other objects that pass
+  through a probability set along the way).
+
+--Fixed off-position emotes for babies that are lying down.
+
+--Finally fixed main cause of moon-walking glitch.  Fixes #309
+
+--New indoor food drain bonus (currently +20 seconds per pip).  Only affects
+  people over 3 years old.  Mousing over your temp meter explains your current
+  food drain rate.
+
+
+
+
+Server Fixes
+
+--Fixed bug in tapout triggers that were counting uses (of shallow well, for
+  example) as tapouts.
+
+--Welcome message now shows total tool slots along with bonus slots.
+
+--Force-spawns can speak to everyone in shared language.
+
+--Fixed failed insert condition on fitness server when a life is both your
+  daughter (from your previous life) and your mother (from this life).
+  Double-counting is now correctly prevented without a fatal insert error that
+  blocks the rest of the (non-double) life scoring from happening for that
+  life.  This clears up a major cause of the skipped-scoring bug.
+
+--Support for northward and southward gradient markers in same column as tapout.
+
+--Excess from eating a big food item now goes into bonus overflow food points
+  (same bin as Yum bonus points, with +13 or whatever next to food meter).
+  Overflow capacity starts at 1 and goes up non-linearly to 91.6, based on base
+  stomach size.  So newborn babies and unfit elderly have 1 overflow capacity,
+  and adults have 90.6 overflow capacity (and more fit elderly have more
+  overflow capacity than 1).  This increases the potential beneficial size
+  range of large foods, like feasts.  The non-linear formula, based on Miska's
+  suggestion, is 1 + pow( inBaseCapacity, 8 ) * 0.0000000035.
+
+--End of posse/kill joining spam.  You must end your current targeting (by
+  dropping your weapon) in order to start another target-ting.  You can't keep
+  spam-target-ting the same person, nor can you spam toggle back and forth
+  between target-ting two people, unless you drop and re-grab your weapon.
+  Fixes #439
+
+--Boundless world:  barrier off.
+
+--Boundless world:  Eve window set to 1 second.
+
+--Boundless world:  We inject a new Eve if a new baby would be born pushing the
+  baby-to-mother ratio above 3.0.  We also inject a new Eve if the player-to-
+  family ratio ever exceeds 9.0, but in that case, since it's not an emergency,
+  we wait for a player who has a fitness score matching or exceeding the
+  highest fitness score seen for the 10 most-recently-joined living players.
+
+--Boundless world:  Eves placed on a persistent, moving, zig-zag grid.  Each
+  grid point is 320 tiles away from other grid points to NSEW.  Grid columns
+  are 5 points tall, with new columns distributed further to the west.  Thus,
+  Eves are placed in a horizontal band that grows toward the west.  Walk east
+  to find older parts of civilization.  Walk north or south to find endless
+  wilderness.
+
+--Reading a map within 30 seconds before taking off in a plane causes you to
+  land at the closest landing strip to the map's destination.  This makes plane
+  flights much more reliable and much less griefable with cargo-cult trap
+  strips.  Poor five oz. of vodka on the sidewalk for our fallen comrade Tarr.
+
+--Getting yellow fever clears yummy bonus food store.
+
+--Boundless world:  turned min family limit off, so that arc messages don't
+  mention it.
+
+
+
+
+Version 278   2019-October-31
+
+--Added an early exit hallway to make the tutorial optional.
+
+--Off-screen speech now drawn on left, right, and bottom of screen (before, was
+  top of screen only).  Server sends speech in radius of 16 to facilitate this
+  (was 10).
+
+--Now off-screen sounds for posse targetting you show double exclamation marks,
+  where off-screen sounds that aren't for your posse show the normal single
+  exclamation mark.  Facilitated by the new PJ (POSSE_JOIN) protocol message.
+  Fixes #433
+
+--Head emots (like heart for /LOVE) are shown above hat layer (were covered by
+  hat).
+
+--Apocalypse clears your tool learning slots.
+
+--Babies can't move at all for first 12 seconds of life, and lay on the ground,
+  but react to mouse clicks by wiggling.
+
+--Spring tapouts now leave E or W gradient dry springs along ley line to W or E
+  of well.  You can follow these gradients to find the well.
+
+
+
+
+
+Server Fixes
+
+--Boiling the frog:  6-12 tool slots (was 8-16).
+
+--Boiling the frog:  5-10 tool slots (was 6-12).
+
+--Min fertile girls per fam 6 (was 3).  This should help to prop up struggling
+  families and prolong the arc.
+
+--Fixed kill-target swapping bug.  Fixes #420.  Delay before landing kill is
+  now 6 seconds (was 3).
+
+--Holding a baby now cancels any kill target actions against it.  Fixes #421
+
+--Changed definition of hand tool use to require something left in the hand
+  after the action.  So putting a sterile pad back in a bowl doesn't count.
+  Fixes #435
+
+--New map change log is started correctly when a biome reseed happens.
+  Fixes #434
+
+--Server forces player to say [GASP] when they are targetted by a killer.
+  Along with the shocked face, this makes it harder to ignore the fact that you
+  are targetted.  Related to #433
+
+--Message on birth explaining your bonus tool slots due to your fitness score.
+  Message is skipped if your fitness score is too low to grant you any bonus
+  tool slots.
+
+--Support for forced spawns for specific accounts.
+
+--Everyone with fitness score over 0 gets one bonus slot, so genetic fitness
+  message on birth can be shown to almost everyone.
+
+--Fixed a sign issue in fitness server in the case of even R parameter.
+
+--K parameter for genetic fitness score is now 46.5 (was 10).  This value was
+  discovered empirically through simulation of 100 births with various infant
+  death rates to find a K-value that balanced fast convergence with low score
+  range overlap between player skill tiers.  This means that scores go up and
+  down 4.65x slower than before.
+
+--New hints to find wells:  when well taps out area, it leaves thoroughly dry
+  springs in same row as well, and regular dry springs elswhere.  So if you
+  ever find a thoroughly dry spring, you know you can find a well by walking E
+  or W.
+
+--Mothers and Gmas and GGmas now count toward your genetic fitness score,
+  assuming that you are at least 3 years old (or would have been) at their time
+  of their death.  This closes the 'kill your mom to prevent younger sibs'
+  exploit.
+ 
+
+
+
+Version 276   2019-October-25
+
+--/FPS graph in client now shows frame timing breakdown.
+
+--Holding 'x' key lets you click through people.  Allows you
+  to interact with objects behind self and others.
+
+--Showing explicit hint for [SHIFT]-[TAB] on hint sheets (paging backwards).
+
+--Fixed stuck murder mouth after apocalypse.
+
+--Shift-right-clicking an animal with a valid weapon no longer puts you into
+  kill mode against closest person.  A lot of new players were confused by this.
+
+--Implementation of limited number of tool learning slots per player, complete
+  with messaging about how many slots are left and backwards holding of
+  unlearned tools.
+
+--Support for bigger jumps in picker paging.
+
+
+
+
+Server Fixes
+
+--Support for upper limit on number of tapout triggers that can be built
+  followed by a larger tapout radius.  Example:  first 5 shallow wells built
+  tap out springs in an 80-radius area.  6th+ shallow well taps out springs in
+  an 800-radius area.
+
+--Fixed bug in replacing oil wells with tarry spots on server restart, and also
+  no longer using same random seed for placement of tarry spots in each arc.
+
+--If you are < 3 years old when one of your descendants die, they will not
+  count toward your genetic score (because you were helpless yourself).
+
+--Reseeding map now depends on map being inited, so switched order in
+  apocalypse step.
+
+--Fixed so that curse radius is correctly limited to 32 tiles.
+
+--Fixed so that saying I AM EVE SMITH doesn't result in redundant name
+  insertion in broadcast speech of I AM EVE EVE SMITH.
+
+--Client tag as part of protocol, along with server-side logging.
+
+--Fixed some grave-tracking inconsistencies.
+
+--Limit on well placements wasn't resetting with apocalypse, causing limit of
+  only one well in next run.
+
+
+
+
+Version 272    2019-October-19
+
+--Fixed crash when switching hint target object with a non-matching filter.
+
+--Fixed when hint filter string doesn't match anything, so that non-matching
+  filter doesn't interfere with normal hint behavior.
+
+--Fixed missing links in crafting hints due to not handling probabalistic
+  transitions when fleshing out producesMap.  Example:  Lock and Key Parts
+  with Chisel is only made sometimes, only if the use state transition isn't
+  triggered to make Lock and Key Parts with Chisel# use 4 (the state where the
+  chisel has become partially used).  Before, there was no complete crafting
+  process hinted for Lock and Key Parts because of this.
+
+--Fixed a crash when server (mistakenly) tells us we're responsible for an
+  object change happening off of our known map area.
+
+--Map implementation.  Holding a blank map and charcoal and speaking a map name
+  creates a marked map to your current location.  Picking up a marked map
+  causes you to speak the map name and set your home arrow to the map's
+  destination for the next 60 seconds, or as long as you continue to hold the
+  map.
+
+--VOG text at same location replaces previous text instead of overlapping.
+
+--Improved frame rate in cities by reducing overdraw.  Biome tiles that are
+  compltely covered by floors don't need to be drawn.
+
+--Editor obeys alpha channel when baking a multiplicative layer to mask the
+  affected area (some multiplicative sprites had invisible black areas---not
+  sure why).
+
+
+
+
+Server Fixes
+
+--Added utility program for dumping map value at coordinates at a given
+  location on a live server.
+
+--Tapout trigger implementation.  Upon construction, a given object can tapout
+  nearby objects on a grid pattern with a given radius.  Used for shallow wells
+  that tapout all spring heads in an 80-tile radius.
+
+--Can't join posse targeting yourself.  Related to #426
+
+--Fixed so that leaving a posse clears your speed boost.  Fixes #426
+
+--Fixed so that endtower apocalypse trigger restarts eve window and does other
+  necessary bookkeeping steps.  Fixes #428
+
+
+
+
+
+Version 270    2019-October-12
+
+--Editor can copy slot movements relative to saved position.
+
+--New hint filter system.  When you target an object to make (like /HATCHET),
+  you see an reverse-ordered list of steps, starting with the target and going
+  simpler, as you TAB.  Each step shows you hint arrows for nearby ingredients,
+  and when you pick up an ingredient object, the list automatically jumps to
+  the most relevant hint for that ingredient.
+
+
+
+
+Server Fixes
+
+--Saying I JOIN YOU near a posse member with something in your hand causes you 
+ to join that posse, even if you're not holding a weapon and haven't managed to
+ shift-right-click on the target person yourself.  You can do this while
+ holding a branch or whatever, and though you can't kill with a non-weapon,
+ your posse membership can help to speed up the posse.  This makes groups much
+ more powerful against hit-and-run griefers, who are difficult for the whole
+ group to target.
+
+--Blocked births outside of rift barrier (before, was only blocking outside
+  births during Eve window).
+
+--Rift barrier no longer blocks plane flights, and this setting is configurable
+  live, without restarting the server.
+
+--Fixed another cause of out-of-range ghost players.  Updates for midrange
+  players weren't getting PO messages correctly, nor were global updates for
+  new players.  These players were seen as in-range, which triggered (!) emote
+  notifications and a ghost player standing there if you ever travelled to
+  their original location.  Fixes #410
+
+--Support for fixed-count, randomly placed biome objects.  Used for tarry
+  spots, to ensure that there are exactly 5 of them inside the rift barrier in
+  snowy biomes only.
+
+--EVE was on list of female and last names.  Whoops.
+
+
+
+
+Version 268    2019-October-3
+
+--Fixed so that off-screen sounds generated by your own character are never
+  drawn.  Fixes #409
+
+--Fixed so that we don't play emote sounds (or show their off-screen icons) for
+  out-of-range players.  Fixes #410
+
+--Tutorial wording reflects latest curse changes.  Fixes #407
+
+--When computing object center, don't consider worn-only sprites, since
+  centering is used for containment.  This fixes the weird containment position
+  for long dress and skirt.
+
+--Hint arrow shows nearby objects that are relevant to current tip (activate by
+  actively tabbing through hints, or having a hint filter set).
+
+
+
+Server Fixes
+
+--Max speech radius is now 10.  No more spying on distant speech with a zoom
+  mod.  Fixes #408
+
+--values.h should be replaced with limits.h  Fixes #411
+
+--Fixed grave duplication caused by swapping grave baskets with objects on the
+  ground.  Fixes #402  There is still a possible case of grave mix-up if three
+  people are moving graves around in the same area at the same time (which is
+  unlikely), but no grave duplication that I could produce even in that edge
+  case.
+
+--Blocked twins/trips/quads from cursing (before, just blocked them from
+  earning tokens, but if they already had a token, they could spend it).
+
+--Expanded the list of possible last names to the full list of 151,000 provided
+  by the US Census 2000.  Was using a trimmed list of 86,000 last names (from
+  the same source, but only counting names that occurred 200 or more times in
+  the year 2000).  The source list includes names that occurred 100 or more
+  times in the year 2000.
+
+--Fixed glitch in lineage_depth calculation on family tree server when
+  generation is not known yet.
+
+--Fixed major infinite loop in server name picking code.  Not sure how this was
+  never triggered, but a new name list, with a different length, triggered it.
+
+--Full list of all US first names since 1880, for roughly 100K names (was 30K),
+  and split into male and female names (for names that were always > 80% one 
+  gender in every year) and unisex names (for names that were > 20% the 
+  minority gender in some year).  Gender is enforced in baby name filtering.  
+  No more girls named Robert or boys named Mary, but both boys and girls can be
+  named Charlie.  Hello Helga!
+
+--When you name your baby, the closest matching name is replaced in your said
+  text as it is displayed.  YOU ARE ROBERT for a girl is heard as YOU ARE
+  ROBERTA.  You don't need to mouse over the baby to find out what name
+  actually stuck, and there's no mismatch between what your baby hears and what
+  their name is.
+
+
+
+
+Version 266    2019-September-27
+
+--Extra ID param in USE message to differentiate between click on ground and
+  click on target object (to fix case where target animal moves out of the way
+  before server gets our message, making it look like we clicked on the ground,
+  thus mistakenly executing a use-on-ground action, like dismounting our
+  horse).  Fixes #400
+
+--Right-click on empty ground around an object with empty hand will pick it up.
+  Makes it easier to pick up tiny objects.
+
+--Support for offScreenSound tag on emotes (like murder mouth and yoohoo).
+  Support for pulsing off-screen notification if an offScreenSound object emits
+  sounds during its animation (like murder mouth does).  Fixes #406
+
+--Editor supports flipping whole object.
+
+
+
+Server Fixes
+
+--Fixed so that long paths that go near edge of client's known map chunk cause
+  new chunks to be sent (so client doesn't see unknown map area when walking
+  near edge of mapt chunk).
+
+--Fixed a movement bug that caused jump-back when rapidly clickly to extend a
+  path (a timing bug).  This jump-back would also cause a carried child's view
+  to scroll way off into the unknown map area and then slide back.
+
+--If a new player has played less than 5 lives or less than 2 hours total (not
+  including their time in the tutorial), their mother gets a message when they
+  are born.
+
+--Personal curses now block someone from being born near you for 7 days (was 2
+  days).  Fixes #384
+
+--Fixed major bug in personal curse implementation.  When checking if birth
+  location blocked, was only checking first player on the list.  This meant
+  that personal curses didn't work correctly most of the time.
+
+--During Eve window, if all fertile mothers have a player curse-blocked, they
+  go to donkeytown (they used to spawn as Eve inside the rift barrier).
+
+--Simplified mother picking code (without changing behavior) in anticipation of
+  some additional fixes.
+
+--Fixed twin loophole in personal curse implementation.  If your twin is
+  blocked from being born in a given area because of curses, so are you, and
+  you all go to donkeytown if there's no area for one of you.
+
+--Twins sent to donkeytown based on personal curses all have black speech.
+
+--Fixed a jump-back movement glitch when a slow client tries to interrupt a
+  move that the server thinks is already done.
+
+--Fixed so that you can't add things to slots in DIE-baby graves.
+
+--Player counted as new if <4 hours lived in game (was 2).
+
+--Fixed case where force-drop happens (during death or wounding) when no direct
+  bare-ground transition applies to the permanent held object (example:  cast
+  fishing pole).  In this case, we check for a timed transition first, and then
+  look for a bare-ground transition after that timed transition is applied.
+  Also, in case where bare ground transition leaves something in hand (example:
+  pole with old boot), we toss both things (before, the pole would disappear,
+  leaving only the boot).  Fixes #388
+
+--Better logging of too many babies per mother apocalypse trigger.
+
+--Player counted as new if < 8 hours lived in game (was 4).
+
+--Fixed stacked basket flinging glitch.  Fixes #391
+
+--Blocked all container object from flinging stuff.  To target a container
+  object (like a grave full of belongings) in a way that would reduce the
+  number of slots in the container (like picking up the grave into a basket),
+  you must empty it first.
+
+--Changed max baby/mother after Eve to 20 (to essentially disable that
+  apocalypse condition).  Added a new condition:  apocalypse after Eve window
+  if our player population inside the rift is ever > 33% helpless babies.
+
+--Increased death stagger time by 20 seconds (+50%) up to 60 seconds (was 40),
+  allowing more time for wounded players to be healed.
+
+--Fixed glitch in naming an unnamed Eve so that she doesn't get your family
+  name.
+
+--Was not accounting for yum bonus when deciding whether we had enough food for
+  hungry work.  Also brought safe buffer down to 4 pips (was 5).
+  Related to #392
+
+--If family has < 3 potentially fertile females left (fertile females and girl
+  children), we force that family to have girl babies when it is their turn for
+  babies.
+
+--findDropSpot code now respects rift barrier.  Flinging stuff across the
+  barrier should never be possible (last case was picking up a toddler who was
+  holding something).
+
+--Food log now includes eating bonus.  Fixes #393
+
+--Fixed frozen full horse cart bug.
+
+--Baby ratio to trigger apocalypse is now 0.66 (was 0.33).  If we get to the
+  point where there are 2 babies for every non-baby player, things have gotten
+  really bad, right?
+
+--Fixed potential (though unlikely) overflow issue for long emails in local
+  curse database.
+
+--Over past 21 hours, only three spawns were sent to donkeytown, and all three
+  of them were for the single player with the most curses in the game.  No one
+  else went to donkeytown.  It seems like the blocking radius for curses is
+  simply too small.  Increasing it up to 200 (was 50).
+
+--Your younger sibs now count toward your genetic score, closing the 'avoid 
+  having kids yourself and try to live until 60' path to a high genetic score.
+
+--Tutorial lives no longer count toward genetic fitness.
+
+--Rollback:  back to reporting tutorial lives to fitness server (all Eve lives
+  were already not affecting the score, according to the fitness server code).
+
+--Fix for getting back on the leaderboard (after expiring) by playing the
+  tutorial:  lives that don't affect score (all Eve lives) don't update
+  last_action_time.
+
+--One more basket-stacking fling case fixed.  Fixes #404
+
+--Curse radius grows as your total curse count grows.  Starts at 200 (you must 
+  be born 200 tiles away from any living player that cursed you in the past 7
+  days), and grows by 200 with each curse you receive.  At 4 curses, your
+  curse block radius is 1000, which means you cannot be born inside the rift
+  if anyone who cursed you is currently alive.  Your total curse count goes
+  down by 1 point every 7 days.  Cursing still works effectively as a 'get
+  away from me' gesture (you'll be very unlikely to encounter this player again
+  in the next 7 days), but starts functioning more and more like a global block
+  as your curse count grows.  Even then, though, it only blocks you if the
+  people who don't like your behavior are currently playing.  As opposed to a
+  fixed-length punishment, this is more like, 'you've bugged these people
+  enough, try playing again later.'  Fixes #403
+
+--Grave placement now respects rift barrier.
+
+--Target player of murder-mouth kill targeting shows SHOCK emotion to indicate
+  that they are being targeted.  Related to #401
+
+--3-second delay between when murder-mouth sound/anim starts and when the kill
+  window actually opens, to give the target some warning.  No more surprise
+  insta-kill when you're standing next to someone.  Fixes #401
+
+--Better wording so that people know what the arc name is.
+
+--Your curse block radius depends on number of living players who have you
+  cursed, not total number.  Starting radius is 100, when one living player has
+  you cursed, and it goes up by 100 for each additional living player that has
+  you cursed.  Once 5 living players have you cursed, one of them standing at
+  the center of the rift will bock you from being born and send you to
+  donkeytown.  Once 10 living players have you cursed, one of them standing at
+  the corner of the rift will block the entire rift, sending you to donkeytown
+  always, as long as those players continue living.  The worst offender
+  currently has 104 curses, and in a recent sample, 13 living players had that
+  offender cursed.
+
+--Twins/trips/quads don't get curse tokens to spend.
+
+--How fast you run while chasing someone in the kill state now depends on the
+  size of your posse.  If you are by yourself, you run slow (0.75x speed).  A
+  posse of 2 runs at 1.25x speed.  A posse of 3 runs at 1.5x speed.  A posse
+  of 4+ runs at 2x speed.  This makes it more difficult for a lone griefer to
+  kill someone, while also making it more difficult for a lone griefer to
+  escape the will of a determined group.  This only affects chasing speed, so a
+  lone player can still easily guard a choke point (with a short-range weapon)
+  or an area (with a bow).
+
+--Improved fence auto-orientation code so that different types of fences
+  (rickety, proposed, etc.) can react to each other and auto-orient.  No more
+  out-of-whack fences caused by them being out-of-sync when placed.
+
+--New baby distribution method, after Eve window closes:  Instead of
+  round-robin, we pick the family with the fewest potentially fertile females
+  (fertile moms and girl children) left and send the next incoming baby there.
+
+--Twins always run at posse-1 speed (0.75x) when trying to kill, no matter what
+  size of a posse they're part of.  Thus, twins can't form their own posse made
+  up just of their twin set to get a kill speedup.
+
+
+
+
+Version 262    2019-September-12
+
+--Incorporated PAX West hotfixes to kiosk mode.
+
+--Fixed so that hitched horse cart doesn't cross objects to the left in a
+  glitchy way.  Fixes #358
+
+--Support for ctrl-v paste of text into object description in editor.
+
+--Auto-walking around all kinds of road branches (diagonals, etc.) now works
+  flawlessly.  Fixes #360
+
+--Fixed so that you can walk to and set down or swap an object on an empty
+  surrounded tile with one click.  Fixes #361
+
+--Removed lingering home markers after apocalypse.  Related to #363
+
+--Can now CTRL-V to paste clipboard text into chat.  Fixes #367
+
+--Added some safeguards to make sure drawn cursor size never jumps to 0. 
+  Fixes jasonrohrer/OneLife#379
+
+--Mousing over someone from another family shows their WAR or PEACE status with
+  your family (no label if neutral).  A new WAR_REPORT message from the server
+  makes this possible.
+
+--If you spam more than 10 emotes in a single minute, you're put on emote
+  cooldown for two minutes.  Based on the simplistic implementation, worst
+  case, you can trigger 20 emotes in a row (if you trigger 10 at the end of a
+  minute window and 10 at the beginning of the next minute window).  Fixes #396
+
+
+
+
+Server Fixes
+
+--Fixed crash when moveTotalSeconds is negative.
+
+--Whoops.  For the past two months, no new players were having reviews, lives 
+  lived, or time lived logged by the review server (due to a bug in the insert 
+  query after polls were added).
+
+--Special announcement to let players know they have a PAX Expo baby.
+
+--Current move truncated when you land a kill, to prevent a long move from
+  continuing at full speed with a slow-down bloody weapon in your hand.
+  Fixes #362
+
+--Fixed so that we clear remembered monomument positions after apocalypse so
+  that we don't keep passing them on to future generations (babies hear about
+  the monument that their mothers know about at age 0.5).  Fixes #363
+
+--Added sanity check so that no Eves are born outside barrier, no matter what.
+  Fixes #377
+
+--Check min pickup age before swapping a held object (with a ground transition)
+  with another object on the ground.  A child can no longer swap a clean pad
+  with a sword, car, bow, etc.  Fixes #378
+
+--Fixed memory leak.
+
+
+
+
+
+
+Version 260    2019-August-28
+
+--Fixed bug in murder weapon change not showing up on perpetrator until perp
+  stops moving (in other clients other than the perp's client).
+
+--Fixed digit in sqrt(2) constant.  Fixes #372
+
+--Editor now highlights naturally-occuring objects and deadly objects in
+  picker, so no more mistakes making something natural during object
+  duplication.
+
+--More kiosk mode features.  Instructions on RebirthChoice page, friends button
+  there, and blocking various things that would return you to the login screen.
+
+
+
+
+Server Fixes
+
+--Family limit failure condition set to 35 (was 23).
+
+--Fixed bug that caused stuck murder mouth emote if you target someone from
+  more than 8 tiles away.
+
+--Support for custom global messages.
+
+--Support for maxPickupAge on objects (so elders cannot use swords).
+
+--Local personal curses replaces centralized curse server.  Each player on a
+  server gets one token per 30 minutes (was 1 per 2 hours) to curse another
+  player.  That marks the player for 48 hours, preventing them from getting
+  born within 50 tiles of the cursing player.  If a cursed player runs out of
+  mothers inside the Eve window, they become an Eve.  If a cursed player runs
+  out of mothers outside of the Eve window, they go to donkeytown.
+
+--Cross-family cursing can now be done without speaking the curse in their
+  language (local personal curses are fine across families).
+
+--Shortcuts for cursing:  CURSE YOU (closest other player) and CURSE MY BABY
+  (your youngest baby, even if recently died).
+
+--Change to baby last name:  now comes from biological family name, if set,
+  even if baby is adopted and named by someone else.  Much less confusion about
+  who is in which family line (for war and peace purposes).
+
+--Families start out in neutral state and cannot use swords against each other.
+  Unilateral war is possible when elders speak WAR in the target family's
+  language (and then both sides are at war).  Peace can be set by elders from
+  both families saying PEACE in the target language, and then that PEACE treaty
+  can only be broken by elders from both families saying WAR.  So, unilateral
+  war is possible at first, but after peace is established bilaterally, it must
+  be broken bilaterally.
+
+--Support for force-matched vertical, horizontal, and corner fences.  No more
+  manually rotating them.
+
+--Wildcard shortcuts for giving gate ownership to all living children (MY
+  OFFSPRING OWN THIS) or all living family members (MY FAMILY OWNS THIS).
+
+--New arc failure condition:  After Eve Window closes, there are no new Eves,
+  and arc ends when there are fewer than 5 living families.
+
+--Arc milestone message now includes info about min family end condition.
+
+--Global announcement whenever a family dies out after the Eve window closes.
+
+--Link from Eve on family tree server to full tree on Wondible viewer.
+
+--Fixed rounding errors in move timing that could cause micro-managed moves to
+  be faster than long paths (WASD movment catching up to mouse movement).
+
+--Fixed apocalypse frozen-whiteout bug caused by server waiting for
+  disconnected players to have been sent the map update (they are disconnected,
+  so this is never going to happen).  When this bug was triggered (by a player
+  in the disconnected state during the apocalypse), the apocalypse whiteout
+  would last until that disconnected player died.
+
+--Fixed to no longer send out arc-family death announcements for Tutorial and
+  Donkeytown players.  Fixes #375.
+
+--Can spend YUM bonus to do hungry work.  Hungry worked blocked if it would
+  take you down below 5 food (to give you a safe buffer at the end).  Thus, you
+  need at least 15 food (including food and YUM) to do 10-cost hungry work.
+
+--After Eve window closes, babies are distributed between remaining families
+  round-robin.  Within each family, when it's their turn to get a baby, heat
+  an yum fertility bonuses still affect which mother in the family is chosen.
+  Note that area/lineage bans, birth cooldowns, and other factors still apply.
+  We only send a baby to the next family, round-robin, if we can according to
+  these other factors.
+
+--For analysis:  after Eve window, each family population is tracked separately
+  in a log over time (so we can make graphs showing family fractions of total
+  population, etc).
+
+--Support in lifeTokenServer for manually changing an account's token count
+  (for PAX booth use).
+
+
+
+
+Version 256    2019-August-2
+
+--Support for offScreenSound_red tag (other offScreenSounds are white).
+
+--Support for global messages broadcast from server to all connected clients
+  not in tutorial.  Using it to announce war/peace status.
+
+
+
+
+Server Fixes
+
+--Fixed baby teleportation glitch.  Now if there's no place to drop a baby, 
+  they go where you are standing instead of being thrown.
+
+--Babies born outside rift area don't count toward survival requirement for
+  determining group failure.
+
+--Fixed offspring selection code to balance male and female babies, even for
+  races that have different numbers of male and female characters (before,
+  redhead and black mothers had 75% boy babies, now they have 50% like they
+  should).
+
+--Added support for an Eve window of time at the beginning of an arc.  Eves can
+  only spawn during that time.
+
+--Disabling baby-survivial-age based apocalypse trigger, and replacing it with
+  a no-fertile-mothers-left (inside the barrier) trigger.
+
+--Outside the Eve window, incoming babies will be born to SOME fertile mother,
+  no matter what (despite lineage bans, birth cooldowns, etc.)
+
+--Barrier radius 354, for roughly half a million tiles (tried 1/4 million
+  which was too small, and 1 million, which was too big).
+
+--Forcing all girls to be born if we're outside Eve window and number of
+  fertile mothers inside the barrier falls below a threshold (1/15 of the
+  population, or 2, whichever is larger).
+
+--Fixed so that donkeytown can spawn Eves even after the Eve window closes.
+
+--Fixed so that suiciding as a baby counts against your own genetic fitness
+  score (a bug was preventing it from counting).
+
+--Made fitness leaderboard window a setting, and set it to 24 hours (was 48
+  hours before).  This is the recent-play window for displaying names on the
+  leaderboard and computing rankings.
+
+--Global failure condition is now baby/mother ratio of 6 or higher (counting
+  helpless, < 3-year babies and fertile mothers).  So no more baby overload at
+  very end.
+ 
+--Support for new +hungryWork object tag, which requires and consumes a certain
+  amount of food when the object is produced.  Applying this to chopping down
+  most kinds of useful trees (at least ones that are sensibly hardwood, like
+  maple, poplar, and rubber).
+
+--Server biomes random generator reseeds itself after every map wipe.  A
+  different map every time, with one of 4 billion possible seeds.
+
+--Made server wait 8 seconds after signalling apocalypse, to give clients
+  plenty of time to white-out.
+
+--Fixed so that non-cursed babies don't get born to cursed mothers after Eve
+  window closes.
+
+--Fixed so that during 2-hour eve window at start of arc, players outside
+  barrier cannot have babies (so that they have to escape fresh during each
+  new arc).
+
+--You can now curse people in other families, but only if you utter the curse
+  in their language.  This means that over multiple generations of
+  co-existence, where subsequent generations of babies learn more and more of
+  the language, you can curse that family in plain English, eventually, because
+  they can understand your plain English.  But before that, you can utter the
+  curse in their language directly (or join in a curse that they are carrying
+  out by repeating what they said in their language.  For example, DANCH LEASIE
+  STEADGED was one translation that I saw for CURSE TOBY JONES.)
+
+--Server logs every player-caused change to map, for wondible's potential use
+  in time-lapses.
+
+--If server starts up and finds that it's map seed file has been wiped, it
+  assumes this is a manually-started fresh arc, and reports the end of the
+  previous arc to the arc-tracking server.
+
+--Server map-change-log includes floors.
+
+--Biome map gen code overhaul.  Testing new topographical placement.  Swamps
+  surrounded by grass surrounded by prairie.  Snow surrounded by mountain
+  surrounded by desert surrounded by jungle.  Every grassy area is a good
+  settlement spot, because it's always next to a swamp.
+
+--Disabled plane flying over rift.  People escaping early makes it impossible
+  to test properly.
+
+--Baby mother ratio (failure condition) reduced from 6 to 4.
+
+--New patch-based layout of special biomes (desert, snow, jungle) on
+  topographical peaks.  Regular biomes (swap, grass, prairie, mountain) are
+  still played in topographical rings.  This prevents the biomes that we need
+  less of from ending up in weird-feeling, thin topo rings.  It also adds
+  large-scale variation to the map.  This region has snowy peaks.  This other
+  region has desert peaks.
+
+--Saying PEACE in a way that another family can understand (in their language,
+  or in English if you are bilingual), with one of their family members in
+  earshot, establishes a peace treaty between families, blocking the use of the
+  war sword between them.  Only works if said in both directions, by elders
+  over age 55.  If elders say WAR bidirectionally later, the families are no
+  longer at peace and can use war swords again.
+
+--Testing new arc failure condition:  We allow a normal Eve spiral always, but
+  after the initial Eve window time (currently 2 hours), we start counting
+  families.  The arc ends if we ever have too many families (more than 15),
+  because this means that the successful families have all started to fail,
+  and there aren't enough fertile mothers left, and we're getting a lot of Eves
+  that can't survive.
+
+--Cronjob to sync map change logs to public data server every 5 minutes.
+
+--Support for special map placements.
+
+--Can only enter the kill state against a player that is no further than 8
+  tiles away.
+
+--Family data log, tracking player population stats over time.
+
+--Server sends global message with arc stats every 100 years.
+
+
+
+
+Version 251    2019-July-25
+
+--Fixed weird initialization of OwnerInfo structure.
+
+--Support for +noHighlight tag on objects (blocking mouse-over highlights,
+  which look weird on the rift object).
+
+
+
+Server Fixes
+
+--Another work-around for the Steam bug.  Manually verify that the latest
+  steam build ID is correct before building.
+
+--Long term non-look map culling (live reclamation by nature) disabled.
+
+--Added an impassible barrier at a adjustable square radius.
+
+--Eve spiral resets to 0,0 when it gets too close to the barrier.
+
+--Adjusted Eve spiral jump to 50 (from 250) and set barrier radius at 250
+  (500x500 square).  The smaller spiral fits nicely in the barrier square.
+
+--If no baby lives to age 15 for 60 straight minutes (on a server with at least
+  15 active players), then an apocalypse is auto-triggered.  This means the
+  barrier square is out of resources necessary for survival.
+
+
+
+
+Version 248    2019-July-18
+
+--Fixed crash in crafting hints if an object is picked up that has no 
+  transitions.
+
+--Support for adjusting ground tile edge blur at runtime in settings folder.
+
+--Fixed rapid character flipping glitch when walking on a road with a
+  wide-blocking object on it.  Fixes #352
+
+--Fixed crash when specified emotion object ID does not exist.
+
+
+
+
+Server Fixes
+
+--Server now allows authenticated re-connect through no matter what,
+  force-disconnecting the existing connection if its still seen as connected.
+  This will eliminate LOGIN FAILED when trying to reconnect quickly (before the
+  server has seen the connection break), BUT it will also allow someone else
+  with the same login credentials (like a friend you gave your account key to)
+  to login and hijack your game (and force you to disconnect).  This is an edge
+  case that will almost never happen, so it's best to honor all connection 
+  requests and assume they came from the legit account owner.  Fixes #345
+
+--Fixed implementation of Bresenham's Line Algorithm to handle cases where y
+  changes faster than x (vertically-oriented lines).  This fixes blocked kill
+  shots and long-distance item uses from tight vertical angles.  Fixes #350
+
+--Fixed rounding issues that could affect fitness ranking.  Fixes #351
+
+--Fixed so that you can swap held items into full clothing containers.
+  Fixes #353
+
+--Getting fed by someone else can never break your YUM chain.  Getting fed a
+  yummy food by someone else will increase your chain and give you the normal
+  bonus.  Getting fed a MEH food will not affect your chain, but you won't get
+  the bonus.  This means you can't grief someone's YUM chain, and through
+  collaboration, you can preserve each other's YUM chains while waiting for
+  more yummy foods to be available.  Fixes #354
+
+--Fixed so that baby carried away from AM transmitter doesn't still transmit
+  voice.  Fixes #355
+
+
+
+Version 246    2019-July-5
+
+--Fixed crash if email blank on login screen when score fetch attempted.
+
+--Fixed suffix for 11th, 12th, and 13th rankings.  Thanks Twisted.
+
+--Fixed client ignoring DENIED from fitness server.
+
+--Can now swap items in a full container.  Related to #340
+
+--Right-clicking bare ground near an object while on a horse now swaps the
+  horse with that object, making it consistent with other swapping behavior.
+  Related to #340
+
+--Fixed character getting stuck in eating animation when double-clicking to
+  eat.  This potentially also fixes moonwalking, but I haven't confirmed that.
+  Related to #309
+
+--Fixed so that new graves correctly replace vanished graves at same location.
+  Fixes #343  Thanks Twisted.
+
+--Added additional movement fix to Justin L's previous pull request.
+
+--Fixed double sound playing (2x as loud, with phase interference) when putting
+  on clothing that contains something.
+
+--Added support for red ! speech balloon to accompany certain important off
+  screen sounds (like murder scream).  Fixes #349
+
+
+
+
+Server Fixes
+
+--DIE babies don't affect genetic score of their ancestors (but affect
+  themselves).
+
+--Fixed bug in interleaving of requests to genetic fitness server, resulting in
+  stale sequence numbers (and thus offspring not getting logged properly).
+
+--Eves and tutorial players no longer contribute to a player's genetic score.
+
+--Fitness server now discards old offspring records and lives that have fallen
+  off the end of client's display lists anyway.
+
+--Fixed rare case of visually changing biome.  Fixes #341  Thanks Alec Y.
+
+--Blocked default transitions from happening at a distance, to prevent modded
+  clients from using distant-use objects (like bows and arrows) to open doors
+  at a distance.  Fixes #342
+
+--Fixed objects getting stuck between decay transitions when you walk away and
+  come back (before, touching the object would finally trigger the pending
+  transition).  Fixes #337
+
+--Handle a special clothing removal case more intelligently.  If left-click
+  does a special clothing action (like remove sword), then it used to be
+  impossible to take off the clothing (without doing the special action first),
+  because right-click was reserved for removing stuff from clothing.  Now, if
+  clothing slots are empty, and left-click maps to a special clothing action,
+  right-click will remove the clothing.  Note that it's still impossible to
+  remove clothing with full slots that also has a special bare-hand action
+  (because right and left click both do something already).
+
+--Fixed row index in lineage server.  Fixes #348
+
+
+
+Version 245    2019-June-28
+
+--Support for new genetic fitness score across lives, ranking, leaderboard, 
+  and genetic history display inside client.
+
+
+
+
+Server Fixes
+
+--Whoops... totally forgot to update killEmotionIndex.ini server setting.
+  Murder Mouth should work now.
+
+
+
+
+
+Version 243    2019-June-21
+
+--Better randomization (less repetative) of multi-sound sets by shuffling
+  sounds, playing them in that order, and then reshuffling (instead of picking
+  a different random sound each time, which can lead to lots of repeats).
+
+--Support in editor for pasting a single sound onto the end of a sound set
+  without replacing it.
+
+--Client can now play animation sounds from a character's emote.
+
+--8/12 display for lives remaining (suggested by Dodge).
+
+--Finally fixed lurking wrong-grave-info bug (triggered when you swap a bone
+  basket with something that's on the ground where an old grave has already
+  decayed away).  Fixes #338
+
+
+
+
+Server Fixes
+
+--Fixed issues with other forced-emots (like snowball splats) interruping the
+  KILL-state angry face.  Now the angry face comes back when the snowball splat
+  melts.
+
+--Admin funciton for restoring all tokens back to starting level (useful before
+  servers restart).
+
+
+
+
+Version 242    2019-June-19
+
+--Client support for in-game poll feature.
+
+
+
+
+Server Fixes
+
+--Fixed a crash when a baby tries to take a sword out of a backpack they are
+  wearing.
+
+
+
+
+Version 240    2019-June-14
+
+--Fixed so that lives-left text never overlaps with re-detect or custom-server-
+  disable buttons on login page.  Fixed so that re-dectect button doesn't
+  linger after visiting settings page triggers a re-measure of FPS.
+
+--There are now both Retry and Re-detect buttons when FPS mismatch occurs,
+  allowing you to re-measure right then and there without restarting the game.
+  We don't keep re-measuring every time we return to this screen, speeding up
+  player login.  We wait to fetch life token data from the server until after
+  the first FPS measurement is over, to avoid networking hiccups messing up the
+  measurment.  Fixes #330
+
+--Fixed memory leak.  Fixes #322
+
+--Fixed so that if you click on an object that is surrounded NSEW but still
+  accessible, you walk there, to that object's spot, and interact with it,
+  instead of just walking there.  Fixes #318
+
+--Protocol now includes lineageEveID with lineage and grave messages so that
+  client can show DISTANT RELATIVE for relatives and graves that are further
+  away than the 20 generation cuttoff.  Fixes #317
+
+--Fixed memory leak in killMessage.  Fixes #311
+
+--New /DISCONNECT command in client for testing.
+
+--Added support for sprites that disappear when an object is contained.
+  Fixes #282
+
+
+
+Server Fixes
+
+--Fixed so that empty tiles that used to contain a natural object are restored
+  when map is culled back to natural state.  Thanks Alec.  Fixes #332
+
+--Reduced map database pollution with unecessary 0-values (before, we would 
+  clear a tile's contained items, setting its num-contained to 0 in the db,
+  every time an item was picked up from that tile, even if the item that was
+  picked up contained nothing---now, we check that there are contained items
+  there to clear before clearing them and inserting a 0 for num contained in
+  the database).  This cuts the number of database entries in half in many
+  situations (thus reducing the disk size of the database dramatically).
+ 
+--If you disconnect and reconnect when you have 0 lives left, you are no longer
+  blocked from logging in to resume your last life.
+
+--Fixed bug where you could enter the kill-intent state against family members
+  when holding the sword, and if you ever got close enough, the server would
+  generate an endless flood of update messages for the failed kill action,
+  overload network connections, and leading to disconnects.  Now you can't even
+  enter the kill-intent state if the weapon you are holding is not applicable
+  to your target.  Thanks Laccy.  Fixes #320
+
+--Can no longer trigger a transition for warn clothing that takes it to an
+  unwearable state (for example, hitting crown with hammer to turn it back into
+  an ingot while you're still wearing it).  Fixes #310
+
+--No more tutorial players in name logs.  Fixes  #333
+
+--Fixed typo in square root of two in server code.  Fixes #325
+
+--Fixed disappearing springs caused by map cache not being aware of grid
+  placement status.  Fixes #319
+
+--Trees and other permanent objects regrowing destroy sections of underlying
+  roads in natural reclamation.  However, surface non-permanent natural objects
+  (stones, iron, etc.) will re-occur on top of the road.  Fixes #334
+
+--No language barriers on low-pop servers.  Fixes #314
+
+--Making sure REMV action is grid adjacent.  Fixes #312 
+
+--Monument stats include year now.  Fixes #307
+
+--Fixed calculation of distance for fleeing/chasing animal movement.  Fixes #306
+
+--If you quit the client to disconnect and then reconnect as a twin, it will
+  now kill your old self to make room for your twin (it used to confusingly
+  reconnect you to your old life, and let your partner through as a lone twin).
+  Fixes #305
+
+--Fixed cause of ghost players who just stand there but aren't really there.
+  Fixes #299
+
+--Smarter code when swapping shoes.  Swaps held shoe with non-matching shoe
+  first, and if both shoes are non-matching, pays attention to which shoe you
+  clicked on.  Fixes #297
+
+--If name of Eve or baby not unique within past two hours on server, closest
+  unique name chosen instead.  No more roman numeral suffixes.  Fixes #283
+
+
+
+Version 238    2019-June-8
+
+--Support for limited number of life tokens per player, with more tokens
+  earned every hour that passes.
+
+
+
+
+Server Fixes
+
+--We now add a new Eve whenever existing families have more than 15 players
+  each on average.
+
+--Lineage server trims newlines from death cause description.
+
+--People without last names can be cursed.  Fixes #302
+
+--Fixed a memory leak in murderPerpEmail.
+
+--Support for 'kill' result emots that are non-lethal and don't make you drop
+  what you are holding through new no_replace tag.  Snowball splats now work
+  this way.
+
+--Stone road not culled (allong with stone walls) during map reclamation by
+  nature.
+
+--Rolled back change 7292535f9fca5333bff52f3ba9038b530ea77273, so max birth
+  cooldown is 5 minutes again.
+
+--Rolled back changes 10e9b49dca89cd9e50895a883a0e98c9ab9e0f89 and
+  b33eae6c249103b32b4c0163bb5fe1e57c1d3a35, so mother's birth cooldown only
+  resets if she picked up a SIDS baby, and doesn't reset if most recent baby
+  died due to neglect.
+
+--Partially rolled back change 2419cdf75a3d64d2c637851434763c84efdd7649 so that
+  suicide triggers area ban like it did before, but family skip list is still
+  functioning too.  Thus, suicide has a compound effect of making you skip the
+  family until you run out of families AND ban yourself from that area.
+  Figured leaving skip list code in place for now is fine, instead of tearing
+  it out completely.
+
+--Disabled latest Eve spring grid placement close to civ, and re-enabled old
+  Eve spiral.
+
+--New Eve spiral behavior:  If center of spiral hasn't been seen in a long
+  enough time that it has likely been culled, we restart the spiral again from
+  the center.  This prevents the spiral from getting endlessly bigger, and
+  brings Eves closer together again periodically, as the center of the map gets
+  culled.
+
+
+
+
+
+Version 235    2019-May-29
+
+--Fixed one cause of rubber-banding player movement in client.  No need to
+  navigate all the way back to start of a new path sent by server if we're
+  closer to a spot in the middle of the path.
+
+--Fixed so that other players never slow down in their movement to match
+  server timing, but still speed up if necessary.  (It's always okay for
+  another player to arrive at their destination early, client-side.)
+
+
+
+Server Fixes
+
+--Changes to function of /DIE.  Can no longer use it to cycle through all
+  families and force yourself to be an unecessary Eve.  Eve only spawns if
+  there are really no available motehrs for an incoming baby.  /DIE adds this
+  family to your family skip list.  If you eventually cycle through all
+  families, so that you've skipped them all, and none are left, your skip list
+  is cleared.
+
+--When the server has 15 or more simultaneous players, 200 map database entries
+  are examined every periodic server step (4x per second), and any entries in
+  regions that have not been seen by players in 8 hours are set back to their
+  natural state.  Depending on the size of the database, walking through all
+  entries can take quite a while (the current bigserver2 database has 25
+  million entries, so that would take 8 hours at the current rate).  Thus, the
+  actual decay-back-to-nature time will be at least 8 hours, due to the time it
+  takes to walk through all database entries.  Also, a group of tiles will
+  potentially clear in an uneven sequence, based on their order in the
+  database.  Thus, partial ruins are possible.
+
+--Don't spawn non-cursed Eve near donkey town.
+
+--Always reset mother's birth cool down if baby does /DIE, whether ever held
+  or not.
+
+--Mother's birth cool-down instantly resets when her most-recent baby dies of
+  any cause.
+
+--Max birth cool-down for mother is 3 minutes instead of 5 (mean 1.2 minutes
+  instead of 2 minutes).
+
+--Ancient stone walls are left standing during 8-hour-no-look map culling.
+
+
+
+
+Version 234    2019-May-25
+
+--Fixed long-standing bug when something decays in the hand of a moving player,
+  causing a bad player update message to get sent, making their position revert
+  on other clients.
+
+--On SHIFT-click to kill, allow missing by up to four tiles (finding closest
+  person and calling them the target) to avoid the annoying "drop your weapon
+  by accident" game when you're trying to click on a moving target.
+
+--Fixed long-standing bug that would defer mid-move player change until after
+  their move completed.
+
+
+
+Server Fixes:
+
+--Query times listed on front page of family tree server.
+
+--Reduced server step time to 1/10 sec max if there are active kill requests
+  pending, so that even on servers with very few players, kills happen
+  instantly when players cross paths.
+
+--Added a work-around for a bug in move path validation that was causing valid
+  moves to get rejected by server.  Fixed check for diagonal adjacent.
+
+
+
+Version 231    2019-May-23
+
+--Tiles that are drawn as non-flipped remember their non-flipped status, even
+  if they change to flippable tiles later (so they don't flip back and forth
+  in an unappealing way).
+
+--Client supports new KILL message semantics.
+
+--Fixed a glitch where other players showed doing animation when their held
+  object passively changed.
+
+--Fixed glitch on auto-click at the end of very short paths.
+
+--Applied fixes for various movement glitches.  Thanks Justin L.
+
+--KILL action now requires SHIFT key held.  Instruction image updated.
+
+
+
+
 Server Fixes:
 
 --Fixed bug in deletion of underlying object if grave marker has no slots.
@@ -16,6 +1656,49 @@ Server Fixes:
 
 --Fixed so that use-on-bare-ground objects that are groundOnly can't be used on
   floors.
+
+--Added a script to automate end-user installation of a private server on Linux.
+
+--Fixed so that Eves don't spawn near tutorial town.
+
+--Fixed so that VOG doesn't see language-mapped phrases.
+
+--Fixed so that spring placement not blocked by objects to the south.
+
+--Improved thermal model for buildings.  Now using a 13x13 heat grid instead of
+  8x8, to support larger buildings.  We now detect a binary indoor/outdoor
+  property for each player, based on being completely surrounded by walls,
+  floors, and closed doors.  If indoors, the effect of a cold environment is
+  halved, and the effect of clothing to protect from cold environments is
+  doubled.
+
+--Changed semantics of player KILL action server-side.  Instead of an
+  instantaneous action based on player proximity that either succeeds or fails,
+  the server remembers that the player is trying to kill that other player and
+  forces an angry emote for their face.  If they ever get within range of the
+  target player, the kill action is executed.  The kill state will get canceled
+  if they drop their weapon, target someone else, or if their target dies of
+  other causes.  Essentially, once you set a quest for blood on another player,
+  if you ever cross paths with them, it will happen.  This dramatically reduces
+  the effectiveness of dancing around, but doesn't undercut the advantage of
+  range weapons (you can still run away from an attacker).  If two players
+  attempt to kill each other simultaneously, the player that was put into the
+  kill state first will succeed, if the players ever cross paths.
+
+--Fixed missing fseek between fread and fwrite calls.  Thanks Justin L.
+  Related to pull request #268
+
+--Fixed bug in param order in call to getClosestOtherPlayer.
+
+--If you didn't inherit a family name at birth, you get the family name of
+  whoever is holding you when they name you.  Related to #227
+
+--Standardized other-person-naming code, whether for held baby, or non-held,
+  currently-nameless adult.  Baby inherits the family name of their mother at
+  birth, or the family name of their namer otherwise.  Family name can differ
+  from last name, depending on who named you, but your family name will
+  resurface later down the line as a last name if your last name is lost. 
+  Fixes #277
 
 
 

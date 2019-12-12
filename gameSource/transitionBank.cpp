@@ -58,6 +58,15 @@ static char autoGenerateGenericUseTransitions = false;
 static char autoGenerateVariableTransitions = false;
 
 
+static char shouldFileBeCached( char *inFileName ) {
+    if( strstr( inFileName, ".txt" ) != NULL ) {
+        return true;
+        }
+    return false;
+    }
+
+
+
 int initTransBankStart( char *outRebuildingCache,
                         char inAutoGenerateCategoryTransitions,
                         char inAutoGenerateUsedObjectTransitions,
@@ -74,7 +83,8 @@ int initTransBankStart( char *outRebuildingCache,
     currentFile = 0;
 
 
-    cache = initFolderCache( "transitions", outRebuildingCache );
+    cache = initFolderCache( "transitions", outRebuildingCache,
+                             shouldFileBeCached );
 
     return cache.numFiles;
     }
@@ -92,7 +102,7 @@ float initTransBankStep() {
 
     char *txtFileName = getFileName( cache, i );
                         
-    if( strstr( txtFileName, ".txt" ) != NULL ) {
+    if( shouldFileBeCached( txtFileName ) ) {
                     
         int actor = 0;
         int target = -2;
@@ -227,19 +237,33 @@ typedef struct TransIDPair {
     
 
 
-void initTransBankFinish() {
+
+static void handleWhatProbSetProduces( int inPossibleSetID,
+                                       TransRecord *inT ) {
     
-    freeFolderCache( cache );
+    CategoryRecord *cr = getCategory( inPossibleSetID );
+    
+    if( cr != NULL &&
+        cr->isProbabilitySet ) {
+        for( int i=0; i< cr->objectIDSet.size(); i++ ) {
+            if( cr->objectWeights.getElementDirect( i ) > 0 ) {
+                int oID = cr->objectIDSet.getElementDirect( i );
+                
+                producesMap[ oID ].push_back( inT );
+                }
+            }
+        }
+    }
 
 
-    mapSize = maxID + 1;
-    
 
-    usesMap = new SimpleVector<TransRecord *>[ mapSize ];
-        
-    producesMap = new SimpleVector<TransRecord *>[ mapSize ];
-    
-    
+static void regenUsesAndProducesMaps() {
+    for( int i=0; i<mapSize; i++ ) {
+        usesMap[i].deleteAll();
+        producesMap[i].deleteAll();
+        }
+
+
     int numRecords = records.size();
     
     for( int i=0; i<numRecords; i++ ) {
@@ -257,13 +281,52 @@ void initTransBankFinish() {
         
         if( t->newActor != 0 ) {
             producesMap[t->newActor].push_back( t );
+            handleWhatProbSetProduces( t->newActor, t );
+            }
+
+        if( t->actorChangeChance < 1.0 && t->newActorNoChange != 0 &&
+            t->newActorNoChange != t->newActor ) {
+            producesMap[t->newActorNoChange].push_back( t );
+            handleWhatProbSetProduces( t->newActorNoChange, t );
             }
         
         // no duplicate records
         if( t->newTarget != 0 && t->newTarget != t->newActor ) {    
             producesMap[t->newTarget].push_back( t );
+            handleWhatProbSetProduces( t->newTarget, t );
             }
+
+        if( t->targetChangeChance < 1.0 && t->newTargetNoChange != 0 &&
+            t->newTargetNoChange != t->newTarget &&
+            t->newTargetNoChange != t->newActor &&
+            t->newTargetNoChange != t->newActorNoChange ) {
+            producesMap[t->newTargetNoChange].push_back( t );
+            handleWhatProbSetProduces( t->newTargetNoChange, t );
+            }
+        
         }
+    }
+
+
+
+
+void initTransBankFinish() {
+    
+    freeFolderCache( cache );
+
+
+    mapSize = maxID + 1;
+    
+
+    usesMap = new SimpleVector<TransRecord *>[ mapSize ];
+        
+    producesMap = new SimpleVector<TransRecord *>[ mapSize ];
+
+    
+    regenUsesAndProducesMaps();
+    
+
+    int numRecords = records.size();    
     
     printf( "Loaded %d transitions from transitions folder\n", numRecords );
 
@@ -1463,6 +1526,14 @@ void initTransBankFinish() {
         }
 
 
+    if( autoGenerateVariableTransitions ||
+        autoGenerateUsedObjectTransitions ||
+        autoGenerateGenericUseTransitions ||
+        autoGenerateCategoryTransitions ) {
+        
+        regenUsesAndProducesMaps();
+        }
+    
 
 
     regenerateDepthMap();
@@ -1577,15 +1648,47 @@ void regenerateDepthMap() {
             if( nextDepth < UNREACHABLE ) {
                     
                 if( tr->newActor > 0 ) {
-                    if( depthMap[ tr->newActor ] == UNREACHABLE ) {
-                        depthMap[ tr->newActor ] = nextDepth;
-                        treeHorizon.push_back( tr->newActor );
+                    CategoryRecord *cr = getCategory( tr->newActor );
+                    
+                    if( cr != NULL && cr->isProbabilitySet ) {
+                        for( int s=0; s<cr->objectIDSet.size(); s++ ) {
+                            if( cr->objectWeights.getElementDirect( s ) > 0 ) {
+                                int oID = cr->objectIDSet.getElementDirect( s );
+                                
+                                if( depthMap[ oID ] == UNREACHABLE ) {
+                                    depthMap[ oID ] = nextDepth;
+                                    treeHorizon.push_back( oID );
+                                    }
+                                }
+                            }
+                        }
+                    else {
+                        if( depthMap[ tr->newActor ] == UNREACHABLE ) {
+                            depthMap[ tr->newActor ] = nextDepth;
+                            treeHorizon.push_back( tr->newActor );
+                            }
                         }
                     }
                 if( tr->newTarget > 0 ) {
-                    if( depthMap[ tr->newTarget ] == UNREACHABLE ) {
-                        depthMap[ tr->newTarget ] = nextDepth;
-                        treeHorizon.push_back( tr->newTarget );
+                    CategoryRecord *cr = getCategory( tr->newTarget );
+                    
+                    if( cr != NULL && cr->isProbabilitySet ) {
+                        for( int s=0; s<cr->objectIDSet.size(); s++ ) {
+                            if( cr->objectWeights.getElementDirect( s ) > 0 ) {
+                                int oID = cr->objectIDSet.getElementDirect( s );
+                                
+                                if( depthMap[ oID ] == UNREACHABLE ) {
+                                    depthMap[ oID ] = nextDepth;
+                                    treeHorizon.push_back( oID );
+                                    }
+                                }
+                            }
+                        }
+                    else {
+                        if( depthMap[ tr->newTarget ] == UNREACHABLE ) {
+                            depthMap[ tr->newTarget ] = nextDepth;
+                            treeHorizon.push_back( tr->newTarget );
+                            }
                         }
                     }
                 }
@@ -1888,7 +1991,13 @@ TransRecord *getPTrans( int inActor, int inTarget,
             rStatic->newActor = packMetadataID( rStatic->newActor, 
                                                 passThroughMeta );
             }
-        else if( rStatic->newTarget > 0 &&
+        // can pass meta data through to both
+        // forking it and duplicating it
+        
+        // this allows for a piece of writing to be copied onto
+        // another object, for example
+
+        if( rStatic->newTarget > 0 &&
                  getObject( rStatic->newTarget )->mayHaveMetadata ) {
             rStatic->newTarget = packMetadataID( rStatic->newTarget, 
                                                  passThroughMeta );
@@ -2704,7 +2813,14 @@ char isGrave( int inObjectID ) {
     if( r->deathMarker ) {
         return true;
         }
+
+    // direct results of death that aren't deathMarkers
+    SimpleVector<int> *deathMarkers = getAllPossibleDeathIDs();
+    if( deathMarkers->getElementIndex( inObjectID ) != -1 ) {
+        return true;
+        }
     
+
     // first, see if this decays into a grave in one step
 
     TransRecord *trans = getTrans( -1, inObjectID );

@@ -68,6 +68,11 @@ emotion.cpp \
 Picker.cpp \
 PickableStatics.cpp \
 photos.cpp \
+lifeTokens.cpp \
+PollPage.cpp \
+fitnessScore.cpp \
+GeneticHistoryPage.cpp \
+
 
 
 GAME_GRAPHICS = \
@@ -108,12 +113,14 @@ graphics/cellFill.tga \
 graphics/homeArrows.tga \
 graphics/homeArrowsErased.tga \
 graphics/homeSlip.tga \
+graphics/homeSlip2.tga \
 graphics/hiddenFieldTexture.tga \
 graphics/yumSlip1.tga \
 graphics/yumSlip2.tga \
 graphics/yumSlip3.tga \
 graphics/yumSlip4.tga \
 graphics/photoBorder.tga \
+graphics/hintArrow.tga \
 
 
 

@@ -37,6 +37,9 @@ typedef struct CurseRecord {
         double livedTimeSinceScoreDecrement;
 
         double lastBirthTime;
+
+        GridPos deathPos;
+        double deathTime;
     } CurseRecord;
 
 
@@ -103,6 +106,53 @@ static int useCurseServer = false;
 static char *curseServerURL = NULL;
 
 
+static double lastCurseSettingCheckTime = 0;
+
+static double curseSettingCheckInterval = 10;
+
+static double tokenTime = 7200.0;
+static double decrementTime = 3600.0;
+
+static int usePersonalCurses = 0;
+
+
+
+static void checkSettings() {
+    double curTime = Time::getCurrentTime();
+    
+    if( curTime - lastCurseSettingCheckTime > curseSettingCheckInterval ) {
+        tokenTime = SettingsManager::getFloatSetting( "curseTokenTime",
+                                                      7200.0 );
+        decrementTime = 
+            SettingsManager::getFloatSetting( "curseDecrementTime", 3600.0 );
+
+        usePersonalCurses = SettingsManager::getIntSetting( "usePersonalCurses",
+                                                            0 );
+
+        char oldVal = useCurseServer;
+        
+        useCurseServer = 
+            SettingsManager::getIntSetting( "useCurseServer", 0 ) &&
+            SettingsManager::getIntSetting( "remoteReport", 0 );
+    
+        if( useCurseServer ) {
+            if( !oldVal ) {
+                AppLog::info( "Using remote curse server." );
+                }
+            
+            if( curseServerURL != NULL ) {
+                delete [] curseServerURL;
+                }
+            
+            curseServerURL = 
+                SettingsManager::getStringSetting( "curseServerURL", "" );
+            }
+
+        
+        lastCurseSettingCheckTime = curTime;
+        }
+    }
+
 
 
 void initCurses() {
@@ -139,22 +189,17 @@ void initCurses() {
                 r.livedTimeSinceScoreDecrement = livedTimeSinceScoreDecrement;
                 r.lastBirthTime = Time::getCurrentTime();
                 
+                r.deathPos.x = 0;
+                r.deathPos.y = 0;
+                r.deathTime = 0;
+                
                 curseRecords.push_back( r );
                 }
             }
         fclose( f );
         }
 
-    useCurseServer = 
-        SettingsManager::getIntSetting( "useCurseServer", 0 ) &&
-        SettingsManager::getIntSetting( "remoteReport", 0 );
-    
-    if( useCurseServer ) {
-        AppLog::info( "Using remote curse server." );
-        
-        curseServerURL = 
-            SettingsManager::getStringSetting( "curseServerURL", "" );
-        }
+    checkSettings();
     }
 
 
@@ -222,28 +267,16 @@ void freeCurses() {
 
 
 
-static double lastCurseSettingCheckTime = 0;
-
-static double curseSettingCheckInterval = 10;
-
-static double tokenTime = 7200.0;
-static double decrementTime = 3600.0;
 
 
 static void stepCurses() {
 
+
+    checkSettings();
     
 
     double curTime = Time::getCurrentTime();
     
-    if( curTime - lastCurseSettingCheckTime > curseSettingCheckInterval ) {
-        tokenTime = SettingsManager::getFloatSetting( "curseTokenTime",
-                                                      7200.0 );
-        decrementTime = 
-            SettingsManager::getFloatSetting( "curseDecrementTime", 3600.0 );
-        
-        lastCurseSettingCheckTime = curTime;
-        }
     
 
     for( int i=0; i<playerNames.size(); i++ ) {
@@ -298,7 +331,12 @@ static void stepCurses() {
             }
 
 
-        if( ! r->alive )
+        // for records for non-living players, if they've been dead
+        // for more than 10 minutes
+        // (we keep their name record for 5 minutes)
+        if( ! r->alive &
+            ( r->deathTime == 0 ||
+              curTime - r->deathTime > 10 * 60 ) )
         if( ( r->tokens == 1 && r->score == 0 )
             ||
             curTime - r->lastBirthTime > 3600 * 96 ) {
@@ -342,7 +380,9 @@ static CurseRecord *findCurseRecord( char *inEmail ) {
                       0,
                       0,
                       0,
-                      curTime };
+                      curTime,
+                      { 0, 0 },
+                      0 };
     
     
     curseRecords.push_back( r );
@@ -403,20 +443,25 @@ void cursesLogBirth( char *inEmail ) {
 
 
 
-void cursesLogDeath( char *inEmail, double inAge ) {
+void cursesLogDeath( char *inEmail, double inAge, GridPos inDeathPos ) {
     CurseRecord *r = findCurseRecord( inEmail );
     
     if( r->alive ) {
         
         r->alive = false;
 
+        double curTime = Time::getCurrentTime();
+
         double lifeTimeSinceToken = 
-            Time::getCurrentTime() - r->aliveStartTimeSinceTokenSpent;
+            curTime - r->aliveStartTimeSinceTokenSpent;
         double lifeTimeSinceScoreDecrement = 
-            Time::getCurrentTime() - r->aliveStartTimeSinceScoreDecrement;
+            curTime - r->aliveStartTimeSinceScoreDecrement;
         
         r->livedTimeSinceTokenSpent += lifeTimeSinceToken;
         r->livedTimeSinceScoreDecrement += lifeTimeSinceScoreDecrement;
+
+        r->deathPos = inDeathPos;
+        r->deathTime = curTime;
         }
 
     for( int i=0; i<playerNames.size(); i++ ) {
@@ -517,37 +562,7 @@ void getNewCurseTokenHolders( SimpleVector<char*> *inEmailList ) {
 
 
 
-
-char cursePlayer( int inGiverID, int inGiverLineageEveID, char *inGiverEmail, 
-                  char *inReceiverName ) {
-    stepCurses();
-    
-    int receiverLineageEveID = 0;
-    
-    CurseRecord *receiverRecord = 
-        findCurseRecordByName( inReceiverName, &receiverLineageEveID );
-    
-    if( receiverRecord == NULL ) {
-        return false;
-        }
-    
-    if( receiverLineageEveID != inGiverLineageEveID ) {
-        // not in the same family, can't curse
-        return false;
-        }
-
-    if( !useCurseServer && receiverRecord->bornCursed ) {
-        // already getting born cursed, from local curses, 
-        // leave them alone for now
-        return false;
-        }
-
-    if( strcmp( receiverRecord->email, inGiverEmail ) == 0 ) {
-        // giver is receiver, block
-        return false;
-        }
-    
-    
+char spendCurseToken( char *inGiverEmail ) {
     CurseRecord *giverRecord = findCurseRecord( inGiverEmail );
     
     
@@ -564,7 +579,61 @@ char cursePlayer( int inGiverID, int inGiverLineageEveID, char *inGiverEmail,
         giverRecord->aliveStartTimeSinceTokenSpent = curTime;
         }
     giverRecord->livedTimeSinceTokenSpent = 0;
+    return true;
+    }
+
+
+
+
+char cursePlayer( int inGiverID, int inGiverLineageEveID, char *inGiverEmail,
+                  GridPos inGiverPos,
+                  double inMaxDistance,
+                  char *inReceiverName ) {
+    stepCurses();
     
+    int receiverLineageEveID = 0;
+    
+    CurseRecord *receiverRecord = 
+        findCurseRecordByName( inReceiverName, &receiverLineageEveID );
+    
+    if( receiverRecord == NULL ) {
+        return false;
+        }
+    
+    if( receiverLineageEveID != inGiverLineageEveID ) {
+        // not in the same family, can't curse
+        
+        // skip for now.  Filter based on language outside this call instead.
+
+        // return false;
+        }
+
+    if( !useCurseServer && !usePersonalCurses && receiverRecord->bornCursed ) {
+        // already getting born cursed, from local, non-personal curses, 
+        // leave them alone for now
+        return false;
+        }
+
+    if( strcmp( receiverRecord->email, inGiverEmail ) == 0 ) {
+        // giver is receiver, block
+        return false;
+        }
+
+
+    if( ! receiverRecord->alive &&
+        distance( inGiverPos, receiverRecord->deathPos ) > inMaxDistance ) {
+        // too far away from this death pos
+        return false;
+        }
+
+    if( !spendCurseToken( inGiverEmail ) ) {
+        return false;
+        }
+    
+    
+    double curTime = Time::getCurrentTime();
+
+
     receiverRecord->score ++;
     receiverRecord->livedTimeSinceScoreDecrement = 0;
     
@@ -590,6 +659,38 @@ char cursePlayer( int inGiverID, int inGiverLineageEveID, char *inGiverEmail,
 
     return true;
     }
+
+
+
+int getCurseReceiverLineageEveID( char *inReceiverName ) {
+    int receiverLineageEveID = -1;
+    
+    CurseRecord *receiverRecord = 
+        findCurseRecordByName( inReceiverName, &receiverLineageEveID );
+    
+    if( receiverRecord == NULL ) {
+        return -1;
+        }
+    
+    return receiverLineageEveID;
+    }
+
+
+
+char *getCurseReceiverEmail( char *inReceiverName ) {
+    int receiverLineageEveID = -1;
+    
+    CurseRecord *receiverRecord = 
+        findCurseRecordByName( inReceiverName, &receiverLineageEveID );
+    
+    if( receiverRecord == NULL ) {
+        return NULL;
+        }
+    
+    return receiverRecord->email;
+    }
+
+
 
 
 
@@ -678,7 +779,7 @@ CurseStatus getCurseLevel( char *inPlayerEmail ) {
 
 
 
-char isNameDuplicateForCurses( char *inPlayerName ) {
+char isNameDuplicateForCurses( const char *inPlayerName ) {
     int numRec = playerNames.size();
     
     for( int i=0; i<numRec; i++ ) {

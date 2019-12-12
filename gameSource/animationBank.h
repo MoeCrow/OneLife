@@ -270,7 +270,7 @@ typedef struct ObjectAnimPack {
         int *inContainedIDs;
         SimpleVector<int> *inSubContained;
         
-        Emotion *setEmot;
+        SimpleVector<Emotion*> setEmots;
 
         // can be added by caller after this structure
         // is returned by drawObjectAnimPacked
@@ -443,13 +443,38 @@ char isSoundUsedByAnim( int inSoundID );
 
 
 // sets emotion for subsequent drawObjectAnim calls, or NULL for no emotion
+// clear extra layers
 void setAnimationEmotion( Emotion *inEmotion );
+
+// add an extra layer of emotion for drawObjectAnim calls
+void addExtraAnimationEmotions( SimpleVector<Emotion*> *inList );
+
 
 
 // sets fade values for clothing highlights of next drawn person
 // or NULL for no clothing highlights
 // Copied internally.
 void setClothingHighlightFades( float *inFades );
+
+
+// toggles hiding of "Shadow" tagged sprites on drawn person objects
+void hidePersonShadows( char inHide );
+
+
+
+
+// used by game to find the closest drawn instance of a given object
+void startWatchForClosestObjectDraw( int inObjecID[2], doublePair inPos );
+
+// fix pos to a cell, to avoid variable pos for contained objects
+void fixWatchedObjectDrawPos( doublePair inPos );
+void unfixWatchedObjectDrawPos();
+
+void ignoreWatchedObjectDraw( char inIgnore );
+
+
+
+doublePair getClosestObjectDraw( char *inDrawn, int inIndex );
 
 
 

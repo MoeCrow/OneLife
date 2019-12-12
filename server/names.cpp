@@ -9,11 +9,13 @@
 #include <stdio.h>
 
 
-static char *firstNames = NULL;
+static char *firstNamesMale = NULL;
+static char *firstNamesFemale = NULL;
 static char *lastNames = NULL;
 
 // total length of arrays
-static int firstNamesLen;
+static int firstNamesMaleLen;
+static int firstNamesFemaleLen;
 static int lastNamesLen;
 
 
@@ -58,7 +60,8 @@ static char *readNameFile( const char *inFileName, int *outLen ) {
 
 
 void initNames() {    
-    firstNames = readNameFile( "firstNames.txt", &firstNamesLen  );
+    firstNamesMale = readNameFile( "maleNames.txt", &firstNamesMaleLen  );
+    firstNamesFemale = readNameFile( "femaleNames.txt", &firstNamesFemaleLen  );
     lastNames = readNameFile( "lastNames.txt", &lastNamesLen );
     }
 
@@ -66,9 +69,13 @@ void initNames() {
 
 
 void freeNames() {
-    if( firstNames != NULL ) {
-        delete [] firstNames;
-        firstNames = NULL;
+    if( firstNamesMale != NULL ) {
+        delete [] firstNamesMale;
+        firstNamesMale = NULL;
+        }
+    if( firstNamesFemale != NULL ) {
+        delete [] firstNamesFemale;
+        firstNamesFemale = NULL;
         }
     if( lastNames != NULL ) {
         delete [] lastNames;
@@ -135,7 +142,8 @@ int getNameOffsetForward( char *inNameList, int inListLen, int inOffset ) {
 
 
 
-const char *findCloseName( char *inString, char *inNameList, int inListLen ) {
+const char *findCloseName( char *inString, char *inNameList, int inListLen,
+                           int *outIndex = NULL ) {
     if( inNameList == NULL ) {
         return defaultName;
         }
@@ -159,6 +167,8 @@ const char *findCloseName( char *inString, char *inNameList, int inListLen ) {
         char *testString = &( inNameList[ offset ] );
         int prevDiff = lastDiff;
         lastDiff = strcmp( tempString, testString );
+        
+        int lastUsedOffset = offset;
         
         
         if( getSign( lastDiff ) != getSign( prevDiff ) ) {
@@ -189,6 +199,11 @@ const char *findCloseName( char *inString, char *inNameList, int inListLen ) {
             else {
                 offset = getNameOffsetForward( inNameList, inListLen, offset );
                 hitEndCount = 0;
+                if( offset == lastUsedOffset ) {
+                    // back to same location as last time?
+                    // stuck
+                    break;
+                    }
                 }
             }
         else if( lastDiff < 0 ) {
@@ -206,6 +221,11 @@ const char *findCloseName( char *inString, char *inNameList, int inListLen ) {
             else {
                 hitStartCount = 0;
                 offset = getNameOffsetBack( inNameList, inListLen, offset );
+                if( offset == lastUsedOffset ) {
+                    // back to same location as last time?
+                    // stuck
+                    break;
+                    }
                 }
             }
         }
@@ -298,15 +318,43 @@ const char *findCloseName( char *inString, char *inNameList, int inListLen ) {
 
     
     delete [] tempString;
+
+    if( outIndex != NULL ) {
+        *outIndex = offset;
+        }
     
     return &( inNameList[offset] );
     }
 
 
 
+char *getFirstNamesArray( char inFemale ) {
+    char *names = firstNamesMale;
+    if( inFemale ) {
+        names = firstNamesFemale;
+        }
+    return names;
+    }
+
+
+
+int getFirstNamesLen( char inFemale ) {
+    int namesLen = firstNamesMaleLen;
+    if( inFemale ) {
+        namesLen = firstNamesFemaleLen;
+        }
+    return namesLen;
+    }
+
+
+
+
 // results destroyed internally when freeNames called
-const char *findCloseFirstName( char *inString ) {
-    return findCloseName( inString, firstNames, firstNamesLen );
+const char *findCloseFirstName( char *inString, char inFemale ) {
+    
+    return findCloseName( inString, 
+                          getFirstNamesArray( inFemale ),
+                          getFirstNamesLen( inFemale ) );
     }
 
 
@@ -314,3 +362,54 @@ const char *findCloseFirstName( char *inString ) {
 const char *findCloseLastName( char *inString ) {
     return findCloseName( inString, lastNames, lastNamesLen );
     }
+
+
+
+int getFirstNameIndex( char *inFirstName, char inFemale ) {
+    int i;
+    findCloseName( inFirstName, 
+                   getFirstNamesArray( inFemale ), 
+                   getFirstNamesLen( inFemale ),
+                   &i );
+    
+    return i;
+    }
+
+
+int getLastNameIndex( char *inLastName ) {
+    int i;
+    findCloseName( inLastName, lastNames, lastNamesLen, &i );
+   
+    return i;
+    }
+
+
+
+const char *getFirstName( int inIndex, int *outNextIndex, char inFemale ) {
+    *outNextIndex = getNameOffsetForward(
+        getFirstNamesArray( inFemale ), 
+        getFirstNamesLen( inFemale ),
+        inIndex );
+
+    if( inIndex == *outNextIndex ) {
+        // loop back around
+        *outNextIndex = 0;
+        }
+    
+    return &( getFirstNamesArray( inFemale )[ inIndex ] );
+    }
+
+
+
+const char *getLastName( int inIndex, int *outNextIndex ) {
+    *outNextIndex = getNameOffsetForward( lastNames, lastNamesLen, inIndex );
+    
+    if( inIndex == *outNextIndex ) {
+        // loop back around
+        *outNextIndex = 0;
+        }    
+
+    return &( lastNames[ inIndex ] );
+    }
+
+

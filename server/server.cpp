@@ -8227,8 +8227,8 @@ int processLoggedInPlayer( char inAllowReconnect,
     SettingsManager::setSetting( "nextPlayerID",
                                  (int)nextID );
 
-	startX =	SettingsManager::getIntSetting( "forceEveLocationX", 0 );
-	startY =	SettingsManager::getIntSetting( "forceEveLocationY", 0 );
+	int startX =	SettingsManager::getIntSetting( "forceEveLocationX", 0 );
+	int startY =	SettingsManager::getIntSetting( "forceEveLocationY", 0 );
 		
 	Spot* spot = findSpot(&deathSpot, newObject.email);
 	if(spot != NULL) { 

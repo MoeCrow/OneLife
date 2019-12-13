@@ -8246,10 +8246,6 @@ int processLoggedInPlayer( char inAllowReconnect,
     
     newObject.killPosseSize = 0;
 
-	// 随机化出生人物性别
-    int personID = getRandomPersonObject();
-    if(personID != -1)
-		newObject.displayID = personID;
     newObject.displayID = getRandomPersonObject();
     
     newObject.isEve = false;
@@ -8816,6 +8812,10 @@ int processLoggedInPlayer( char inAllowReconnect,
             newObject.displayID = femaleID;
             }
         }
+		
+		int personId = getRandomPersonObject();
+		if(personId != -1)
+			newObject.displayID = personId;
     
 
     if( !forceParentChoices && 

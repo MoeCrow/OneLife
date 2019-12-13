@@ -207,6 +207,11 @@ static SimpleVector<char*> youRedeemPhrases;
 static SimpleVector<char*> namedRedeemPhrases;
 
 
+static SimpleVector<char*> youKillPhrases;
+static SimpleVector<char*> namedKillPhrases;
+static SimpleVector<char*> namedAfterKillPhrases;
+
+
 
 static char *eveName = NULL;
 
@@ -2577,6 +2582,11 @@ void quitCleanup() {
 
     youRedeemPhrases.deallocateStringElements();
     namedRedeemPhrases.deallocateStringElements();
+
+
+    youKillPhrases.deallocateStringElements();
+    namedKillPhrases.deallocateStringElements();
+    namedAfterKillPhrases.deallocateStringElements();
     
 
 
@@ -11696,6 +11706,31 @@ char *isNamedRedeemSay( char *inSaidString ) {
 
 
 
+char isYouKillSay( char *inSaidString ) {
+    return isWildcardGivingSay( inSaidString, &youKillPhrases );
+    }
+
+
+// returns newly allocated string
+char *isNamedKillSay( char *inSaidString ) {
+
+    char *name = isReverseNamingSay( inSaidString, &namedAfterKillPhrases );
+
+    if( name != NULL ) {
+        return name;
+        }
+    
+    name = isNamingSay( inSaidString, &namedKillPhrases );
+    
+    if( name != NULL ) {
+        return stringDuplicate( name );
+        }
+    
+    return NULL;
+    }
+
+
+
 
 LiveObject *getClosestOtherPlayer( LiveObject *inThisPlayer,
                                    double inMinAge = 0,
@@ -14234,6 +14269,99 @@ static void leaderDied( LiveObject *inLeader ) {
 
 
 
+
+static void tryToStartKill( LiveObject *nextPlayer, int inTargetID ) {
+    if( inTargetID > 0 && 
+        nextPlayer->holdingID > 0 &&
+        canPlayerUseOrLearnTool( nextPlayer,
+                                 nextPlayer->holdingID ) ) {
+                            
+        ObjectRecord *heldObj = 
+            getObject( nextPlayer->holdingID );
+                            
+                            
+        if( heldObj->deadlyDistance > 0 ) {
+            
+            // player transitioning into kill state?
+                            
+            LiveObject *targetPlayer =
+                getLiveObject( inTargetID );
+                            
+            if( targetPlayer != NULL ) {
+                                    
+                // block intra-family kills with
+                // otherFamilyOnly weapons
+                char weaponBlocked = false;
+                                    
+                if( strstr( heldObj->description,
+                            "otherFamilyOnly" ) ) {
+                    // make sure victim is in
+                    // different family
+                    // AND that there's no peace treaty
+                    if( targetPlayer->lineageEveID ==
+                        nextPlayer->lineageEveID
+                        ||
+                        isPeaceTreaty( 
+                            targetPlayer->lineageEveID,
+                            nextPlayer->lineageEveID )
+                        ||
+                        ! isWarState( 
+                            targetPlayer->lineageEveID,
+                            nextPlayer->lineageEveID ) ) {
+                                            
+                        weaponBlocked = true;
+                        }
+                    }
+                                    
+                if( ! weaponBlocked  &&
+                    ! isAlreadyInKillState( nextPlayer ) ) {
+                    // they aren't already in one
+                                        
+                    removeAnyKillState( nextPlayer );
+                                        
+                    char enteredState =
+                        addKillState( nextPlayer,
+                                      targetPlayer );
+                                        
+                    if( enteredState && 
+                        ! isNoWaitWeapon( 
+                            nextPlayer->holdingID ) ) {
+                                            
+                        // no killer emote for no-wait
+                        // weapons (these aren't
+                        // actually weapons, like
+                        // tattoo needles and snowballs)
+
+                        nextPlayer->emotFrozen = true;
+                        nextPlayer->emotFrozenIndex = 
+                            killEmotionIndex;
+                                            
+                        newEmotPlayerIDs.push_back( 
+                            nextPlayer->id );
+                        newEmotIndices.push_back( 
+                            killEmotionIndex );
+                        newEmotTTLs.push_back( 120 );
+                                            
+                        if( ! targetPlayer->emotFrozen ) {
+                                                
+                            targetPlayer->emotFrozen = true;
+                            targetPlayer->emotFrozenIndex =
+                                victimEmotionIndex;
+                                                
+                            newEmotPlayerIDs.push_back( 
+                                targetPlayer->id );
+                            newEmotIndices.push_back( 
+                                victimEmotionIndex );
+                            newEmotTTLs.push_back( 120 );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 int main() {
 
     if( checkReadOnly() ) {
@@ -14411,6 +14539,11 @@ int main() {
 
     readPhrases( "youRedeemPhrases", &youRedeemPhrases );
     readPhrases( "namedRedeemPhrases", &namedRedeemPhrases );
+
+
+    readPhrases( "youKillPhrases", &youKillPhrases );
+    readPhrases( "namedKillPhrases", &namedKillPhrases );
+    readPhrases( "namedAfterKillPhrases", &namedAfterKillPhrases );
 
     
     curseYouPhrase = 
@@ -17995,6 +18128,34 @@ int main() {
                                 }
                             }
                         
+                        if( nextPlayer->holdingID > 0 &&
+                            getObject( nextPlayer->holdingID )->deadlyDistance
+                            > 0 ) {
+                            // are they speaking intent to kill?
+
+                            LiveObject *otherToKill = NULL;
+                            
+                            if( isYouKillSay( m.saidText ) ) {
+                                otherToKill = 
+                                    getClosestOtherPlayer( nextPlayer );
+                                }
+                            else {
+                                char *namedPlayer = 
+                                    isNamedKillSay( m.saidText );
+                                    
+                                if( namedPlayer != NULL ) {
+                                    otherToKill =
+                                        getPlayerByName( namedPlayer, 
+                                                         nextPlayer );
+                                    delete [] namedPlayer;
+                                    }
+                                }
+
+                            if( otherToKill != NULL ) {
+                                playerIndicesToSendUpdatesAbout.push_back( i );
+                                tryToStartKill( nextPlayer, otherToKill->id );
+                                }
+                            }
                         
 
 
@@ -18148,94 +18309,7 @@ int main() {
                         }
                     else if( m.type == KILL ) {
                         playerIndicesToSendUpdatesAbout.push_back( i );
-                        if( m.id > 0 && 
-                            nextPlayer->holdingID > 0 &&
-                            canPlayerUseOrLearnTool( nextPlayer,
-                                                     nextPlayer->holdingID ) ) {
-                            
-                            ObjectRecord *heldObj = 
-                                getObject( nextPlayer->holdingID );
-                            
-                            
-                            if( heldObj->deadlyDistance > 0 ) {
-                            
-                                // player transitioning into kill state?
-                            
-                                LiveObject *targetPlayer =
-                                    getLiveObject( m.id );
-                            
-                                if( targetPlayer != NULL ) {
-                                    
-                                    // block intra-family kills with
-                                    // otherFamilyOnly weapons
-                                    char weaponBlocked = false;
-                                    
-                                    if( strstr( heldObj->description,
-                                                "otherFamilyOnly" ) ) {
-                                        // make sure victim is in
-                                        // different family
-                                        // AND that there's no peace treaty
-                                        if( targetPlayer->lineageEveID ==
-                                            nextPlayer->lineageEveID
-                                            ||
-                                            isPeaceTreaty( 
-                                                targetPlayer->lineageEveID,
-                                                nextPlayer->lineageEveID )
-                                            ||
-                                            ! isWarState( 
-                                                targetPlayer->lineageEveID,
-                                                nextPlayer->lineageEveID ) ) {
-                                            
-                                            weaponBlocked = true;
-                                            }
-                                        }
-                                    
-                                    if( ! weaponBlocked  &&
-                                        ! isAlreadyInKillState( nextPlayer ) ) {
-                                        // they aren't already in one
-                                        
-                                        removeAnyKillState( nextPlayer );
-                                        
-                                        char enteredState =
-                                            addKillState( nextPlayer,
-                                                          targetPlayer );
-                                        
-                                        if( enteredState && 
-                                            ! isNoWaitWeapon( 
-                                                nextPlayer->holdingID ) ) {
-                                            
-                                            // no killer emote for no-wait
-                                            // weapons (these aren't
-                                            // actually weapons, like
-                                            // tattoo needles and snowballs)
-
-                                            nextPlayer->emotFrozen = true;
-                                            nextPlayer->emotFrozenIndex = 
-                                                killEmotionIndex;
-                                            
-                                            newEmotPlayerIDs.push_back( 
-                                                nextPlayer->id );
-                                            newEmotIndices.push_back( 
-                                                killEmotionIndex );
-                                            newEmotTTLs.push_back( 120 );
-                                            
-                                            if( ! targetPlayer->emotFrozen ) {
-                                                
-                                                targetPlayer->emotFrozen = true;
-                                                targetPlayer->emotFrozenIndex =
-                                                    victimEmotionIndex;
-                                                
-                                                newEmotPlayerIDs.push_back( 
-                                                    targetPlayer->id );
-                                                newEmotIndices.push_back( 
-                                                    victimEmotionIndex );
-                                                newEmotTTLs.push_back( 120 );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        tryToStartKill( nextPlayer, m.id );
                         }
                     else if( m.type == USE ) {
                         // send update even if action fails (to let them

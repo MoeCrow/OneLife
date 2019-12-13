@@ -8284,93 +8284,6 @@ int processLoggedInPlayer( char inAllowReconnect,
     
     int numOfAge = 0;
 
-	// 恢复玩家数据(物品、状态、饥饿、位置)
-	// restore player status here
-	newObject.holdingID = 0;
-    newObject.numContained = 0;
-    newObject.containedIDs = NULL;
-	newObject.subContainedIDs = NULL;
-	newObject.containedEtaDecays = NULL;
-    newObject.subContainedEtaDecays = NULL;
-	{
-		int displayID, xd, yd, hunger, holding,
-			hat, tunic, frontShoe, backShoe, bottom, backPack;
-		double age;
-		
-		if(playerDBGet(
-						newObject.email,
-						&displayID, &age, &xd, &yd, &hunger,
-						&holding, &hat, &tunic, &frontShoe,
-						&backShoe, &bottom, &backPack,
-						&newObject.numContained,
-						&newObject.containedIDs,
-						&newObject.subContainedIDs,
-						newObject.clothingContained
-		)) {
-		
-			newObject.xd = xd;
-			newObject.yd = yd;
-			newObject.xs = xd;
-			newObject.ys = yd;
-			
-			if(holding > 0)
-			switch(holding) {
-				case 797:
-				case 798:
-				case 1363:
-				case 1367:
-				case 1366:
-				case 1380:
-				case 1381:
-				case 1382:
-				case 1383:
-				case 1364:
-				case 1377:
-				case 1384:
-				case 1365:
-				case 2155:
-					newObject.holdingID = 0;
-					break;
-				default:
-					newObject.holdingID = holding;
-			} else
-				newObject.holdingID = 0;
-			
-			
-			newObject.clothing = getEmptyClothingSet();
-			newObject.clothing.hat = getObject(hat);
-			newObject.clothing.tunic = getObject(tunic);
-			newObject.clothing.frontShoe = getObject(frontShoe);
-			newObject.clothing.backShoe = getObject(backShoe);
-			newObject.clothing.bottom = getObject(bottom);
-			newObject.clothing.backpack = getObject(backPack);
-			
-			newObject.containedEtaDecays = new timeSec_t[newObject.numContained];
-			newObject.subContainedEtaDecays = new SimpleVector<timeSec_t>[newObject.numContained];
-			
-			for(int i = 0; i < newObject.numContained; i++) {
-				newObject.containedEtaDecays[i] = 0;
-			}
-		
-			for(int i = 0; i < newObject.numContained; i++) {
-				for(int j = 0; j < newObject.subContainedIDs[i].size(); j++) {
-					newObject.subContainedEtaDecays[i].push_back(0);
-				}
-			}
-			
-			for(int i = 0; i < NUM_CLOTHING_PIECES; i++) {
-				newObject.clothingContainedEtaDecays[i].deleteAll();
-				for(int j = 0; j < newObject.clothingContained[i].size(); j++) {
-					newObject.clothingContainedEtaDecays[i].push_back(0);
-				}
-			}
-		}
-		float randAge = ((rand() % 100) < 30 ? 3.f : 14.f);
-		
-		newObject.lifeStartTimeSeconds = 
-                Time::getCurrentTime() - randAge * ( 1.0 / getAgeRate() );
-	}
-
     int numBirthLocationsCurseChecked = 0;
     int numBirthLocationsCurseBlocked = 0;
                             
@@ -9713,6 +9626,92 @@ int processLoggedInPlayer( char inAllowReconnect,
         delete [] forceSpawnInfo.lastName;
         }
     
+
+	// 恢复玩家数据(物品、状态、饥饿、位置)
+	// restore player status here
+	newObject.holdingID = 0;
+    newObject.numContained = 0;
+    newObject.containedIDs = NULL;
+	newObject.subContainedIDs = NULL;
+	newObject.containedEtaDecays = NULL;
+    newObject.subContainedEtaDecays = NULL;
+	{
+		int displayID, xd, yd, hunger, holding,
+			hat, tunic, frontShoe, backShoe, bottom, backPack;
+		double age;
+		
+		if(playerDBGet(
+						newObject.email,
+						&displayID, &age, &xd, &yd, &hunger,
+						&holding, &hat, &tunic, &frontShoe,
+						&backShoe, &bottom, &backPack,
+						&newObject.numContained,
+						&newObject.containedIDs,
+						&newObject.subContainedIDs,
+						newObject.clothingContained
+		)) {
+		
+			newObject.xd = xd;
+			newObject.yd = yd;
+			newObject.xs = xd;
+			newObject.ys = yd;
+			
+			if(holding > 0)
+			switch(holding) {
+				case 797:
+				case 798:
+				case 1363:
+				case 1367:
+				case 1366:
+				case 1380:
+				case 1381:
+				case 1382:
+				case 1383:
+				case 1364:
+				case 1377:
+				case 1384:
+				case 1365:
+				case 2155:
+					newObject.holdingID = 0;
+					break;
+				default:
+					newObject.holdingID = holding;
+			} else
+				newObject.holdingID = 0;			
+			
+			newObject.clothing = getEmptyClothingSet();
+			newObject.clothing.hat = getObject(hat, true);
+			newObject.clothing.tunic = getObject(tunic, true);
+			newObject.clothing.frontShoe = getObject(frontShoe, true);
+			newObject.clothing.backShoe = getObject(backShoe, true);
+			newObject.clothing.bottom = getObject(bottom, true);
+			newObject.clothing.backpack = getObject(backPack, true);
+			
+			newObject.containedEtaDecays = new timeSec_t[newObject.numContained];
+			newObject.subContainedEtaDecays = new SimpleVector<timeSec_t>[newObject.numContained];
+			
+			for(int i = 0; i < newObject.numContained; i++) {
+				newObject.containedEtaDecays[i] = 0;
+			}
+		
+			for(int i = 0; i < newObject.numContained; i++) {
+				for(int j = 0; j < newObject.subContainedIDs[i].size(); j++) {
+					newObject.subContainedEtaDecays[i].push_back(0);
+				}
+			}
+			
+			for(int i = 0; i < NUM_CLOTHING_PIECES; i++) {
+				newObject.clothingContainedEtaDecays[i].deleteAll();
+				for(int j = 0; j < newObject.clothingContained[i].size(); j++) {
+					newObject.clothingContainedEtaDecays[i].push_back(0);
+				}
+			}
+		}
+		float randAge = ((rand() % 100) < 30 ? 3.f : 14.f);
+		
+		newObject.lifeStartTimeSeconds = 
+                Time::getCurrentTime() - randAge * ( 1.0 / getAgeRate() );
+	}
 
     newObject.birthPos.x = newObject.xd;
     newObject.birthPos.y = newObject.yd;

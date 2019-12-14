@@ -215,6 +215,11 @@ static SimpleVector<char*> namedAfterKillPhrases;
 
 
 
+static int nextOrderNumber = 1;
+
+static char *orderPhrase = NULL;
+
+
 static char *eveName = NULL;
 
 
@@ -624,6 +629,9 @@ typedef struct LiveObject {
         
         char followingUpdate;
         char exileUpdate;
+
+        int currentOrderNumber;
+        char *currentOrder;
 
 
         // time that this life started (for computing age)
@@ -2463,6 +2471,10 @@ void quitCleanup() {
         if( nextPlayer->name != NULL ) {
             delete [] nextPlayer->name;
             }
+        
+        if( nextPlayer->currentOrder != NULL ) {
+            delete [] nextPlayer->currentOrder;
+            }
 
         if( nextPlayer->familyName != NULL ) {
             delete [] nextPlayer->familyName;
@@ -2593,6 +2605,10 @@ void quitCleanup() {
     namedKillPhrases.deallocateStringElements();
     namedAfterKillPhrases.deallocateStringElements();
     
+    if( orderPhrase != NULL ) {
+        delete [] orderPhrase;
+        orderPhrase = NULL;
+        }
 
 
     if( curseYouPhrase != NULL ) {
@@ -8419,6 +8435,9 @@ int processLoggedInPlayer( char inAllowReconnect,
     newObject.followingUpdate = true;
     
     newObject.exileUpdate = false;
+    
+    newObject.currentOrderNumber = -1;
+    newObject.currentOrder = NULL;
     
     
     int numOfAge = 0;
@@ -14410,6 +14429,127 @@ static int getUnusedLeadershipColor() {
 
 
 
+#define NUM_LEADERSHIP_NAMES 8
+static const char *
+leadershipNames[NUM_LEADERSHIP_NAMES][2] = { { "LORD",
+                                               "LADY" },
+                                             { "BARON",
+                                               "BARONESS" },
+                                             { "COUNT",
+                                               "COUNTESS" },
+                                             { "DUKE",
+                                               "DUCHESS" },
+                                             { "KING",
+                                               "QUEEN" },
+                                             { "EMPEROR",
+                                               "EMPRESS" },
+                                             { "HIGH EMPEROR",
+                                               "HIGH EMPRESS" },
+                                             { "SUPREME EMPEROR",
+                                               "SUPREME EMPRESS" } };
+
+
+static char *getLeadershipName( LiveObject *nextPlayer ) {
+    
+    int level = 0;
+    
+    LiveObject *possibleLeader = nextPlayer;
+    
+    while( possibleLeader != NULL ) {
+        LiveObject *nextLeader = NULL;
+        for( int i=0; i<players.size(); i++ ) {
+            LiveObject *o = players.getElement( i );
+            
+            if( o->error ) {
+                continue;
+                }
+            if( o->followingID == possibleLeader->id ) {
+                level ++;
+                nextLeader = o;
+                }
+            }
+        possibleLeader = nextLeader;
+        }
+
+    if( level == 0 ) {
+        // no followers
+        return NULL;
+        }
+    
+    int gender = 0;
+    if( getFemale( nextPlayer ) ) {
+        gender = 1;
+        }
+    
+    if( level > NUM_LEADERSHIP_NAMES ) {
+        level = NUM_LEADERSHIP_NAMES;
+        }
+    
+    int index = level - 1;
+    const char *title = leadershipNames[index][gender];
+    
+    if( nextPlayer->name == NULL ) {
+        return stringDuplicate( title );
+        }
+    else {
+        return autoSprintf( "%s %s", title, nextPlayer->name );
+        } 
+    }
+
+
+
+static void replaceOrder( LiveObject *nextPlayer, char *inFormattedOrder,
+                          int inOrderNumber ) {
+    if( nextPlayer->currentOrderNumber < inOrderNumber ) {
+        nextPlayer->currentOrderNumber = inOrderNumber;
+        
+        if( nextPlayer->currentOrder != NULL ) {
+            delete [] nextPlayer->currentOrder;
+            }
+        nextPlayer->currentOrder = stringDuplicate( inFormattedOrder );
+        }
+    }
+
+
+static int orderDistance = 10;
+
+
+static void checkOrderPropagation() {
+    for( int i=0; i<players.size(); i++ ) {
+        LiveObject *o = players.getElement( i );
+        
+        if( o->error ) {
+            continue;
+            }
+
+        if( o->followingID != -1 ) {
+            LiveObject *l = getLiveObject( o->followingID );
+            
+            if( l != NULL && l->currentOrder != NULL && 
+                l->currentOrderNumber > o->currentOrderNumber) {
+                
+                // our leader has a new order that we don't have
+
+                // are we close enough to them?
+                
+                GridPos ourPos = getPlayerPos( o );
+                GridPos theirPos = getPlayerPos( l );
+                                
+                double d = distance( ourPos, theirPos );
+
+                if( d <= orderDistance ) {
+                    replaceOrder( o, l->currentOrder, l->currentOrderNumber );
+                    
+                    sendGlobalMessage( l->currentOrder, o );
+                    }
+                }
+            } 
+        }
+    
+    }
+
+
+
 
 
 int main() {
@@ -14595,6 +14735,14 @@ int main() {
     readPhrases( "namedKillPhrases", &namedKillPhrases );
     readPhrases( "namedAfterKillPhrases", &namedAfterKillPhrases );
 
+
+    orderPhrase = 
+        SettingsManager::getSettingContents( "orderPhrase", 
+                                             "ORDER," );
+
+    orderDistance = 
+        SettingsManager::getIntSetting( "orderDistance", 10 );
+    
     
     curseYouPhrase = 
         SettingsManager::getSettingContents( "curseYouPhrase", 
@@ -14990,7 +15138,8 @@ int main() {
                 
                 delete [] message;           
                 }
-
+            
+            checkOrderPropagation();
             
             checkCustomGlobalMessage();
             }
@@ -18184,6 +18333,35 @@ int main() {
                                     }
                                 }
                             }
+
+                        if( strstr( m.saidText, orderPhrase ) == m.saidText ) {
+                            // starts with ORDER phrase
+                            
+                            char *order = 
+                                trimWhitespace(
+                                    &( m.saidText[ strlen( orderPhrase ) ] ) );
+                            
+                            char *leadershipName = 
+                                getLeadershipName( nextPlayer );
+
+                            if( leadershipName != NULL ) {
+                                // they are a leader
+
+                                char *formattedOrder = 
+                                    autoSprintf( "ORDER FROM YOUR %s:**%s",
+                                                 leadershipName, order );
+                                
+                                delete [] leadershipName;
+                                
+                                replaceOrder( nextPlayer, formattedOrder,
+                                              nextOrderNumber );
+                                
+                                delete [] formattedOrder;
+                                nextOrderNumber++;
+                                }
+                            delete [] order;
+                            }
+                        
                         
                         if( nextPlayer->holdingID > 0 &&
                             getObject( nextPlayer->holdingID )->deadlyDistance
@@ -25487,6 +25665,10 @@ int main() {
 
                 if( nextPlayer->name != NULL ) {
                     delete [] nextPlayer->name;
+                    }
+
+                if( nextPlayer->currentOrder != NULL ) {
+                    delete [] nextPlayer->currentOrder;
                     }
 
                 if( nextPlayer->familyName != NULL ) {

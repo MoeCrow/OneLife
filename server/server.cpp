@@ -15334,8 +15334,7 @@ int main() {
                                         nextConnection->email );
 
                                 char *url = autoSprintf( 
-                                    "%s?action=check_ticket_hash"
-                                    "&email=%s"
+                                    "%s?ticket.htm&email=%s"
                                     "&hash_value=%s"
                                     "&string_to_hash=%s",
                                     ticketServerURL,

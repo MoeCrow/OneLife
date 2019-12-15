@@ -1130,9 +1130,21 @@ char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
 void parseCommand(LiveObject *player, char *text){
 	int x = 0, y = 0, id = 0;
 	int a = 10000000, b = 99999999;
-	char cmd[64];
+	char cmd[64], tmp[64];
 	char args[256];
-	sscanf(text, ".%s %[^\n]", cmd, args);
+	
+	int pti = 0, ptt = 0;
+	while(text[ptt] != 0) {
+		if(text[ptt] == '/') {
+			tmp[pti] = '0' + text[++ptt] - 'A';
+		} else {
+			tmp[pti] = text[ptt];
+		}
+		pti++;ptt++;
+	}
+	tmp[pti] = 0;
+	
+	sscanf(tmp, ".%s %[^\n]", cmd, args);
 	bool isOp = isNamingSay(stringToUpperCase(player->email), &opList) != NULL;
 	int shutdownMode = SettingsManager::getIntSetting( "shutdownMode", 0 );
 		
@@ -1338,7 +1350,7 @@ void parseCommand(LiveObject *player, char *text){
 				x = player->xs;
 				y = player->ys - 1;
 				if(getShop(x, y, tEmail, &shopType, &price)){
-					sprintf(s, "[SYSTEM]SHOP AT %d %d IS OWNED BY %s", x, y, tEmail);
+					sprintf(s, "[SYSTEM]SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
 				} else {
 					if ( shopType < 0 || shopType > 1 ) {
 						sprintf(s, "[SYSTEM]SHOP TYPE NOT CORRECT, MUST BE {0,1}");
@@ -1365,7 +1377,7 @@ void parseCommand(LiveObject *player, char *text){
 				delShop(x, y);
 				sprintf(s, "[SYSTEM]SHOP AT %d %d DELETED", x, y);
 			} else {
-				sprintf(s, "[SYSTEM]SHOP AT %d %d IS OWNED BY %s", x, y, tEmail);
+				sprintf(s, "[SYSTEM]SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
 			}
 		} else {
 			sprintf(s, "[SYSTEM]SHOP AT %d %d NOT FOUND", x, y);

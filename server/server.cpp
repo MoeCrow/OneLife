@@ -15333,13 +15333,17 @@ int main() {
                                     URLUtils::urlEncode( 
                                         nextConnection->email );
 
+								float money = getPlayerMoney(nextConnection->email);
+								
                                 char *url = autoSprintf( 
                                     "%s?ticket.htm&email=%s"
                                     "&hash_value=%s"
-                                    "&string_to_hash=%s",
+                                    "&string_to_hash=%s"
+									"&coins=%.2f",
                                     ticketServerURL,
                                     encodedEmail,
                                     keyHash,
+									money,
                                     nextConnection->sequenceNumberString );
 
                                 delete [] encodedEmail;

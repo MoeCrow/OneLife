@@ -15887,28 +15887,42 @@ int main() {
                             }
                         }
                     else if( riding && 
-                             curOverObj->permanent && 
-                             curOverObj->deadlyDistance > 0 ) {
-                        // rode over something deadly
-                        // see if it affects what we're riding
+                             curOverObj->permanent ) {
+                        if(curOverObj->deadlyDistance > 0) {
+                            // rode over something deadly
+                            // see if it affects what we're riding
 
-                        TransRecord *r = 
-                            getPTrans( nextPlayer->holdingID, curOverID );
-                    
-                        if( r != NULL ) {
-                            handleHoldingChange( nextPlayer,
-                                                 r->newActor );
-                            nextPlayer->heldTransitionSourceID = curOverID;
-                            playerIndicesToSendUpdatesAbout.push_back( i );
+                            TransRecord *r = 
+                                getPTrans( nextPlayer->holdingID, curOverID );
+                        
+                            if( r != NULL ) {
+                                handleHoldingChange( nextPlayer,
+                                                     r->newActor );
+                                nextPlayer->heldTransitionSourceID = curOverID;
+                                playerIndicesToSendUpdatesAbout.push_back( i );
 
-                            setMapObject( curPos.x, curPos.y, r->newTarget );
+                                setMapObject( curPos.x, curPos.y, r->newTarget );
 
-                            // it attacked their vehicle 
-                            // put it on cooldown so it won't immediately
-                            // attack them
-                            addDeadlyMapSpot( curPos );
-                            }
-                        }                
+                                // it attacked their vehicle 
+                                // put it on cooldown so it won't immediately
+                                // attack them
+                                addDeadlyMapSpot( curPos );
+                                }
+                            }   
+                        } else {
+                            TransRecord *r = 
+                                getPTrans( nextPlayer->holdingID, curOverID );
+                            if( r != NULL ) {
+                                handleHoldingChange( nextPlayer,
+                                                     r->newActor );
+                                nextPlayer->heldTransitionSourceID = curOverID;
+                                playerIndicesToSendUpdatesAbout.push_back( i );
+
+                                setMapObject( curPos.x, curPos.y, r->newTarget );
+                                }
+                            }   
+                        }
+                                     
                     }
                 }
             

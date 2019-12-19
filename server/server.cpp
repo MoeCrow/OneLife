@@ -1150,6 +1150,10 @@ void parseCommand(LiveObject *player, char *text){
 		
 	
 	if(strcmp(cmd, "TP")==0){
+        if(!isOp){
+            makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+            return;
+        }
 		if(player->heldByOther || player->holdingID < 0) {
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
 			return;
@@ -1159,25 +1163,28 @@ void parseCommand(LiveObject *player, char *text){
 			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
 			return;
 		}
-		if(!isOp){
-			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
-			return;
-		}
 		char s[256];
 		sscanf(args, "%d %d", &x, &y);
 		sprintf(s, "[SYSTEM]TELEPORTING");
 		makePlayerSay( player, s);
 		setBack(player->email, player->xs, player->ys);
+		player->firstMessageSent = false;
+		player->firstMapSent = false;
+		player->inFlight = true;
 		player->xs = x;
         player->ys = y;
         player->xd = x;
         player->yd = y;
-		setDeathReason( player, s);
-		setPlayerDisconnected( player, s);
+		player->birthPos.x = player->xs;
+		player->birthPos.y = player->ys;
+		player->heldOriginX = player->xs;
+		player->heldOriginY = player->ys;
+		player->actionTarget.x = player->xs;
+		player->actionTarget.y = player->ys;
 		return;
 	}
 	
-	if(strcmp(cmd, "PUT")==0){
+	if(strcmp(cmd, "PUTP")==0){
 		if(!isOp){
 			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
 			return;
@@ -1199,7 +1206,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUTHERE")==0){
+	if(strcmp(cmd, "PUT")==0){
 		if(!isOp){
 			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
 			return;
@@ -1221,7 +1228,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "FLOOR")==0){
+	if(strcmp(cmd, "FLR")==0){
 		if(!isOp){
 			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
 			return;
@@ -1243,7 +1250,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUTSOUTH")==0){
+	if(strcmp(cmd, "PUTS")==0){
 		if(!isOp){
 			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
 			return;
@@ -1296,12 +1303,19 @@ void parseCommand(LiveObject *player, char *text){
 		sprintf(s, "[SYSTEM]TELEPORTING");
 		makePlayerSay( player, s);
 		setBack(player->email, player->xs, player->ys);
+		player->firstMessageSent = false;
+		player->firstMapSent = false;
+		player->inFlight = true;
 		player->xs = x;
         player->ys = y;
         player->xd = x;
         player->yd = y;
-		setDeathReason( player, s);
-		setPlayerDisconnected( player, s);
+		player->birthPos.x = player->xs;
+		player->birthPos.y = player->ys;
+		player->heldOriginX = player->xs;
+		player->heldOriginY = player->ys;
+		player->actionTarget.x = player->xs;
+		player->actionTarget.y = player->ys;
 		return;
 	}
 	
@@ -1322,14 +1336,21 @@ void parseCommand(LiveObject *player, char *text){
 		else { 
 			int tx = player->xs;
 			int ty = player->ys;
+			player->firstMessageSent = false;
+			player->firstMapSent = false;
+			player->inFlight = true;
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
 			player->yd = spot->y;
+			player->birthPos.x = player->xs;
+			player->birthPos.y = player->ys;
+			player->heldOriginX = player->xs;
+			player->heldOriginY = player->ys;
+			player->actionTarget.x = player->xs;
+			player->actionTarget.y = player->ys;
 			setBack(player->email, tx, ty);
 			sprintf(s, "[SYSTEM]TELEPORTING");
-			setDeathReason( player, s);
-			setPlayerDisconnected( player, s);
 		}
 		makePlayerSay( player, s);
 		return;
@@ -1490,13 +1511,19 @@ void parseCommand(LiveObject *player, char *text){
 			sprintf(s, "[SYSTEM]YOU HAVE NO HOME SET");
 		else {
 			setBack(player->email, player->xs, player->ys);
+			player->firstMessageSent = false;
+			player->firstMapSent = false;
+			player->inFlight = true;
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
 			player->yd = spot->y;
-			sprintf(s, "[SYSTEM]TELEPORTING");
-			setDeathReason( player, s);
-			setPlayerDisconnected( player, s);
+			player->birthPos.x = player->xs;
+			player->birthPos.y = player->ys;
+			player->heldOriginX = player->xs;
+			player->heldOriginY = player->ys;
+			player->actionTarget.x = player->xs;
+			player->actionTarget.y = player->ys;
 		}
 		makePlayerSay( player, s);
 		return;
@@ -1554,13 +1581,19 @@ void parseCommand(LiveObject *player, char *text){
 			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
 		else {
 			setBack(player->email, player->xs, player->ys);
+			player->firstMessageSent = false;
+			player->firstMapSent = false;
+			player->inFlight = true;
 			player->xs = spot->x;
 			player->ys = spot->y;
 			player->xd = spot->x;
 			player->yd = spot->y;
-			sprintf(s, "[SYSTEM]TELEPORTING");
-			setDeathReason( player, s);
-			setPlayerDisconnected( player, s);
+			player->birthPos.x = player->xs;
+			player->birthPos.y = player->ys;
+			player->heldOriginX = player->xs;
+			player->heldOriginY = player->ys;
+			player->actionTarget.x = player->xs;
+			player->actionTarget.y = player->ys;
 		}
 		makePlayerSay( player, s);
 		return;

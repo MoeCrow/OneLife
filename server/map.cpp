@@ -7070,7 +7070,7 @@ void setMapObjectRaw( int inX, int inY, int inID ) {
 
 
 
-    if( o->isAutoOrienting ) {
+    if( false && o->isAutoOrienting ) {
         
         // recurse one step
         inID = neighborWallAgree( inX, inY, o, true );

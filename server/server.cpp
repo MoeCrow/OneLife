@@ -15908,8 +15908,8 @@ int main() {
                                 // attack them
                                 addDeadlyMapSpot( curPos );
                                 }
-                            }   
-                        } else {
+                        }   
+                        else {
                             TransRecord *r = 
                                 getPTrans( nextPlayer->holdingID, curOverID );
                             if( r != NULL ) {

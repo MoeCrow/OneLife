@@ -6,7 +6,6 @@ Add several useful commands, auto save death position and player will reborn on 
 transition改动:https://github.com/moeonelife/OneLifeData7
 
 ## 指令
-以下所有传送的指令输入后必须断线一次才能成功。
 
 查询坐标：.pos
 
@@ -36,16 +35,20 @@ transition改动:https://github.com/moeonelife/OneLifeData7
 
 查询当前邮箱 .email
 
+查询当前格子物体id .id
+
+查询下面一格id .ids
+
 ## OP指令
 坐标传送 .tp <x> <y>
   
-放置物体 .put <x> <y> <id>
+放置物体 .putp <x> <y> <id>
   
-放置在当前位置 .puthere <id>
+放置在当前位置 .put <id>
   
-放置在下面一格 .putsouth <id>
+放置在下面一格 .puts <id>
   
-在下面一格放置地板 .floor <id>
+在下面一格放置地板 .flr <id>
   
 删除地标 .delwarp <warp>
   

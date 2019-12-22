@@ -1,6 +1,6 @@
 # OneLife
 
-[![Build Status](http://43.254.216.98:8891/job/MoeLifeServer/badge/icon)](http://43.254.216.98:8891/job/MoeLifeServer/)
+[![Build Status](http://43.254.216.98:8891/job/OneHourOneLife/job/MoeLifeServer/badge/icon)](http://43.254.216.98:8891/job/OneHourOneLife/job/MoeLifeServer/)
 
 OHOL MoeLife server
 Add several useful commands, auto save death position and player will reborn on the last death position.

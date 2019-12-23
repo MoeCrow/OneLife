@@ -1126,6 +1126,12 @@ static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 }
 
 char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
+static void sendGlobalMessage( char *inMessage, LiveObject *inOnePlayerOnly = NULL );
+
+
+inline int max(int x, int y){return x>y?x:y;}
+inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
+inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs(y)));}
 
 void parseCommand(LiveObject *player, char *text){
 	int x = 0, y = 0, id = 0;
@@ -1165,7 +1171,7 @@ void parseCommand(LiveObject *player, char *text){
 		}
 		char s[256];
 		sscanf(args, "%d %d", &x, &y);
-		sprintf(s, "[SYSTEM]TELEPORTING");
+		sprintf(s, "teleported");
 		makePlayerSay( player, s);
 		setBack(player->email, player->xs, player->ys);
 		player->firstMessageSent = false;
@@ -1199,10 +1205,10 @@ void parseCommand(LiveObject *player, char *text){
 				return;
 			}
 			setMapObject( x, y, id );
-			sprintf(s, "[SYSTEM]OBJECT PUT.");
+			sprintf(s, "OBJECT PUT.");
 		}
 		
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1221,10 +1227,10 @@ void parseCommand(LiveObject *player, char *text){
 				return;
 			}
 			setMapObject( player->xs, player->ys, id );
-			sprintf(s, "[SYSTEM]OBJECT PUT.");
+			sprintf(s, "OBJECT PUT.");
 		}
 		
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1243,10 +1249,10 @@ void parseCommand(LiveObject *player, char *text){
 				return;
 			}
 			setMapFloor( player->xs, player->ys - 1, id );
-			sprintf(s, "[SYSTEM]FLOOR PUT.");
+			sprintf(s, "FLOOR PUT.");
 		}
 		
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1265,24 +1271,31 @@ void parseCommand(LiveObject *player, char *text){
 				return;
 			}
 			setMapObject( player->xs, player->ys - 1, id );
-			sprintf(s, "[SYSTEM]OBJECT PUT.");
+			sprintf(s, "OBJECT PUT.");
 		}
 		
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
+    if(strcmp(cmd, "CIR")==0){
+        char s[256];
+        sprintf(s, "You are in circle: %d", getCircle(player->xd, player->yd));
+        sendGlobalMessage( s, player);
+        return;
+    }
+
 	if(strcmp(cmd, "ID")==0){
 		char s[256];
 		sprintf(s, "[SYSTEM]%d", getMapObjectRaw(player->xd, player->yd));
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "IDS")==0){
 		char s[256];
 		sprintf(s, "[SYSTEM]%d", getMapObjectRaw(player->xd, player->yd - 1));
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1300,8 +1313,8 @@ void parseCommand(LiveObject *player, char *text){
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;
 		char s[256];
-		sprintf(s, "[SYSTEM]TELEPORTING");
-		makePlayerSay( player, s);
+		sprintf(s, "teleported");
+		sendGlobalMessage( s, player);
 		setBack(player->email, player->xs, player->ys);
 		player->firstMessageSent = false;
 		player->firstMapSent = false;
@@ -1352,7 +1365,7 @@ void parseCommand(LiveObject *player, char *text){
 			setBack(player->email, tx, ty);
 			sprintf(s, "[SYSTEM]TELEPORTING");
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1382,7 +1395,7 @@ void parseCommand(LiveObject *player, char *text){
 				}
 			}
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1403,7 +1416,7 @@ void parseCommand(LiveObject *player, char *text){
 		} else {
 			sprintf(s, "[SYSTEM]SHOP AT %d %d NOT FOUND", x, y);
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1414,14 +1427,19 @@ void parseCommand(LiveObject *player, char *text){
 		}
 		char s[256];
 		sprintf(s, "[SYSTEM]%d %d LOCKED", player->xs, player->ys);
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
+
+    if(strcmp(cmd, "DELWARP")==0){
+
+        return;
+    }
 	
 	if(strcmp(cmd, "POS")==0){
 		char s[256];
 		sprintf(s, "[SYSTEM]%d %d", player->xs, player->ys);
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1429,7 +1447,7 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		float money = getPlayerMoney(player->email);
 		sprintf(s, "[SYSTEM]YOU HAVE %.2f COINS", money);
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1439,7 +1457,7 @@ void parseCommand(LiveObject *player, char *text){
 		float money = getPlayerMoney(player->email);
 		if(player->holdingID != 1619) {
 			sprintf(s, "[SYSTEM]YOU HAVE TO HOLD PAPER TO MAKE CHEQUE!");
-			makePlayerSay( player, s);
+			sendGlobalMessage( s, player);
 			return;
 		}
 		
@@ -1467,22 +1485,27 @@ void parseCommand(LiveObject *player, char *text){
 			}
 		}
 		
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "SETHOME")==0){
+        int cir = getCircle(player->xd, player->yd);
+        if(cir < 4 || cir > 6) {
+            sendGlobalMessage( "This command not allowed here", player);
+            return;
+        }
 		char s[256];
 		setHome(player->email, player->xs, player->ys);
 		sprintf(s, "[SYSTEM]HOME SET AT %d %d", player->xs, player->ys);
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "EMAIL")==0){
 		char s[256];
 		sprintf(s, "[SYSTEM]%s", player->email);
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		printf(s);
 		return;
 	}
@@ -1490,7 +1513,7 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "TEST")==0){
 		char s[256];
 		sprintf(s, "[SYSTEM]测试中文%s", player->email);
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		printf(s);
 		return;
 	}
@@ -1510,6 +1533,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]YOU HAVE NO HOME SET");
 		else {
+            sprintf(s, "teleported");
 			setBack(player->email, player->xs, player->ys);
 			player->firstMessageSent = false;
 			player->firstMapSent = false;
@@ -1525,11 +1549,16 @@ void parseCommand(LiveObject *player, char *text){
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "SETWARP")==0){
+        int cir = getCircle(player->xd, player->yd);
+        if(cir < 4 || cir > 6) {
+            sendGlobalMessage( "This command not allowed here", player);
+            return;
+        }
 		char s[256], name[64];
 		if(sscanf(args, "%s", name) == 0) {
 			sprintf(s, "[SYSTEM]WARP NAME SHOULD NOT BE EMPTY");
@@ -1539,7 +1568,7 @@ void parseCommand(LiveObject *player, char *text){
 			if(!setWarp(name, player->email, player->xs, player->ys, isOp))
 				sprintf(s, "[SYSTEM]WARP NAMED '%s' IS NOT OWNED BY YOU", name);
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1559,7 +1588,7 @@ void parseCommand(LiveObject *player, char *text){
 				sprintf(s, "[SYSTEM]WARP NAMED '%s' HAS BEEN REMOVED", name);
 			}
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
@@ -1580,6 +1609,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
 		else {
+            sprintf(s, "teleported");
 			setBack(player->email, player->xs, player->ys);
 			player->firstMessageSent = false;
 			player->firstMapSent = false;
@@ -1595,11 +1625,11 @@ void parseCommand(LiveObject *player, char *text){
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
 		}
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		return;
 	}
 	
-	makePlayerSay( player, "[SYSTEM]UNKNOWN COMMAND");
+    sendGlobalMessage( "Unknown command", player);
 }
 
 
@@ -4918,7 +4948,7 @@ static void setPlayerDisconnected( LiveObject *inPlayer,
 
 // if inOnePlayerOnly set, we only send to that player
 static void sendGlobalMessage( char *inMessage,
-                               LiveObject *inOnePlayerOnly = NULL ) {
+                               LiveObject *inOnePlayerOnly ) {
     char found;
     char *noSpaceMessage = replaceAll( inMessage, " ", "_", &found );
 

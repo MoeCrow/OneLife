@@ -8327,7 +8327,8 @@ int processLoggedInPlayer( char inAllowReconnect,
     
     newObject.isTutorial = false;
     
-    if( inTutorialNumber > 0 ) {
+    //force skip tutorials
+    if( false && inTutorialNumber > 0 ) {
         newObject.isTutorial = true;
         }
 

@@ -1157,22 +1157,22 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "TP")==0){
         if(!isOp){
-            makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+            sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
             return;
         }
 		if(player->heldByOther || player->holdingID < 0) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
 			return;
 		}
 		
 		if(shutdownMode) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
 		char s[256];
 		sscanf(args, "%d %d", &x, &y);
 		sprintf(s, "teleported");
-		makePlayerSay( player, s);
+		sendGlobalMessage( s, player);
 		setBack(player->email, player->xs, player->ys);
 		player->firstMessageSent = false;
 		player->firstMapSent = false;
@@ -1192,16 +1192,16 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "PUTP")==0){
 		if(!isOp){
-			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
 			return;
 		}
 		char s[256];
 		if(sscanf(args, "%d %d %d", &x, &y, &id) != 3) {
-			sprintf(s, "[SYSTEM]NEED THREE ARGS");
+			sprintf(s, "NEED THREE ARGS");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( o == NULL && id != 0) {
-				makePlayerSay( player, "[SYSTEM]OBJECT ID NOT FOUND.");
+				sendGlobalMessage( "OBJECT ID NOT FOUND.", player);
 				return;
 			}
 			setMapObject( x, y, id );
@@ -1214,16 +1214,16 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "PUT")==0){
 		if(!isOp){
-			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
 			return;
 		}
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
-			sprintf(s, "[SYSTEM]NEED ONE ARGS");
+			sprintf(s, "NEED ONE ARGS");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( o == NULL && id != 0) {
-				makePlayerSay( player, "[SYSTEM]OBJECT ID NOT FOUND.");
+				sendGlobalMessage( "OBJECT ID NOT FOUND.", player);
 				return;
 			}
 			setMapObject( player->xs, player->ys, id );
@@ -1236,7 +1236,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "FLR")==0){
 		if(!isOp){
-			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
 			return;
 		}
 		char s[256];
@@ -1245,7 +1245,7 @@ void parseCommand(LiveObject *player, char *text){
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( id != 0 && (o == NULL || !o->floor) ) {
-				makePlayerSay( player, "[SYSTEM]FLOOR ID NOT FOUND.");
+				sendGlobalMessage( "FLOOR ID NOT FOUND.", player);
 				return;
 			}
 			setMapFloor( player->xs, player->ys - 1, id );
@@ -1258,16 +1258,16 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "PUTS")==0){
 		if(!isOp){
-			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
 			return;
 		}
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
-			sprintf(s, "[SYSTEM]NEED ONE ARGS");
+			sprintf(s, "NEED ONE ARGS");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( o == NULL && id != 0) {
-				makePlayerSay( player, "[SYSTEM]OBJECT ID NOT FOUND.");
+				sendGlobalMessage( "OBJECT ID NOT FOUND.", player);
 				return;
 			}
 			setMapObject( player->xs, player->ys - 1, id );
@@ -1287,26 +1287,26 @@ void parseCommand(LiveObject *player, char *text){
 
 	if(strcmp(cmd, "ID")==0){
 		char s[256];
-		sprintf(s, "[SYSTEM]%d", getMapObjectRaw(player->xd, player->yd));
+		sprintf(s, "[ID]%d", getMapObjectRaw(player->xd, player->yd));
 		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "IDS")==0){
 		char s[256];
-		sprintf(s, "[SYSTEM]%d", getMapObjectRaw(player->xd, player->yd - 1));
+		sprintf(s, "[IDS]%d", getMapObjectRaw(player->xd, player->yd - 1));
 		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
 			return;
 		}
 		
 		if(shutdownMode) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
 		srand(time(NULL) + rand()); 
@@ -1334,18 +1334,18 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "BACK")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
 			return;
 		}
 		
 		if(shutdownMode) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
 		char s[256];
 		Spot* spot = findSpot(&backSpot, player->email);
 		if(spot == NULL)
-			sprintf(s, "[SYSTEM]YOU HAVE NO PLACE TO GO BACK");
+			sprintf(s, "YOU HAVE NO PLACE TO GO BACK");
 		else { 
 			int tx = player->xs;
 			int ty = player->ys;
@@ -1363,7 +1363,7 @@ void parseCommand(LiveObject *player, char *text){
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
 			setBack(player->email, tx, ty);
-			sprintf(s, "[SYSTEM]TELEPORTING");
+			sprintf(s, "teleported");
 		}
 		sendGlobalMessage( s, player);
 		return;
@@ -1374,23 +1374,23 @@ void parseCommand(LiveObject *player, char *text){
 		char shopType;
 		float price;
 		if(sscanf(args, "%d %f", &shopType, &price) != 2) {
-			sprintf(s, "[SYSTEM]NEED TWO ARGS, EX .SHOP 0 1.5");
+			sprintf(s, "NEED TWO ARGS, EX .SHOP 0 1.5");
 		} else {
 			if(price < 0) {
-				sprintf(s, "[SYSTEM]PRICE SHOULD NOT BE NEGATIVE");
+				sprintf(s, "PRICE SHOULD NOT BE NEGATIVE");
 			} else {
 			
 				char tEmail[50];
 				x = player->xs;
 				y = player->ys - 1;
 				if(getShop(x, y, tEmail, &shopType, &price)){
-					sprintf(s, "[SYSTEM]SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
+					sprintf(s, "SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
 				} else {
 					if ( shopType < 0 || shopType > 1 ) {
-						sprintf(s, "[SYSTEM]SHOP TYPE NOT CORRECT, MUST BE {0,1}");
+						sprintf(s, "SHOP TYPE NOT CORRECT, MUST BE {0,1}");
 					} else {
 						setShop(x, y, player->email, shopType, price);
-						sprintf(s, "[SYSTEM]SHOP CREATED AT %d %d", x, y);
+						sprintf(s, "SHOP CREATED AT %d %d", x, y);
 					}
 				}
 			}
@@ -1409,12 +1409,12 @@ void parseCommand(LiveObject *player, char *text){
 		if(getShop(x, y, tEmail, &shopType, &price)){
 			if(strcmp(player->email, tEmail) == 0 || isOp) {
 				delShop(x, y);
-				sprintf(s, "[SYSTEM]SHOP AT %d %d DELETED", x, y);
+				sprintf(s, "SHOP AT %d %d DELETED", x, y);
 			} else {
-				sprintf(s, "[SYSTEM]SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
+				sprintf(s, "SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
 			}
 		} else {
-			sprintf(s, "[SYSTEM]SHOP AT %d %d NOT FOUND", x, y);
+			sprintf(s, "SHOP AT %d %d NOT FOUND", x, y);
 		}
 		sendGlobalMessage( s, player);
 		return;
@@ -1422,11 +1422,11 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "LOCK")==0){
 		if(!isOp){
-			makePlayerSay( player, "[SYSTEM]YOU DONT HAVE PERMISSION.");
+			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
 			return;
 		}
 		char s[256];
-		sprintf(s, "[SYSTEM]%d %d LOCKED", player->xs, player->ys);
+		sprintf(s, "%d %d LOCKED", player->xs, player->ys);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -1438,7 +1438,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "POS")==0){
 		char s[256];
-		sprintf(s, "[SYSTEM]%d %d", player->xs, player->ys);
+		sprintf(s, "[POS]%d %d", player->xs, player->ys);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -1446,7 +1446,7 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "BAL")==0){
 		char s[256];
 		float money = getPlayerMoney(player->email);
-		sprintf(s, "[SYSTEM]YOU HAVE %.2f COINS", money);
+		sprintf(s, "[ECONOMY]YOU HAVE %.2f COINS", money);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -1456,13 +1456,13 @@ void parseCommand(LiveObject *player, char *text){
 		float num;
 		float money = getPlayerMoney(player->email);
 		if(player->holdingID != 1619) {
-			sprintf(s, "[SYSTEM]YOU HAVE TO HOLD PAPER TO MAKE CHEQUE!");
+			sprintf(s, "[CHEQUE]YOU HAVE TO HOLD PAPER TO MAKE CHEQUE!");
 			sendGlobalMessage( s, player);
 			return;
 		}
 		
 		if(sscanf(args, "%f", &num) != 1 || num < 0) {
-			sprintf(s, "[SYSTEM]WRONG NUMBER");
+			sprintf(s, "WRONG NUMBER");
 		} else {
 			if(num <= money) {
 				player->holdingID = 1615;
@@ -1477,11 +1477,11 @@ void parseCommand(LiveObject *player, char *text){
 				player->holdingID = addMetadata( player->holdingID,
                                                  metaData );
 				
-				sprintf(s, "[SYSTEM]YOU MAKE CHEQUE OF %.2f COINS", num);
+				sprintf(s, "[CHEQUE]YOU MAKE CHEQUE OF %.2f COINS", num);
 				money -= num;
 				setPlayerMoney(player->email, money);
 			} else {
-				sprintf(s, "[SYSTEM]YOU ONLY HAVE %.2f COINS", money);
+				sprintf(s, "[CHEQUE]YOU ONLY HAVE %.2f COINS", money);
 			}
 		}
 		
@@ -1497,14 +1497,14 @@ void parseCommand(LiveObject *player, char *text){
         }
 		char s[256];
 		setHome(player->email, player->xs, player->ys);
-		sprintf(s, "[SYSTEM]HOME SET AT %d %d", player->xs, player->ys);
+		sprintf(s, "HOME SET AT %d %d", player->xs, player->ys);
 		sendGlobalMessage( s, player);
 		return;
 	}
 	
 	if(strcmp(cmd, "EMAIL")==0){
 		char s[256];
-		sprintf(s, "[SYSTEM]%s", player->email);
+		sprintf(s, "[EMAIL]%s", player->email);
 		sendGlobalMessage( s, player);
 		printf(s);
 		return;
@@ -1520,18 +1520,18 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "HOME")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
 			return;
 		}
 		
 		if(shutdownMode) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
 		char s[256];
 		Spot* spot = findSpot(&homeSpot, player->email);
 		if(spot == NULL)
-			sprintf(s, "[SYSTEM]YOU HAVE NO HOME SET");
+			sprintf(s, "YOU HAVE NO HOME SET");
 		else {
             sprintf(s, "teleported");
 			setBack(player->email, player->xs, player->ys);
@@ -1561,12 +1561,12 @@ void parseCommand(LiveObject *player, char *text){
         }
 		char s[256], name[64];
 		if(sscanf(args, "%s", name) == 0) {
-			sprintf(s, "[SYSTEM]WARP NAME SHOULD NOT BE EMPTY");
+			sprintf(s, "WARP NAME SHOULD NOT BE EMPTY");
 		}
 		else {
-			sprintf(s, "[SYSTEM]WARP '%s' SET AT %d %d", name, player->xs, player->ys);
+			sprintf(s, "WARP '%s' SET AT %d %d", name, player->xs, player->ys);
 			if(!setWarp(name, player->email, player->xs, player->ys, isOp))
-				sprintf(s, "[SYSTEM]WARP NAMED '%s' IS NOT OWNED BY YOU", name);
+				sprintf(s, "WARP NAMED '%s' IS NOT OWNED BY YOU", name);
 		}
 		sendGlobalMessage( s, player);
 		return;
@@ -1578,14 +1578,14 @@ void parseCommand(LiveObject *player, char *text){
 		sscanf(args, "%s", name);
 		Spot* spot = findSpot(&warpSpot, name);
 		if(spot == NULL)
-			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
+			sprintf(s, "FIND NO WARP NAMED '%s'", name);
 		else {
 			if(!isOp && strcmp(spot->owner, stringToUpperCase(player->email)) != 0) {
-				sprintf(s, "[SYSTEM]WARP NAMED '%s' IS NOT OWNED BY YOU", name);
+				sprintf(s, "WARP NAMED '%s' IS NOT OWNED BY YOU", name);
 			} else {
 				delSpot(&warpSpot, name);
 				writeSpotList("warpSpot", &warpSpot);
-				sprintf(s, "[SYSTEM]WARP NAMED '%s' HAS BEEN REMOVED", name);
+				sprintf(s, "WARP NAMED '%s' HAS BEEN REMOVED", name);
 			}
 		}
 		sendGlobalMessage( s, player);
@@ -1594,12 +1594,12 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "WARP")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN IN HOLD.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
 			return;
 		}
 		
 		if(shutdownMode) {
-			makePlayerSay( player, "[SYSTEM]YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.");
+			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
 		char s[256], name[64];
@@ -1607,7 +1607,7 @@ void parseCommand(LiveObject *player, char *text){
 		sscanf(args, "%s", name);
 		Spot* spot = findSpot(&warpSpot, name);
 		if(spot == NULL)
-			sprintf(s, "[SYSTEM]FIND NO WARP NAMED '%s'", name);
+			sprintf(s, "FIND NO WARP NAMED '%s'", name);
 		else {
             sprintf(s, "teleported");
 			setBack(player->email, player->xs, player->ys);
@@ -18094,17 +18094,17 @@ int main() {
 													float skMoney = getPlayerMoney(email);
 													setPlayerMoney(email, skMoney + price);
 													sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
-													makePlayerSay(nextPlayer, s);
+													sendGlobalMessage(s, nextPlayer);
 													delConfirm(nextPlayer->email);
 												} else {
 													sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
-													makePlayerSay(nextPlayer, s);
+													sendGlobalMessage(s, nextPlayer);
 													delConfirm(nextPlayer->email);
 													continue;
 												}
 											} else {
 												sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO BUY ONE", price);
-												makePlayerSay(nextPlayer, s);
+												sendGlobalMessage(s, nextPlayer);
 												setConfirm(nextPlayer->email, m.x, m.y);
 												continue;
 											}
@@ -18113,7 +18113,7 @@ int main() {
 									} else {
 										char s[256];
 										sprintf(s, "[SHOP]PRICE:%.2f", price);
-										makePlayerSay(nextPlayer, s);
+										sendGlobalMessage(s, nextPlayer);
 										continue;
 									}
 								}
@@ -18129,24 +18129,24 @@ int main() {
 												float skMoney = getPlayerMoney(email);
 												setPlayerMoney(email, skMoney + price);
 												sprintf(s, "[SHOP]YOU USE THIS FOR %.2f COINS", price);
-												makePlayerSay(nextPlayer, s);
+												sendGlobalMessage(s, nextPlayer);
 												delConfirm(nextPlayer->email);
 											} else {
 												sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
-												makePlayerSay(nextPlayer, s);
+												sendGlobalMessage(s, nextPlayer);
 												delConfirm(nextPlayer->email);
 												continue;
 											}
 										} else {
 											sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO USE", price);
-											makePlayerSay(nextPlayer, s);
+											sendGlobalMessage(s, nextPlayer);
 											setConfirm(nextPlayer->email, m.x, m.y);
 											continue;
 										}
 									} else {
 										char s[256];
 										sprintf(s, "[SHOP]PRICE:%.2f", price);
-										makePlayerSay(nextPlayer, s);
+										sendGlobalMessage(s, nextPlayer);
 										continue;
 									}
 								}
@@ -18154,7 +18154,7 @@ int main() {
 								} else {
 									char s[256];
 									sprintf(s, "[SHOP]PRICE:%.2f", price);
-									makePlayerSay(nextPlayer, s);
+									sendGlobalMessage(s, nextPlayer);
 								}
 							}
 						}
@@ -20423,42 +20423,42 @@ int main() {
 														float skMoney = getPlayerMoney(email);
 														setPlayerMoney(email, skMoney + price);
 														sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
-														makePlayerSay(nextPlayer, s);
+														sendGlobalMessage(s, nextPlayer);
 														delConfirm(nextPlayer->email);
 														if(getNumContained(m.x, m.y) == 1) {
 															delShop(m.x, m.y);
 														}
 													} else {
 														sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
-														makePlayerSay(nextPlayer, s);
+														sendGlobalMessage(s, nextPlayer);
 														delConfirm(nextPlayer->email);
 														continue;
 													}
 												} else {
 													sprintf(s, "[SHOP]THIS SHOP IS EMPTY");
-													makePlayerSay(nextPlayer, s);
+													sendGlobalMessage(s, nextPlayer);
 													delShop(m.x, m.y);
 													continue;
 												}
 											} else {
 												sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO BUY ONE", price);
-												makePlayerSay(nextPlayer, s);
+												sendGlobalMessage(s, nextPlayer);
 												setConfirm(nextPlayer->email, m.x, m.y);
 												continue;
 											}
 										} else {
 											sprintf(s, "[SHOP]PRICE:%.2f", price);
-											makePlayerSay(nextPlayer, s);
+											sendGlobalMessage(s, nextPlayer);
 											continue;
 										}
 									} else {
 										sprintf(s, "[SHOP]PRICE:%.2f", price);
-										makePlayerSay(nextPlayer, s);
+										sendGlobalMessage(s, nextPlayer);
 										continue;
 									}
 								} else {
 									sprintf(s, "[SHOP]PRICE:%.2f", price);
-									makePlayerSay(nextPlayer, s);
+									sendGlobalMessage(s, nextPlayer);
 								}
 							}
 						}

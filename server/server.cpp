@@ -1491,7 +1491,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SETHOME")==0){
         int cir = getCircle(player->xd, player->yd);
-        if(cir < 4 || cir > 6) {
+        if(cir < 3 || cir > 6) {
             sendGlobalMessage( "This command not allowed here", player);
             return;
         }
@@ -1555,7 +1555,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SETWARP")==0){
         int cir = getCircle(player->xd, player->yd);
-        if(cir < 4 || cir > 6) {
+        if(cir < 3 || cir > 6) {
             sendGlobalMessage( "This command not allowed here", player);
             return;
         }

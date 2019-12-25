@@ -280,6 +280,18 @@ void setResponsiblePlayer( int inPlayerID ) {
 static double gapIntScale = 1000000.0;
 
 
+inline int max(int x, int y){return x>y?x:y;}
+inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
+inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs(y)));}
+inline char shouldStale(int secPassed, int staleSec, int x, int y) {
+    int circle = getCircle(x, y);
+    if(circle >= 7)
+        return true;
+    if(circle <= 3)
+        return false;
+    return secPassed > (8 - circle) * 604800;
+}
+
 
 
 // object ids that occur naturally on map at random, per biome
@@ -3540,8 +3552,11 @@ char initMap() {
                 total++;
 
                 timeSec_t t = valueToTime( value );
+
+                int kx = valueToInt( &( key[0] ) );
+                int ky = valueToInt( &( key[4] ) );
             
-                if( curTime - t >= staleSec ) {
+                if( shouldStale(curTime - t, staleSec, kx, ky)) {
                     // stale cell
                     // ignore
                     stale++;
@@ -3586,7 +3601,9 @@ char initMap() {
             while( DB_Iterator_next( &dbi, key, value ) > 0 ) {
                 timeSec_t t = valueToTime( value );
             
-                if( curTime - t >= staleSec ) {
+                int kx = valueToInt( &( key[0] ) );
+                int ky = valueToInt( &( key[4] ) );
+                if( shouldStale(curTime - t, staleSec, kx, ky)) {
                     // stale cell
                     // ignore
                     }

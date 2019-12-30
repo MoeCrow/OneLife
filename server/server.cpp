@@ -1430,11 +1430,6 @@ void parseCommand(LiveObject *player, char *text){
 		sendGlobalMessage( s, player);
 		return;
 	}
-
-    if(strcmp(cmd, "DELWARP")==0){
-
-        return;
-    }
 	
 	if(strcmp(cmd, "POS")==0){
 		char s[256];

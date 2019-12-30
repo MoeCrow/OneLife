@@ -48,6 +48,10 @@ Get object id in current tile 查询当前格子物体id .id
 
 Get obj id one tile below you 查询下面一格id .ids
 
+Change Person Randomly 随机更换角色 .rpo
+
+Choose specified person 选择指定id的角色 .chs &lt;id>
+
 ## Operator Commands OP指令
 Teleport to coordinate 坐标传送 .tp &lt;x> &lt;y>
   
@@ -62,6 +66,8 @@ Place floor south 在下面一格放置地板 .flr &lt;id>
 Force delete warp 删除地标 .delwarp &lt;warp>
   
 Force delete shop 删除商店 .delshop
+
+Choose any object you want to be 变成任意物体 .chs &lt;id>
 
 ## Settings 配置
 Ban list(list email here,player listed cannot USE)  ban.ini 封禁列表(列入其中的玩家无法进行USE操作)

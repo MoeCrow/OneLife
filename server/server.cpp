@@ -1298,6 +1298,28 @@ void parseCommand(LiveObject *player, char *text){
 		sendGlobalMessage( s, player);
 		return;
 	}
+
+    if(strcmp(cmd, "RPO")==0){
+        player->displayID = getRandomPersonObject();
+        sendGlobalMessage( "PERSON CHANGED", player);
+        return;
+    }
+
+    if(strcmp(cmd, "CHS")==0){
+        if(sscanf(args, "%d", &id) != 1) {
+            sendGlobalMessage( "NEED ONE ARGS", player);
+            return;
+        } else {
+            ObjectRecord *o = getObject( id );
+            if( !o->person && !isOp) {
+                sendGlobalMessage( "WRONG ID", player);
+                return;
+            }
+            player->displayID = id;
+        }
+        sendGlobalMessage( "PERSON CHANGED", player);
+        return;
+    }
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {

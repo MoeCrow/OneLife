@@ -1331,6 +1331,21 @@ void parseCommand(LiveObject *player, char *text){
 			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
+
+        char pay[64];
+        if(sscanf(args, "%s", pay) == 0 || strcmp(pay, "PAY")!=0) {
+            sendGlobalMessage( "TPR COST 3 COINS, SAY '.TPR PAY' TO PAY COINS.", player);
+            return;
+        }
+
+        float money = getPlayerMoney(player->email);
+        if(3 > money) {
+            sendGlobalMessage( "YOU DONT HAVE ENOUGH MONEY", player);
+            return;
+        }
+
+        money -= 3;
+        setPlayerMoney(player->email, money);
 		srand(time(NULL) + rand()); 
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;

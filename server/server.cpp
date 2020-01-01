@@ -941,6 +941,7 @@ static SimpleVector<Spot*> warpSpot;
 static SimpleVector<Spot*> homeSpot;
 static SimpleVector<Spot*> backSpot;
 static SimpleVector<Spot*> confirmSpot;
+static SimpleVector<Spot*> tprSpot;
 static SimpleVector<Spot*> deathSpot;
 
 static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOptionalID = 0);
@@ -1027,6 +1028,25 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 		}
 	}
 	spotList->push_back(spot);
+}
+
+static bool isTprAllow(char* name, int time) {
+    for( int i=0; i<tprSpot.size(); i++ ) {
+        Spot* s = *tprSpot.getElement(i);
+        
+        if(strcmp(name, s->name)==0){
+            return s->x <= time;
+        }
+    }
+    return true;
+}
+
+static void updateTprTime(char* name, int time) {
+    Spot *spot = new Spot();
+    spot->name = new char[50];
+    strcpy(spot->name, name);
+    spot->x = time;
+    replaceOrCreateSpot(&tprSpot, spot);
 }
 
 static bool isConfirmed(char* name, int x, int y) {
@@ -1332,20 +1352,12 @@ void parseCommand(LiveObject *player, char *text){
 			return;
 		}
 
-        char pay[64];
-        if(sscanf(args, "%s", pay) == 0 || strcmp(pay, "PAY")!=0) {
-            sendGlobalMessage( "TPR COST 3 COINS, SAY '.TPR PAY' TO PAY COINS.", player);
+        if(!isTprAllow(player->email, time(NULL))) {
+            sendGlobalMessage( "NEED TEN MINUTES TO COOL DOWN.", player);
             return;
         }
 
-        float money = getPlayerMoney(player->email);
-        if(3 > money) {
-            sendGlobalMessage( "YOU DONT HAVE ENOUGH MONEY", player);
-            return;
-        }
-
-        money -= 3;
-        setPlayerMoney(player->email, money);
+        updateTprTime(player->email, time(NULL) + 600);
 		srand(time(NULL) + rand()); 
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;

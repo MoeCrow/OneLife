@@ -1020,7 +1020,7 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 	for( int i=0; i<spotList->size(); i++ ) {
 		Spot* s = *spotList->getElement(i);
 		
-		if(strcmp(s->name, stringToUpperCase(spot->name))==0){
+		if(strcmp(stringToUpperCase(s->name), stringToUpperCase(spot->name))==0){
 			spotList->deleteElement(i);
 			delete s;
 			spotList->push_back(spot);
@@ -1043,7 +1043,7 @@ static bool isTprAllow(char* name, int time) {
 
 static void updateTprTime(char* name, int time) {
     Spot *spot = new Spot();
-    spot->name = new char[50];
+    spot->name = new char[256];
     strcpy(spot->name, name);
     spot->x = time;
     replaceOrCreateSpot(&tprSpot, spot);
@@ -1062,7 +1062,7 @@ static bool isConfirmed(char* name, int x, int y) {
 
 static void setConfirm(char* name, int x, int y) {
     Spot *spot = new Spot();
-    spot->name = new char[50];
+    spot->name = new char[256];
     strcpy(spot->name, name);
     spot->x = x;
     spot->y = y;

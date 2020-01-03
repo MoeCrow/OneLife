@@ -9775,6 +9775,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 			newObject.yd = yd;
 			newObject.xs = xd;
 			newObject.ys = yd;
+
+            newObject.displayID = displayID;
 			
 			if(holding > 0)
 			switch(holding) {

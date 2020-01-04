@@ -952,7 +952,7 @@ static void savePlayerStatus(LiveObject *player) {
 		player->lifeStartTimeSeconds,
 		player->xd,
 		player->yd,
-		player->foodStore,
+		player->yummyBonusStore,
 		player->holdingID,
 		
 		player->clothing.hat!=NULL?player->clothing.hat->id:0,
@@ -9750,13 +9750,13 @@ int processLoggedInPlayer( char inAllowReconnect,
 	newObject.containedEtaDecays = NULL;
     newObject.subContainedEtaDecays = NULL;
 	{
-		int displayID, xd, yd, hunger, holding,
+		int displayID, xd, yd, yummy, holding,
 			hat, tunic, frontShoe, backShoe, bottom, backPack;
 		double age;
 		
 		if(playerDBGet(
 						newObject.email,
-						&displayID, &age, &xd, &yd, &hunger,
+						&displayID, &age, &xd, &yd, &yummy,
 						&holding, &hat, &tunic, &frontShoe,
 						&backShoe, &bottom, &backPack,
 						&newObject.numContained,
@@ -9764,7 +9764,10 @@ int processLoggedInPlayer( char inAllowReconnect,
 						&newObject.subContainedIDs,
 						newObject.clothingContained
 		)) {
-		
+
+            newObject.yummyBonusStore = yummy;
+            newObject.foodStore = computeFoodCapacity( newObject );
+
 			newObject.xd = xd;
 			newObject.yd = yd;
 			newObject.xs = xd;
@@ -15438,16 +15441,20 @@ int main() {
                                         nextConnection->email );
 
 								float money = getPlayerMoney(nextConnection->email);
-								
+								int yummy;
+                                playerDBGetState(nextConnection->email, &yummy);
+
                                 char *url = autoSprintf( 
                                     "%s?ticket.htm&email=%s"
                                     "&hash_value=%s"
                                     "&string_to_hash=%s"
-									"&coins=%.2f",
+									"&coins=%.2f"
+                                    "&yummy=%d",
                                     ticketServerURL,
                                     encodedEmail,
                                     keyHash,
 									money,
+                                    yummy,
                                     nextConnection->sequenceNumberString );
 
                                 delete [] encodedEmail;

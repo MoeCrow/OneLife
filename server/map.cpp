@@ -857,6 +857,29 @@ char playerDBGet( const char *inEmail, int *displayID,
 }
 
 
+char playerDBGetState( const char *inEmail, int *hunger) 
+{
+   unsigned char key[50];
+    
+    unsigned char value[512];
+
+
+    emailToKey( inEmail, key );
+    
+    int result = DB_get( &playerDB, key, value );
+    //if(true) return false;
+    if( result == 0 ) {
+        *hunger = valueToInt( &( value[12] ) );
+
+        
+        return true;
+        }
+    else {
+        return false;
+        }
+}
+
+
 void playerDBPut( const char *inEmail, int displayID,
 	double age, int x, int y, int hunger, int holding,
 	int hat, int tunic, int frontShoe, int backShoe, int bottom, int bp,

@@ -1604,6 +1604,10 @@ void parseCommand(LiveObject *player, char *text){
 			sprintf(s, "WARP NAME SHOULD NOT BE EMPTY");
 		}
 		else {
+            if(strlen(name) < 10) {
+                sendGlobalMessage( "WARP NAME LENGTH SHOULD BE AT LEAST 10", player);
+                return;
+            }
 			sprintf(s, "WARP '%s' SET AT %d %d", name, player->xs, player->ys);
 			if(!setWarp(name, player->email, player->xs, player->ys, isOp))
 				sprintf(s, "WARP NAMED '%s' IS NOT OWNED BY YOU", name);

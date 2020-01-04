@@ -860,10 +860,6 @@ typedef struct LiveObject {
         // these are used first before food is decremented
         int yummyBonusStore;
         
-        // last time we told player their capacity in a food update
-        // what did we tell them?
-        int lastReportedFoodCapacity;
-        
 
         ClothingSet clothing;
         
@@ -9010,8 +9006,6 @@ int processLoggedInPlayer( char inAllowReconnect,
     newObject.justAteID = 0;
     
     newObject.yummyBonusStore = 0;
-
-    newObject.lastReportedFoodCapacity = 0;
 
     newObject.clothing = getEmptyClothingSet();
 
@@ -18891,8 +18885,8 @@ int main() {
                                     
                                     nextPlayer->foodStore += eatBonus;
 
-                                    int cap = 
-                                        nextPlayer->lastReportedFoodCapacity;
+                                    int cap =
+                                        computeFoodCapacity( nextPlayer );
                                     
                                     if( nextPlayer->foodStore > cap ) {
     
@@ -19595,14 +19589,7 @@ int main() {
                                 ObjectRecord *obj = 
                                     getObject( nextPlayer->holdingID );
                                 
-                                // don't use "live" computed capacity here
-                                // because that will allow player to spam
-                                // click to pack in food between food
-                                // decrements when they are growing
-                                // instead, stick to the food cap shown
-                                // in the client (what we last reported
-                                // to them)
-                                int cap = nextPlayer->lastReportedFoodCapacity;
+                                int cap = computeFoodCapacity( targetPlayer );
                                 
 
                                 // first case:
@@ -24884,27 +24871,6 @@ int main() {
                         nextPlayer->foodStore = cap;
                         }
                     
-                    if( cap > nextPlayer->lastReportedFoodCapacity ) {
-                        
-                        // stomach grew
-                        
-                        // fill empty space from bonus store automatically
-                        int extraCap = 
-                            cap - nextPlayer->lastReportedFoodCapacity;
-                        
-                        while( nextPlayer->yummyBonusStore > 0 && 
-                               extraCap > 0 &&
-                               nextPlayer->foodStore < cap ) {
-                            nextPlayer->foodStore ++;
-                            extraCap --;
-                            nextPlayer->yummyBonusStore--;
-                            }
-                        }
-                    
-
-                    nextPlayer->lastReportedFoodCapacity = cap;
-                    
-
                     int yumMult = nextPlayer->yummyFoodChain.size() - 1;
                     
                     if( yumMult < 0 ) {

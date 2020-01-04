@@ -15441,8 +15441,8 @@ int main() {
                                         nextConnection->email );
 
 								float money = getPlayerMoney(nextConnection->email);
-								int yummy;
-                                playerDBGetState(nextConnection->email, &yummy);
+								int yummy = 111;
+                                //playerDBGetState(nextConnection->email, &yummy);
 
                                 char *url = autoSprintf( 
                                     "%s?ticket.htm&email=%s"

@@ -9765,8 +9765,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 						newObject.clothingContained
 		)) {
 
-            //newObject.yummyBonusStore = yummy;
-            //newObject.foodStore = computeFoodCapacity( &newObject );
+            newObject.foodStore = computeFoodCapacity( &newObject );
+            newObject.yummyBonusStore = yummy;
 
 			newObject.xd = xd;
 			newObject.yd = yd;
@@ -15441,8 +15441,8 @@ int main() {
                                         nextConnection->email );
 
 								float money = getPlayerMoney(nextConnection->email);
-								int yummy = 111;
-                                //playerDBGetState(nextConnection->email, &yummy);
+								int yummy;
+                                playerDBGetState(nextConnection->email, &yummy);
 
                                 char *url = autoSprintf( 
                                     "%s?ticket.htm&email=%s"

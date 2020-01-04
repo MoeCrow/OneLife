@@ -86,6 +86,7 @@ char playerDBGet( const char *inEmail, int *displayID,
 	int *numContained, int **containedIDs, SimpleVector<int> **subContainedIDs,
 	SimpleVector<int> *clothingContained
 	) ;
+char playerDBGetState( const char *inEmail, int *hunger) ;
 void playerDBPut( const char *inEmail, int displayID,
 	double age, int x, int y, int hunger, int holding,
 	int hat, int tunic, int frontShoe, int backShoe, int bottom, int bp,

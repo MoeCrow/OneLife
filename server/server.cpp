@@ -15453,9 +15453,9 @@ int main() {
                                     ticketServerURL,
                                     encodedEmail,
                                     keyHash,
+                                    nextConnection->sequenceNumberString,
 									money,
-                                    yummy,
-                                    nextConnection->sequenceNumberString );
+                                    yummy );
 
                                 delete [] encodedEmail;
 

@@ -9765,8 +9765,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 						newObject.clothingContained
 		)) {
 
-            newObject.yummyBonusStore = yummy;
-            newObject.foodStore = computeFoodCapacity( &newObject );
+            //newObject.yummyBonusStore = yummy;
+            //newObject.foodStore = computeFoodCapacity( &newObject );
 
 			newObject.xd = xd;
 			newObject.yd = yd;

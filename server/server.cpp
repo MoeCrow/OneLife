@@ -18085,7 +18085,8 @@ int main() {
 							continue; 
 						
 						int checkTarget = getMapObject( m.x, m.y );
-						if(checkTarget == 434 || checkTarget == 3065)
+                        ObjectRecord *targetObj = getObject(checkTarget);
+						if(targetObj->permanent && targetObj->containble)
 							if(getNumContained(m.x, m.y) == 0) {
 								delShop(m.x, m.y);
 							}
@@ -20073,7 +20074,8 @@ int main() {
 							char type;
 							float price;
 							int checkTarget = getMapObject( m.x, m.y );
-							if(checkTarget == 434 || checkTarget == 3065)
+							ObjectRecord *targetObj = getObject(checkTarget);
+                            if(targetObj->permanent && targetObj->containble)
 								if(getNumContained(m.x, m.y) == 0) {
 									delShop(m.x, m.y);
 								}
@@ -20449,11 +20451,12 @@ int main() {
 							char type;
 							float price;
 							int checkTarget = getMapObject( m.x, m.y );
+                            ObjectRecord *targetObj = getObject(checkTarget);
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								char s[256];
 								if(strcmp(email, nextPlayer->email)!=0) {
 									if(type == 0) {
-										if(checkTarget == 434 || checkTarget == 3065) {
+										if(targetObj->permanent && targetObj->containble) {
 											if(getNumContained(m.x, m.y) == 0) {
 												delShop(m.x, m.y);
 											} else

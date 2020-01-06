@@ -18086,7 +18086,7 @@ int main() {
 						
 						int checkTarget = getMapObject( m.x, m.y );
                         ObjectRecord *targetObj = getObject(checkTarget);
-						if(targetObj->permanent && targetObj->containSize > 0)
+						if(targetObj->permanent && targetObj->slotSize > 0)
 							if(getNumContained(m.x, m.y) == 0) {
 								delShop(m.x, m.y);
 							}
@@ -20075,7 +20075,7 @@ int main() {
 							float price;
 							int checkTarget = getMapObject( m.x, m.y );
 							ObjectRecord *targetObj = getObject(checkTarget);
-                            if(targetObj->permanent && targetObj->containSize > 0)
+                            if(targetObj->permanent && targetObj->slotSize > 0)
 								if(getNumContained(m.x, m.y) == 0) {
 									delShop(m.x, m.y);
 								}
@@ -20456,7 +20456,7 @@ int main() {
 								char s[256];
 								if(strcmp(email, nextPlayer->email)!=0) {
 									if(type == 0) {
-										if(targetObj->permanent && targetObj->containSize > 0) {
+										if(targetObj->permanent && targetObj->slotSize > 0) {
 											if(getNumContained(m.x, m.y) == 0) {
 												delShop(m.x, m.y);
 											} else

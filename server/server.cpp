@@ -1604,8 +1604,8 @@ void parseCommand(LiveObject *player, char *text){
 			sprintf(s, "WARP NAME SHOULD NOT BE EMPTY");
 		}
 		else {
-            if(strlen(name) < 10) {
-                sendGlobalMessage( "WARP NAME LENGTH SHOULD BE AT LEAST 10", player);
+            if(strlen(name) < 6) {
+                sendGlobalMessage( "WARP NAME LENGTH SHOULD BE AT LEAST 6", player);
                 return;
             }
 			sprintf(s, "WARP '%s' SET AT %d %d", name, player->xs, player->ys);

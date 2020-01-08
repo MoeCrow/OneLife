@@ -1336,6 +1336,27 @@ void parseCommand(LiveObject *player, char *text){
         sendGlobalMessage( "PERSON CHANGED", player);
         return;
     }
+
+    if(strcmp(cmd, "GMM")==0 && isOp) {
+        float added;
+        if(sscanf(args, "%f", &added) != 1) {
+            sendGlobalMessage( "NEED ONE ARGS", player);
+            return;
+        }
+        float money = getPlayerMoney(player->email) + added;
+        setPlayerMoney(player->email, money);
+        char s[256];
+        sprintf(s, "[ECONOMY]YOU HAVE %.2f COINS", money);
+        sendGlobalMessage( s, player);
+        return;
+    }
+
+    if(strcmp(cmd, "FEED")==0 && isOp) {
+        player->foodStore = computeFoodCapacity( player );
+        player->yummyBonusStore += 100;
+        sendGlobalMessage( "FEED YOU NOW", player);
+        return;
+    }
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {
@@ -9777,7 +9798,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 			newObject.xs = xd;
 			newObject.ys = yd;
 
-            newObject.displayID = displayID;
+            if(yummy > 10)
+                newObject.displayID = displayID;
 			
 			if(holding > 0)
 			switch(holding) {
@@ -9830,7 +9852,7 @@ int processLoggedInPlayer( char inAllowReconnect,
 				}
 			}
 		}
-		float randAge = ((rand() % 100) < 30 ? 3.f : 14.f);
+		float randAge = ((rand() % 100) < 10 ? 3.f : 14.f);
 		
 		newObject.lifeStartTimeSeconds = 
                 Time::getCurrentTime() - randAge * ( 1.0 / getAgeRate() );

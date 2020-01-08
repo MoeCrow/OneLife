@@ -1143,6 +1143,7 @@ static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 
 char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
 static void sendGlobalMessage( char *inMessage, LiveObject *inOnePlayerOnly = NULL );
+int computeFoodCapacity( LiveObject *inPlayer );
 
 
 inline int max(int x, int y){return x>y?x:y;}

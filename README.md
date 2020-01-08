@@ -69,6 +69,10 @@ Force delete shop 删除商店 .delshop
 
 Choose any object you want to be 变成任意物体 .chs &lt;id>
 
+Give me money 给自己前 .gmm &lt;money>
+
+Feed me 喂饱自己 .feed
+
 ## Settings 配置
 Ban list(list email here,player listed cannot USE)  ban.ini 封禁列表(列入其中的玩家无法进行USE操作)
 

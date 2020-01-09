@@ -18035,7 +18035,8 @@ int main() {
 								}
 								
 								if(type == 1) {
-									if(true || nextPlayer->holdingID == 0) {
+									if(nextPlayer->holdingID == 0 &&
+                                        getPTrans( 0, checkTarget ) != NULL) {
 										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
 											float money = getPlayerMoney(nextPlayer->email);
 											if(money >= price) {
@@ -18061,14 +18062,15 @@ int main() {
 										}
 									} else {
 										char s[256];
-										sprintf(s, "[SHOP]PRICE:%.2f", price);
+										sprintf(s, "[SHOP]USE PRICE:%.2f", price);
 										sendGlobalMessage(s, nextPlayer);
 										continue;
 									}
 								}
 
                                 if(type == 2) {
-                                    if(nextPlayer->holdingID != 0) {
+                                    if(nextPlayer->holdingID != 0 && 
+                                        getPTrans( nextPlayer->holdingID, checkTarget ) != NULL) {
                                         if(isConfirmed(nextPlayer->email, m.x, m.y)) {
                                             float money = getPlayerMoney(nextPlayer->email);
                                             if(money >= price) {
@@ -20342,7 +20344,7 @@ int main() {
                         bool isBanned = isNamingSay(stringToUpperCase(nextPlayer->email), &banList) != NULL;
                         if(isBanned)
                             continue; 
-                        
+
                         // send update even if action fails (to let them
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );

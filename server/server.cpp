@@ -9799,7 +9799,7 @@ int processLoggedInPlayer( char inAllowReconnect,
 			newObject.xs = xd;
 			newObject.ys = yd;
 
-            if(yummy > 10)
+            if(yummy > 0)
                 newObject.displayID = displayID;
 			
 			if(holding > 0)
@@ -9852,7 +9852,30 @@ int processLoggedInPlayer( char inAllowReconnect,
 					newObject.clothingContainedEtaDecays[i].push_back(0);
 				}
 			}
-		}
+		} else {
+            //not found player data
+            // give them starter kit
+            newObject.clothing = getEmptyClothingSet();
+            //newObject.clothing.hat = getObject(199, true);
+            newObject.clothing.tunic = getObject(711, true);
+            //newObject.clothing.frontShoe = getObject(frontShoe, true);
+            //newObject.clothing.backShoe = getObject(backShoe, true);
+            newObject.clothing.bottom = getObject(128, true);
+            //newObject.clothing.backpack = getObject(198, true);
+
+            unsigned char metaData[ MAP_METADATA_LENGTH ];
+            char paperStr[50];
+            sprintf(paperStr, "WELCOME TO MOELIFE! QQ QUN:762642715");
+            int len = strlen( paperStr );
+            
+            memset( metaData, 0, MAP_METADATA_LENGTH );
+            memcpy( metaData, paperStr, len + 1 );
+            
+            newObject.holdingID = addMetadata( 1615, metaData );
+                
+            //sendGlobalMessage( "WELCOME TO MOELIFE! GO bbs.onehouronelife.cn for more", &newObject );
+            sendGlobalMessage( "WELCOME NEW PLAYER JOIN SERVER!!!" );
+        }
 		float randAge = ((rand() % 100) < 10 ? 3.f : 14.f);
 		
 		newObject.lifeStartTimeSeconds = 

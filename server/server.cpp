@@ -1451,7 +1451,7 @@ void parseCommand(LiveObject *player, char *text){
 				x = player->xs;
 				y = player->ys - 1;
 				if(getShop(x, y, tEmail, &shopType, &price)){
-					sprintf(s, "SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
+					sprintf(s, "SHOP AT %d %d IS EXISTS", x, y);
 				} else {
 					if ( shopType < 0 || shopType > 2 ) {
 						sprintf(s, "SHOP TYPE NOT CORRECT, MUST BE {0,1,2}");
@@ -19971,12 +19971,13 @@ int main() {
 							char type;
 							float price;
 							int checkTarget = getMapObject( m.x, m.y );
+                            bool hasShop = getShop(m.x, m.y, email, &type, &price);
 							ObjectRecord *targetObj = getObject(checkTarget);
-                            if(targetObj->permanent && targetObj->slotSize > 0)
+                            if(hasShop && type == 0 && targetObj->permanent && targetObj->slotSize > 0)
 								if(getNumContained(m.x, m.y) == 0) {
 									delShop(m.x, m.y);
 								}
-							if(getShop(m.x, m.y, email, &type, &price) && strcmp(email, nextPlayer->email)!=0) {
+							if(hasShop && strcmp(email, nextPlayer->email)!=0) {
 								continue;
 							}
 						}

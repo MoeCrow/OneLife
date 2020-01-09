@@ -1453,8 +1453,8 @@ void parseCommand(LiveObject *player, char *text){
 				if(getShop(x, y, tEmail, &shopType, &price)){
 					sprintf(s, "SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
 				} else {
-					if ( shopType < 0 || shopType > 1 ) {
-						sprintf(s, "SHOP TYPE NOT CORRECT, MUST BE {0,1}");
+					if ( shopType < 0 || shopType > 2 ) {
+						sprintf(s, "SHOP TYPE NOT CORRECT, MUST BE {0,1,2}");
 					} else {
 						setShop(x, y, player->email, shopType, price);
 						sprintf(s, "SHOP CREATED AT %d %d", x, y);
@@ -18067,6 +18067,39 @@ int main() {
 										continue;
 									}
 								}
+
+                                if(type == 2) {
+                                    if(nextPlayer->holdingID != 0) {
+                                        if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+                                            float money = getPlayerMoney(nextPlayer->email);
+                                            if(money >= price) {
+                                                money -= price;
+                                                setPlayerMoney(nextPlayer->email, money);
+                                                
+                                                float skMoney = getPlayerMoney(email);
+                                                setPlayerMoney(email, skMoney + price);
+                                                sprintf(s, "[SHOP]YOU USE THIS FOR %.2f COINS", price);
+                                                sendGlobalMessage(s, nextPlayer);
+                                                delConfirm(nextPlayer->email);
+                                            } else {
+                                                sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+                                                sendGlobalMessage(s, nextPlayer);
+                                                delConfirm(nextPlayer->email);
+                                                continue;
+                                            }
+                                        } else {
+                                            sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO USE", price);
+                                            sendGlobalMessage(s, nextPlayer);
+                                            setConfirm(nextPlayer->email, m.x, m.y);
+                                            continue;
+                                        }
+                                    } else {
+                                        char s[256];
+                                        sprintf(s, "[SHOP]USE PRICE:%.2f", price);
+                                        sendGlobalMessage(s, nextPlayer);
+                                        continue;
+                                    }
+                                }
 								
 								} else {
 									char s[256];

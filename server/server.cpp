@@ -17949,11 +17949,6 @@ int main() {
 							continue; 
 						
 						int checkTarget = getMapObject( m.x, m.y );
-                        ObjectRecord *targetObj = getObject(checkTarget);
-						if(targetObj->permanent && targetObj->slotSize > 0)
-							if(getNumContained(m.x, m.y) == 0) {
-								delShop(m.x, m.y);
-							}
 						if(checkTarget == 2482) {
 							ObjectRecord *holdO = getObject( nextPlayer->holdingID );
 							if(nextPlayer->holdingID == 326) {
@@ -17997,6 +17992,10 @@ int main() {
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								if(strcmp(email, nextPlayer->email)!=0){
 								if(type == 0) {
+                                    if(targetObj->permanent && targetObj->slotSize > 0 &&
+                                        getNumContained(m.x, m.y) == 0) {
+                                        delShop(m.x, m.y);
+                                    }
 									if(targetObj && ! targetObj->permanent &&
 									 targetObj->minPickupAge <=
 									 computeAge( nextPlayer ) ||
@@ -20340,6 +20339,10 @@ int main() {
                             }
                         }
                     else if( m.type == REMV ) {
+                        bool isBanned = isNamingSay(stringToUpperCase(nextPlayer->email), &banList) != NULL;
+                        if(isBanned)
+                            continue; 
+                        
                         // send update even if action fails (to let them
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );

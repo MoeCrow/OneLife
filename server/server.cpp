@@ -1395,9 +1395,7 @@ void parseCommand(LiveObject *player, char *text){
         player->lifeStartTimeSeconds = 
                 Time::getCurrentTime() - age * ( 1.0 / getAgeRate() );
 
-        char s[256];
-        sprintf(s, "[ECONOMY]YOU HAVE %.2f COINS", money);
-        sendGlobalMessage( s, player);
+        sendGlobalMessage( "AGE SET.", player);
         return;
     }
 

@@ -1385,6 +1385,22 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 
+    if(strcmp(cmd, "AGE")==0 && isOp) {
+        float age;
+        if(sscanf(args, "%d", &age) != 1) {
+            sendGlobalMessage( "NEED ONE ARGS", player);
+            return;
+        }
+
+        player->lifeStartTimeSeconds = 
+                Time::getCurrentTime() - age * ( 1.0 / getAgeRate() );
+
+        char s[256];
+        sprintf(s, "[ECONOMY]YOU HAVE %.2f COINS", money);
+        sendGlobalMessage( s, player);
+        return;
+    }
+
     if(strcmp(cmd, "BC")==0 && isOp) {
         char s[256];
          if(sscanf(args, "%s", s) != 1) {

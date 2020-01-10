@@ -20712,13 +20712,21 @@ int main() {
 							int checkTarget = getMapObject( m.x, m.y );
                             bool hasShop = getShop(m.x, m.y, email, &type, &price);
 							ObjectRecord *targetObj = getObject(checkTarget);
-                            if(hasShop && type == 0 && targetObj->permanent && targetObj->slotSize > 0)
-								if(getNumContained(m.x, m.y) == 0) {
-									delShop(m.x, m.y);
-								}
-							if(hasShop && strcmp(email, nextPlayer->email)!=0) {
-								continue;
-							}
+
+                            if(hasShop) {
+                                if(type == 0 && targetObj != NULL && targetObj->permanent && targetObj->slotSize > 0)
+                                    if(getNumContained(m.x, m.y) == 0) {
+                                        delShop(m.x, m.y);
+                                    }
+
+                                if(strcmp(email, nextPlayer->email)!=0) {
+                                    if(type > 0 && targetObj == NULL) {
+                                        delShop(m.x, m.y);
+                                    } else {
+                                        continue;
+                                    }
+                                }
+                            }
 						}
 
                         char canDrop = true;

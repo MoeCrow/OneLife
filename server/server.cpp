@@ -1231,7 +1231,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUTP" && isOp)==0){
+	if(strcmp(cmd, "PUTP")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d %d %d", &x, &y, &id) != 3) {
 			sprintf(s, "NEED THREE ARGS");
@@ -1249,7 +1249,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUT" && isOp)==0){
+	if(strcmp(cmd, "PUT")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
 			sprintf(s, "NEED ONE ARGS");
@@ -18705,8 +18705,7 @@ int main() {
                                         delShop(m.x, m.y);
                                     }
 									if(targetObj && ! targetObj->permanent &&
-									 targetObj->minPickupAge <=
-									 computeAge( nextPlayer ) ||
+									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
 									 checkTarget == 774 || checkTarget == 779) {
 										if(nextPlayer->holdingID == 0) {
 											if(isConfirmed(nextPlayer->email, m.x, m.y)) {

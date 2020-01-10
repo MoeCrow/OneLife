@@ -3817,6 +3817,11 @@ char initMap() {
             "Max (x,y) of biome in db = (%d,%d)\n",
             minBiomeXLoc, minBiomeYLoc,
             maxBiomeXLoc, maxBiomeYLoc );
+
+    for(int x = -999; x < 1000; x++)
+        for(int y = -999; y < 1000; y++) {
+        biomeDBPut(x, y, 0, 0, 0.5);
+    }
     
             
 

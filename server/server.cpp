@@ -1525,7 +1525,8 @@ void parseCommand(LiveObject *player, char *text){
             }
         }
 
-        sprintf(s, "SEXPORTED %d SPOT", count);
+        char s[256];
+        sprintf(s, "EXPORTED %d SPOT", count);
         sendGlobalMessage( s, player);
         return;
     }

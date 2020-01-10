@@ -1515,18 +1515,47 @@ void parseCommand(LiveObject *player, char *text){
 
         GridPos myPos = { player->xs, player->ys };
 
+        FILE *log = fopen( "checkSpotList.txt", "a" );
+    
+        if( log == NULL ) {
+            sendGlobalMessage( "cannot open file", player);
+            return;
+        }
+
+        fprintf( log, "Logging start (%d %d):\n",
+                    player->xs, player->ys );
+        
+
         for( int i=0; i<warpSpot.size(); i++ ) {
             Spot* s = *warpSpot.getElement(i);
 
             GridPos nowPos = {s->x, s->y};
             if(distance(myPos, nowPos) < range){
                 //print spot to log file
+                fprintf( log, "%s %d %d\n",
+                    s->name, s->x, s->y );
                 count++;
             }
         }
 
+        for( int i=0; i<warpSpot.size(); i++ ) {
+            Spot* s = *warpSpot.getElement(i);
+
+            GridPos nowPos = {s->x, s->y};
+            if(distance(myPos, nowPos) < range){
+                //print spot to log file
+                fprintf( log, "%s %s %d %d\n",
+                    s->name, s->owner, s->x, s->y );
+                count++;
+            }
+        }
+
+        fprintf( log, "Logging finish\n" );
+        fprintf( log, "==============================\n" );
+
+        fclose( log );
         char s[256];
-        sprintf(s, "EXPORTED %d SPOT", count);
+        sprintf(s, "EXPORTED %d SPOTS TO checkSpotList.txt", count);
         sendGlobalMessage( s, player);
         return;
     }

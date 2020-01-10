@@ -1392,8 +1392,9 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 
-        player->lifeStartTimeSeconds = 
-                Time::getCurrentTime() - age * ( 1.0 / getAgeRate() );
+        player->lifeStartTimeSeconds = Time::getCurrentTime() - age * ( 1.0 / getAgeRate() );
+        player->needsUpdate = true;
+
 
         sendGlobalMessage( "AGE SET.", player);
         return;
@@ -1522,8 +1523,8 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 
-        fprintf( log, "Logging start (%d %d):\n",
-                    player->xs, player->ys );
+        fprintf( log, "Logging start center(%d %d) range(%d)\n",
+                    player->xs, player->ys, range );
         
 
         for( int i=0; i<warpSpot.size(); i++ ) {

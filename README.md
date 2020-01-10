@@ -34,9 +34,9 @@ Bank instruction: Holding steel click The Apocalypse to save, click The Apocalyp
 
 银行使用说明：拿着钢点天启存钢，空手点击取出，支票点天启兑换。
 
-Create shop: standing one block above shop say .shop &lt;type>(0:sell 1:use) &lt;price>
+Create shop: standing one block above shop say .shop &lt;type>(0:container sell 1:bare hand use 2:item use) &lt;price>
   
-创建商店 站在商店上面一格 .shop &lt;type>(0:出售 1:使用) &lt;price>
+创建商店 站在商店上面一格 .shop &lt;type>(0:货架出售 1:空手使用 2:合成使用) &lt;price>
 
 Delete shop: standing one block above shop say .delshop
 
@@ -60,8 +60,10 @@ Place object to coordinate 放置物体 .putp &lt;x> &lt;y> &lt;id>
 Place obj here 放置在当前位置 .put &lt;id>
   
 Place obj south 放置在下面一格 .puts &lt;id>
-  
-Place floor south 在下面一格放置地板 .flr &lt;id>
+
+Place floor here 在当前位置放置地板 .flr &lt;id>
+
+Place floor south 在下面一格放置地板 .flrs &lt;id>
   
 Force delete warp 删除地标 .delwarp &lt;warp>
   
@@ -72,6 +74,10 @@ Choose any object you want to be 变成任意物体 .chs &lt;id>
 Give me money 给自己前 .gmm &lt;money>
 
 Feed me 喂饱自己 .feed
+
+Set my age 设置自己的年龄 .age &lt;age>
+
+Broadcast messages 广播消息 .bc &lt;msg>
 
 ## Settings 配置
 Ban list(list email here,player listed cannot USE)  ban.ini 封禁列表(列入其中的玩家无法进行USE操作)

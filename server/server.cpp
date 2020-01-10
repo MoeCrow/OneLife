@@ -1488,6 +1488,47 @@ void parseCommand(LiveObject *player, char *text){
 		sendGlobalMessage( s, player);
 		return;
 	}
+
+    if(strcmp(cmd, "SHOPT")==0 && isOp){
+        char s[256];
+        char tEmail[50];
+        char shopType;
+        float price;
+        x = player->xs;
+        y = player->ys - 1;
+        if(!getShop(x, y, tEmail, &shopType, &price)){
+            sprintf(s, "SHOP NOT EXISTS");
+        } else {
+            sprintf(s, "SHOP TYPE:%d PRICE:%d OWNER:%s", shopType, price, tEmail);
+        }
+        sendGlobalMessage( s, player);
+        return;
+    }
+
+    if(strcmp(cmd, "SPOTCHECK")==0 && isOp) {
+        int range;
+        int count = 0;
+        if(sscanf(args, "%d", &range)==0)
+            range = 100;
+        if(range > 200)
+            range = 200;
+
+        GridPos myPos = { player->xs, player->ys };
+
+        for( int i=0; i<warpSpot.size(); i++ ) {
+            Spot* s = *warpSpot.getElement(i);
+
+            GridPos nowPos = {s->x, s->y};
+            if(distance(myPos, nowPos) < range){
+                //print spot to log file
+                count++;
+            }
+        }
+
+        sprintf(s, "SEXPORTED %d SPOT", count);
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "SHOP")==0){
 		char s[256];
@@ -20729,13 +20770,8 @@ int main() {
 							ObjectRecord *targetObj = getObject(checkTarget);
 
                             if(hasShop) {
-                                if(type == 0 && targetObj != NULL && targetObj->permanent && targetObj->slotSize > 0)
-                                    if(getNumContained(m.x, m.y) == 0) {
-                                        delShop(m.x, m.y);
-                                    }
-
                                 if(strcmp(email, nextPlayer->email)!=0) {
-                                    if(type > 0 && targetObj == NULL) {
+                                    if(type > 0 && checkTarget == 0) {
                                         delShop(m.x, m.y);
                                     } else {
                                         continue;
@@ -21125,30 +21161,20 @@ int main() {
 												delShop(m.x, m.y);
 											} else
 											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-												if(getNumContained(m.x, m.y)>0) {
-													float money = getPlayerMoney(nextPlayer->email);
-													if(money >= price) {
-														money -= price;
-														setPlayerMoney(nextPlayer->email, money);
-														
-														float skMoney = getPlayerMoney(email);
-														setPlayerMoney(email, skMoney + price);
-														sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
-														sendGlobalMessage(s, nextPlayer);
-														delConfirm(nextPlayer->email);
-														if(getNumContained(m.x, m.y) == 1) {
-															delShop(m.x, m.y);
-														}
-													} else {
-														sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
-														sendGlobalMessage(s, nextPlayer);
-														delConfirm(nextPlayer->email);
-														continue;
-													}
-												} else {
-													sprintf(s, "[SHOP]THIS SHOP IS EMPTY");
+												float money = getPlayerMoney(nextPlayer->email);
+												if(money >= price) {
+													money -= price;
+													setPlayerMoney(nextPlayer->email, money);
+													
+													float skMoney = getPlayerMoney(email);
+													setPlayerMoney(email, skMoney + price);
+													sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
 													sendGlobalMessage(s, nextPlayer);
-													delShop(m.x, m.y);
+													delConfirm(nextPlayer->email);
+												} else {
+													sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+													sendGlobalMessage(s, nextPlayer);
+													delConfirm(nextPlayer->email);
 													continue;
 												}
 											} else {

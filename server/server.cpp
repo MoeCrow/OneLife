@@ -1231,11 +1231,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUTP")==0){
-		if(!isOp){
-			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
-			return;
-		}
+	if(strcmp(cmd, "PUTP" && isOp)==0){
 		char s[256];
 		if(sscanf(args, "%d %d %d", &x, &y, &id) != 3) {
 			sprintf(s, "NEED THREE ARGS");
@@ -1253,11 +1249,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUT")==0){
-		if(!isOp){
-			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
-			return;
-		}
+	if(strcmp(cmd, "PUT" && isOp)==0){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
 			sprintf(s, "NEED ONE ARGS");
@@ -1275,11 +1267,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "FLR")==0){
-		if(!isOp){
-			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
-			return;
-		}
+	if(strcmp(cmd, "FLR")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
 			sprintf(s, "[SYSTEM]NEED ONE ARGS");
@@ -1289,19 +1277,33 @@ void parseCommand(LiveObject *player, char *text){
 				sendGlobalMessage( "FLOOR ID NOT FOUND.", player);
 				return;
 			}
-			setMapFloor( player->xs, player->ys - 1, id );
+			setMapFloor( player->xs, player->ys, id );
 			sprintf(s, "FLOOR PUT.");
 		}
 		
 		sendGlobalMessage( s, player);
 		return;
 	}
+
+    if(strcmp(cmd, "FLRS")==0 && isOp){
+        char s[256];
+        if(sscanf(args, "%d", &id) != 1) {
+            sprintf(s, "[SYSTEM]NEED ONE ARGS");
+        } else {
+            ObjectRecord *o = getObject( id );
+            if( id != 0 && (o == NULL || !o->floor) ) {
+                sendGlobalMessage( "FLOOR ID NOT FOUND.", player);
+                return;
+            }
+            setMapFloor( player->xs, player->ys - 1, id );
+            sprintf(s, "FLOOR PUT.");
+        }
+        
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
-	if(strcmp(cmd, "PUTS")==0){
-		if(!isOp){
-			sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
-			return;
-		}
+	if(strcmp(cmd, "PUTS")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
 			sprintf(s, "NEED ONE ARGS");

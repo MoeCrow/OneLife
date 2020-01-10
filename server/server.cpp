@@ -18727,7 +18727,8 @@ int main() {
 								
 								if(type == 1) {
 									if(nextPlayer->holdingID == 0 &&
-                                        (getTrans( 0, checkTarget ) != NULL)) {
+                                        (getTrans( 0, checkTarget ) != NULL
+                                            || !targetObj->permanent)) {
 										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
 											float money = getPlayerMoney(nextPlayer->email);
 											if(money >= price) {

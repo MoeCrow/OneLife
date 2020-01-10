@@ -1527,8 +1527,8 @@ void parseCommand(LiveObject *player, char *text){
                     player->xs, player->ys, range );
         
 
-        for( int i=0; i<warpSpot.size(); i++ ) {
-            Spot* s = *warpSpot.getElement(i);
+        for( int i=0; i<homeSpot.size(); i++ ) {
+            Spot* s = *homeSpot.getElement(i);
 
             GridPos nowPos = {s->x, s->y};
             if(distance(myPos, nowPos) < range){

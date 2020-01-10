@@ -3,12 +3,155 @@ This file only list changes to game code.  Changes to content can be found here:
 http://onehouronelife.com/updateLog.php
 
 
-Version 294     ???
+Version 302    2020-January-9
+
+--Fixed editor skipping gaps in numbering in sprite import cache.
+
+--Support for same object occurring multiple times in one pattern.  So these
+  bottles can empty as powder bottles, and these other bottles can empty as
+  liquid bottles, but the powder and liquid bottles don't need to be duplicated.
+
+
+
+Server Fixes
+
+--Fixed to pull Eve grid back on track if it starts way out of bounds.
+  Fixes #486
+
+--Support for moving animals that can avoid landing on floors.
+  Part of jasonrohrer/OneLifeData7#559
+
+
+
+Version 300    2020-January-3
+
+--Fixed another possible cause of the bouncing forever bug (wild bug):  don't
+  ever set inMotion to true unless we actually send a MOVE message to the
+  server.
+
+
+
+
+Server Fixes
+
+--Fixed blank tool learning message for partially-used tools.  Fixes #475
+
+--Fixed so that dismounting at the edge of a bad biome, where you drop your
+  horse into a good biome, makes you instantly sick.  Before, you weren't sick
+  until moving, allowing you to pull items from your nearby horse cart into the
+  bad biome and trap them there.  Fixes #477
+
+--Eating bonus not applied to alcohol drinks.  Trying to get drunk no longer
+  fills up your stomach so quickly.  Part of #481
+
+--Halved rate that drunkenness wears off.  Part of #481
+
+--Support for emotEat_ tag on objects to define a forced emot when eaten (used
+  to make people blush when getting drunk).  Part of #481
+
+--Fixed photo links on family tree server (removing join with server table
+  broke it, from commit 0788e818548de469688f816b5c81c3a8).  Fixes #482
+
+--Fixed so that murder victims that die of starvation before dying from their
+  wound are still logged as murdered in lifeLog.  Fixes #483
+
+--Fixed another case of spurious tool learning (when taking apart the knife or
+  any tool that results in a permanent stack of parts).  Check that there's no
+  bare-hand action possible on the permanent result (so pounding stakes still
+  counts as a tool use).  Fixes #485
+
+
+
+
+Version 298    2019-December-20
+
+--Fixed so you can TAB to show blue hint arrows for single-recipe objects.
+  Related to #418
+
+--Fixed so that holding a use dummy that is both an ingredient and a target of
+  a recipe doesn't block hint arrows.  Fixes #418
+
+
+
+Server Fixes
+
+--Fixed potential gene score exploit of tutorial lives being factored into your
+  own average lifespan.  Lives that don't affect your score are no longer
+  counted in your own average.  Fixes #473
+
+--Fixed float precision errors in random animation movement that made it
+  unlikely for them to move in certain non-diagonal directions.
+
+
+
+
+Version 297    2019-December-18
+
+--Fixed crash when mousing over at the moment they die.  Fixes #470
+
+--Entering kill mode with shift-right-click no longer causes you to move toward
+  the kill target.  Since there is a waiting period now, moving there right
+  away doesn't make sense anymore.  Fixes #430
+
+--Fixed so that when contents of a held container go through transition, the
+  generic pickup sound is correctly played (was playing container creation
+  sound by accident).  Fixes #431
+
+
+
+
+Server Fixes
+
+--Fixed crash when sending follow and exile messages to disconnected player.
+
+--Fixed so that we don't burn lives when reconnecting, even if server sees us
+  as still connected when we reconnect.  Fixes #443
+
+
+
+Version 296    2019-December-14
+
+--Moved badges to be drawn over top of backpack strap (so not covered by strap).
+
+
+
+Server Fixes
+
+--Leaders can now issue orders that are passed through their follower tree
+  whenever followers are within 10 tiles.  You only receive such orders from
+  your own personal leader, but the orders might be passed down from higher up.
+  Leaders issue orders by saying ORDER, COME TO THE TOWN CENTER.  Orders appear
+  to followers as DING messages.
+
+
+
+Version 294     2019-December-13
 
 --Moved Bell home arrow to bottom of screen, by scooting other paper elements
   down there closer together.  Looked out of place on top.  Added BELL word to
   it to make it clear.  Thanks Twisted.
 
+--Support for voluntary hierarchical leadership.  Each player can chose a 
+  single leader by saying I FOLLOW YOU, or I FOLLOW JANE SMITH.  Go back to no
+  leader with I FOLLOW MYSELF.  You inherit your mother's leader at birth.
+  Each player can also exile other people by saying I EXILE YOU or I EXILE JANE
+  SMITH.  Your exiled players are seen as marked for you and any of the 
+  followers below you in the leadership tree.  People who are still following
+  exiled leaders are marked as dubious.  When a leader dies, they pass their
+  immediate followers up to the leader above them, if any, and their exile list
+  is passed down.  Rank and ally status is shown via colored badges on worn
+  chest clothing.
+
+
+
+Server Fixes
+
+--Can initiate murder mouth by holding weapon near somone and saying I WILL 
+  KILL YOU, or I WILL KILL EVE SMITH while holding a weapon from far away (and
+  a whole bunch of variations on these phrases, like DIE, EVE SMITH, EVE SMITH 
+  IS GONNA DIE, etc.).  If you know someone's name, you can resume your chase
+  after setting down your weapon to eat, or if you can't click on them because
+  they are too fast on a horse.
 
 
 

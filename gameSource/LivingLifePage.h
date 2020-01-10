@@ -338,14 +338,16 @@ typedef struct LiveObject {
         // color to draw badge
         FloatColor badgeColor;
 
-        // when person first becomes a leader, with pick the next
-        // unused color on the list for them
-        // them and their followers have this badge color
-        char hasPersonalLeadershipColor;
-        const char *personalLeadershipColorHexString;
+        FloatColor personalLeadershipColor;
+        
 
         // does the local player see this person as exiled?
         char isExiled;
+
+        // does the local player see this person as dubious?
+        // if they are following someone we see as exiled
+        char isDubious;
+        
 
         // does local player see this person as a follower?
         char followingUs;
@@ -1039,6 +1041,13 @@ class LivingLifePage : public GamePage, public ActionListener {
 
         void updateLeadership();
         
+
+        // 0 for normal
+        // 1 for half x
+        // 2 for full x
+        SimpleVector<int> mLeadershipBadges[3];
+
+        int mFullXObjectID;
 
     };
 

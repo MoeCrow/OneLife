@@ -85,6 +85,8 @@ float targetHeat = 10;
 double secondsPerYear = 60.0;
 
 
+#define NUM_BADGE_COLORS 17
+
 
 #define PERSON_OBJ_ID 12
 
@@ -202,6 +204,20 @@ static SimpleVector<char*> namedFollowPhrases;
 static SimpleVector<char*> youExilePhrases;
 static SimpleVector<char*> namedExilePhrases;
 
+
+static SimpleVector<char*> youRedeemPhrases;
+static SimpleVector<char*> namedRedeemPhrases;
+
+
+static SimpleVector<char*> youKillPhrases;
+static SimpleVector<char*> namedKillPhrases;
+static SimpleVector<char*> namedAfterKillPhrases;
+
+
+
+static int nextOrderNumber = 1;
+
+static char *orderPhrase = NULL;
 
 
 static char *eveName = NULL;
@@ -604,12 +620,20 @@ typedef struct LiveObject {
         // -1 means following self (no one)
         int followingID;
         
+        // -1 if not set
+        int leadingColorIndex;
+
         // people who have exiled this player
         // some could be dead
         SimpleVector<int> exiledByIDs;
         
         char followingUpdate;
         char exileUpdate;
+
+        int currentOrderNumber;
+        // who issued this order?
+        int currentOrderOriginatorID;
+        char *currentOrder;
 
 
         // time that this life started (for computing age)
@@ -2471,6 +2495,10 @@ void quitCleanup() {
         if( nextPlayer->name != NULL ) {
             delete [] nextPlayer->name;
             }
+        
+        if( nextPlayer->currentOrder != NULL ) {
+            delete [] nextPlayer->currentOrder;
+            }
 
         if( nextPlayer->familyName != NULL ) {
             delete [] nextPlayer->familyName;
@@ -2592,7 +2620,19 @@ void quitCleanup() {
     
     youExilePhrases.deallocateStringElements();
     namedExilePhrases.deallocateStringElements();
+
+    youRedeemPhrases.deallocateStringElements();
+    namedRedeemPhrases.deallocateStringElements();
+
+
+    youKillPhrases.deallocateStringElements();
+    namedKillPhrases.deallocateStringElements();
+    namedAfterKillPhrases.deallocateStringElements();
     
+    if( orderPhrase != NULL ) {
+        delete [] orderPhrase;
+        orderPhrase = NULL;
+        }
 
 
     if( curseYouPhrase != NULL ) {
@@ -6302,6 +6342,9 @@ static void forcePlayerToRead( LiveObject *inPlayer,
 
 
 
+void makePlayerBiomeSick( LiveObject *nextPlayer, 
+                          int sicknessObjectID );
+
 
 
 static void holdingSomethingNew( LiveObject *inPlayer, 
@@ -6331,6 +6374,23 @@ static void holdingSomethingNew( LiveObject *inPlayer,
         }
     else {
         inPlayer->holdingFlightObject = false;
+        }
+
+    if( inOldHoldingID > 0 && getObject( inOldHoldingID )->rideable &&
+        ( inPlayer->holdingID <= 0 || 
+          ! getObject( inPlayer->holdingID )->rideable ) ) {
+        
+        // check if they are now getting biome sick after dismount
+        int sicknessObjectID = 
+            getBiomeSickness( 
+                inPlayer->displayID, 
+                inPlayer->xd,
+                inPlayer->yd );
+        
+        if( sicknessObjectID != -1 ) {
+            makePlayerBiomeSick( inPlayer, 
+                                 sicknessObjectID );
+            }
         }
     }
 
@@ -8413,11 +8473,16 @@ int processLoggedInPlayer( char inAllowReconnect,
     newObject.everHeldByParent = false;
     
     newObject.followingID = -1;
-    
+    newObject.leadingColorIndex = -1;
+
     // everyone should hear about who this player is following
     newObject.followingUpdate = true;
     
     newObject.exileUpdate = false;
+    
+    newObject.currentOrderNumber = -1;
+    newObject.currentOrderOriginatorID = -1;
+    newObject.currentOrder = NULL;
     
     
     int numOfAge = 0;
@@ -11727,6 +11792,41 @@ char *isNamedExileSay( char *inSaidString ) {
     }
 
 
+char isYouRedeemSay( char *inSaidString ) {
+    return isWildcardGivingSay( inSaidString, &youRedeemPhrases );
+    }
+
+// returns pointer into inSaidString
+char *isNamedRedeemSay( char *inSaidString ) {
+    return isNamingSay( inSaidString, &namedRedeemPhrases );
+    }
+
+
+
+char isYouKillSay( char *inSaidString ) {
+    return isWildcardGivingSay( inSaidString, &youKillPhrases );
+    }
+
+
+// returns newly allocated string
+char *isNamedKillSay( char *inSaidString ) {
+
+    char *name = isReverseNamingSay( inSaidString, &namedAfterKillPhrases );
+
+    if( name != NULL ) {
+        return name;
+        }
+    
+    name = isNamingSay( inSaidString, &namedKillPhrases );
+    
+    if( name != NULL ) {
+        return stringDuplicate( name );
+        }
+    
+    return NULL;
+    }
+
+
 
 
 LiveObject *getClosestOtherPlayer( LiveObject *inThisPlayer,
@@ -12656,6 +12756,34 @@ static SimpleVector<int> newEmotPlayerIDs;
 static SimpleVector<int> newEmotIndices;
 // 0 if no ttl specified
 static SimpleVector<int> newEmotTTLs;
+
+
+static void checkForFoodEatingEmot( LiveObject *inPlayer,
+                                    int inEatenID ) {
+    
+    ObjectRecord *o = getObject( inEatenID );
+    
+    if( o != NULL ) {
+        char *emotPos = strstr( o->description, "emotEat_" );
+        
+        if( emotPos != NULL ) {
+            int e, t;
+            int numRead = sscanf( emotPos, "emotEat_%d_%d", &e, &t );
+
+            if( numRead == 2 ) {
+                inPlayer->emotFrozen = true;
+                inPlayer->emotFrozenIndex = e;
+                            
+                inPlayer->emotUnfreezeETA = Time::getCurrentTime() + t;
+                            
+                newEmotPlayerIDs.push_back( inPlayer->id );
+                newEmotIndices.push_back( e );
+                newEmotTTLs.push_back( t );
+                }
+            }
+        }
+    }
+
 
 
 static char isNoWaitWeapon( int inObjectID ) {
@@ -13814,10 +13942,11 @@ static char learnTool( LiveObject *inPlayer, int inToolID ) {
         if( toolPos != NULL ) {
             char *tagPos = &( toolPos[5] );
             
-            if( tagPos[0] != '\0' && tagPos[0] != ' ' ) {
+            // use dummies can have # immediately after +TOOL tag
+            if( tagPos[0] != '\0' && tagPos[0] != ' ' && tagPos[0] != '#' ) {
                 int tagLen = strlen( tagPos );
                 for( int i=0; i<tagLen; i++ ) {
-                    if( tagPos[i] == ' ' ) {
+                    if( tagPos[i] == ' ' || tagPos[i] == '#' ) {
                         tagPos[i] = '\0';
                         break;
                         }
@@ -14054,9 +14183,20 @@ static unsigned char *getFollowingMessage( char inAll, int *outLength ) {
         
         if( nextPlayer->followingUpdate || inAll ) {
 
-            char *line = autoSprintf( "%d %d\n", 
+            int colorIndex = -1;
+            
+            if( nextPlayer->followingID > 0 ) {
+                LiveObject *l = getLiveObject( nextPlayer->followingID );
+                
+                if( l != NULL ) {
+                    colorIndex = l->leadingColorIndex;
+                    }
+                }
+
+            char *line = autoSprintf( "%d %d %d\n", 
                                       nextPlayer->id,
-                                      nextPlayer->followingID );
+                                      nextPlayer->followingID,
+                                      colorIndex );
                 
             followingWorking.appendElementString( line );
             delete [] line;
@@ -14116,6 +14256,19 @@ static unsigned char *getExileMessage( char inAll, int *outLength ) {
             }
         if( nextPlayer->exileUpdate || inAll ) {
 
+            if( nextPlayer->exiledByIDs.size() > 0 ||
+                ( !inAll && nextPlayer->exileUpdate ) ) {
+                // send preface line for this player
+                // they have some lines coming OR we have a force-update
+                // for a player with no exile status (client-side list should
+                // be cleared)
+                char *line = autoSprintf( "%d -1\n", nextPlayer->id  );
+                
+                exileWorking.appendElementString( line );
+                delete [] line;
+                numAdded++;
+                }
+            
             for( int e=0; e< nextPlayer->exiledByIDs.size(); e++ ) {
                 
                 char *line = autoSprintf( 
@@ -14127,6 +14280,7 @@ static unsigned char *getExileMessage( char inAll, int *outLength ) {
                 delete [] line;
                 numAdded++;
                 }
+
             if( ! inAll ) {
                 nextPlayer->exileUpdate = false;
                 }
@@ -14161,7 +14315,489 @@ static unsigned char *getExileMessage( char inAll, int *outLength ) {
     return exileMessage;
     }
 
+
+
+// Recursively walks up leader tree to find out if inLeader is a leader
+static char isFollower( LiveObject *inLeader, LiveObject *inTestFollower ) {
+    int nextID = inTestFollower->followingID;
     
+    if( nextID > 0 ) {
+        if( nextID == inLeader->id ) {
+            return true;
+            }
+
+        LiveObject *next = getLiveObject( nextID );
+        
+        if( next == NULL ) {
+            return false;
+            }
+        return isFollower( inLeader, next );
+        }
+    return false;
+    }
+    
+
+
+// any followers switch to following the leader of this leader
+// exiles are passed down to followers
+static void leaderDied( LiveObject *inLeader ) {
+
+    SimpleVector<LiveObject*> exiledByThisLeader;
+    
+    for( int i=0; i<players.size(); i++ ) {
+        
+        LiveObject *otherPlayer = players.getElement( i );
+        
+        if( otherPlayer != inLeader &&
+            ! otherPlayer->error ) {
+            
+            int exileIndex = otherPlayer->
+                exiledByIDs.getElementIndex( inLeader->id );
+            
+            if( exileIndex != -1 ) {
+                
+                // we have this other exiled
+                exiledByThisLeader.push_back( otherPlayer );
+                
+                // take ourselves off their list, we're dead
+                otherPlayer->exiledByIDs.deleteElement( exileIndex );
+                otherPlayer->exileUpdate = true;
+                }
+            }
+        }
+    
+        
+    for( int i=0; i<players.size(); i++ ) {
+        
+        LiveObject *otherPlayer = players.getElement( i );
+        
+        if( otherPlayer != inLeader &&
+            ! otherPlayer->error ) {
+            
+            if( otherPlayer->followingID == inLeader->id ) {
+                // they were following us
+
+                
+                // now they follow our leader
+                // (or no leader, if we had none)
+                otherPlayer->followingID = inLeader->followingID;
+                otherPlayer->followingUpdate = true;
+                
+                int oID = otherPlayer->id;
+                
+                // have them exile whoever we were exiling
+                for( int e=0; e<exiledByThisLeader.size(); e++ ) {
+                    LiveObject *eO = 
+                        exiledByThisLeader.getElementDirect( e );
+                    
+                    if( eO != NULL &&
+                        // never have them exile themselves
+                        eO->id != oID &&
+                        eO->exiledByIDs.getElementIndex( oID ) == -1 ) {
+                        // this follower is not already exiling this person
+                        eO->exiledByIDs.push_back( oID );
+                        eO->exileUpdate = true;
+                        }
+                    }
+                } 
+            }
+        }
+    
+    }
+
+
+
+
+static void tryToStartKill( LiveObject *nextPlayer, int inTargetID ) {
+    if( inTargetID > 0 && 
+        nextPlayer->holdingID > 0 &&
+        canPlayerUseOrLearnTool( nextPlayer,
+                                 nextPlayer->holdingID ) ) {
+                            
+        ObjectRecord *heldObj = 
+            getObject( nextPlayer->holdingID );
+                            
+                            
+        if( heldObj->deadlyDistance > 0 ) {
+            
+            // player transitioning into kill state?
+                            
+            LiveObject *targetPlayer =
+                getLiveObject( inTargetID );
+                            
+            if( targetPlayer != NULL ) {
+                                    
+                // block intra-family kills with
+                // otherFamilyOnly weapons
+                char weaponBlocked = false;
+                                    
+                if( strstr( heldObj->description,
+                            "otherFamilyOnly" ) ) {
+                    // make sure victim is in
+                    // different family
+                    // AND that there's no peace treaty
+                    if( targetPlayer->lineageEveID ==
+                        nextPlayer->lineageEveID
+                        ||
+                        isPeaceTreaty( 
+                            targetPlayer->lineageEveID,
+                            nextPlayer->lineageEveID )
+                        ||
+                        ! isWarState( 
+                            targetPlayer->lineageEveID,
+                            nextPlayer->lineageEveID ) ) {
+                                            
+                        weaponBlocked = true;
+                        }
+                    }
+                                    
+                if( ! weaponBlocked  &&
+                    ! isAlreadyInKillState( nextPlayer ) ) {
+                    // they aren't already in one
+                                        
+                    removeAnyKillState( nextPlayer );
+                                        
+                    char enteredState =
+                        addKillState( nextPlayer,
+                                      targetPlayer );
+                                        
+                    if( enteredState && 
+                        ! isNoWaitWeapon( 
+                            nextPlayer->holdingID ) ) {
+                                            
+                        // no killer emote for no-wait
+                        // weapons (these aren't
+                        // actually weapons, like
+                        // tattoo needles and snowballs)
+
+                        nextPlayer->emotFrozen = true;
+                        nextPlayer->emotFrozenIndex = 
+                            killEmotionIndex;
+                                            
+                        newEmotPlayerIDs.push_back( 
+                            nextPlayer->id );
+                        newEmotIndices.push_back( 
+                            killEmotionIndex );
+                        newEmotTTLs.push_back( 120 );
+                                            
+                        if( ! targetPlayer->emotFrozen ) {
+                                                
+                            targetPlayer->emotFrozen = true;
+                            targetPlayer->emotFrozenIndex =
+                                victimEmotionIndex;
+                                                
+                            newEmotPlayerIDs.push_back( 
+                                targetPlayer->id );
+                            newEmotIndices.push_back( 
+                                victimEmotionIndex );
+                            newEmotTTLs.push_back( 120 );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+static int getUnusedLeadershipColor() {
+    // look for next unused
+
+    int usedCounts[ NUM_BADGE_COLORS ];
+    memset( usedCounts, 0, NUM_BADGE_COLORS * sizeof( int ) );
+    
+    for( int i=0; i<players.size(); i++ ) {
+        LiveObject *o = players.getElement( i );
+
+        if( o->leadingColorIndex != -1 ) {
+            usedCounts[ o->leadingColorIndex ] ++;
+            }
+        }
+    
+    int minUsedCount = players.size();
+    int minUsedIndex = -1;
+    
+    for( int c=0; c<NUM_BADGE_COLORS; c++ ) {
+        if( usedCounts[c] < minUsedCount ) {
+            minUsedCount = usedCounts[c];
+            minUsedIndex = c;
+            }
+        }
+
+    return minUsedIndex;
+    }
+
+
+
+#define NUM_LEADERSHIP_NAMES 8
+static const char *
+leadershipNames[NUM_LEADERSHIP_NAMES][2] = { { "LORD",
+                                               "LADY" },
+                                             { "BARON",
+                                               "BARONESS" },
+                                             { "COUNT",
+                                               "COUNTESS" },
+                                             { "DUKE",
+                                               "DUCHESS" },
+                                             { "KING",
+                                               "QUEEN" },
+                                             { "EMPEROR",
+                                               "EMPRESS" },
+                                             { "HIGH EMPEROR",
+                                               "HIGH EMPRESS" },
+                                             { "SUPREME EMPEROR",
+                                               "SUPREME EMPRESS" } };
+
+
+static char *getLeadershipName( LiveObject *nextPlayer ) {
+    
+    int level = 0;
+    
+    LiveObject *possibleLeader = nextPlayer;
+    
+    while( possibleLeader != NULL ) {
+        LiveObject *nextLeader = NULL;
+        for( int i=0; i<players.size(); i++ ) {
+            LiveObject *o = players.getElement( i );
+            
+            if( o->error ) {
+                continue;
+                }
+            if( o->followingID == possibleLeader->id ) {
+                level ++;
+                nextLeader = o;
+                }
+            }
+        possibleLeader = nextLeader;
+        }
+
+    if( level == 0 ) {
+        // no followers
+        return NULL;
+        }
+    
+    int gender = 0;
+    if( getFemale( nextPlayer ) ) {
+        gender = 1;
+        }
+    
+    if( level > NUM_LEADERSHIP_NAMES ) {
+        level = NUM_LEADERSHIP_NAMES;
+        }
+    
+    int index = level - 1;
+    const char *title = leadershipNames[index][gender];
+    
+    if( nextPlayer->name == NULL ) {
+        return stringDuplicate( title );
+        }
+    else {
+        return autoSprintf( "%s %s", title, nextPlayer->name );
+        } 
+    }
+
+
+
+static void replaceOrder( LiveObject *nextPlayer, char *inFormattedOrder,
+                          int inOrderNumber, int inOriginatorID ) {
+    if( nextPlayer->currentOrderNumber < inOrderNumber ) {
+        nextPlayer->currentOrderNumber = inOrderNumber;
+        nextPlayer->currentOrderOriginatorID = inOriginatorID;
+        
+        if( nextPlayer->currentOrder != NULL ) {
+            delete [] nextPlayer->currentOrder;
+            }
+        nextPlayer->currentOrder = stringDuplicate( inFormattedOrder );
+        }
+    }
+
+
+
+
+// speaker can be NULL sometimes
+static char *translatePhraseFromSpeaker( char *inPhrase,
+                                         LiveObject *speakerObj,
+                                         LiveObject *listenerObj ) {
+    char *trimmedPhrase = inPhrase;
+    LiveObject *nextPlayer = listenerObj;
+    
+    
+    // skip language filtering in some cases
+    // VOG can talk to anyone
+    // so can force spawns
+    // also, skip in on very low pop servers
+    // (just let everyone talk together)
+    // also in case where speach is server-forced
+    // sound representations (like [GASP])
+    // but NOT for reading written words
+    if( speakerObj == NULL ||
+        nextPlayer->vogMode || 
+        nextPlayer->forceSpawn || 
+        ( speakerObj != NULL &&
+          speakerObj->vogMode ) ||
+        ( speakerObj != NULL &&
+          speakerObj->forceSpawn ) ||
+        players.size() < 
+        minActivePlayersForLanguages ||
+        strlen( trimmedPhrase ) == 0 ||
+        trimmedPhrase[0] == '[' ||
+        isPolylingual( nextPlayer->displayID ) ||
+        ( speakerObj != NULL &&
+          isPolylingual( 
+              speakerObj->displayID ) ) ) {
+        
+        return stringDuplicate( trimmedPhrase );
+        }
+    else {
+        int speakerDrunkenness = speakerObj->drunkenness;
+        
+        return mapLanguagePhrase( 
+            trimmedPhrase,
+            speakerObj->lineageEveID,
+            nextPlayer->lineageEveID,
+            speakerObj->id,
+            nextPlayer->id,
+            computeAge( speakerObj ),
+            computeAge( nextPlayer ),
+            speakerObj->parentID,
+            nextPlayer->parentID,
+            speakerDrunkenness / 10.0 );
+        }
+    }
+
+
+
+static int orderDistance = 10;
+
+
+static void checkOrderPropagation() {
+    for( int i=0; i<players.size(); i++ ) {
+        LiveObject *o = players.getElement( i );
+        
+        if( o->error ) {
+            continue;
+            }
+
+        if( o->followingID != -1 ) {
+            LiveObject *l = getLiveObject( o->followingID );
+            
+            if( l != NULL && l->currentOrder != NULL && 
+                l->currentOrderNumber > o->currentOrderNumber) {
+                
+                // our leader has a new order that we don't have
+
+                // are we close enough to them?
+                
+                GridPos ourPos = getPlayerPos( o );
+                GridPos theirPos = getPlayerPos( l );
+                                
+                double d = distance( ourPos, theirPos );
+
+                if( d <= orderDistance ) {
+
+                    // close!
+
+                    // make leader doesn't see us as exiled
+                    
+                    // are they, or any of their leaders, on our exile list?
+                    
+                    LiveObject *nextToCheck = l;
+                    
+                    char exiled = false;
+                    while( nextToCheck != NULL ) {
+                        if( o->exiledByIDs.getElementIndex( nextToCheck->id )
+                            != -1 ) {
+                            exiled = true;
+                            break;
+                            }
+                        if( nextToCheck->followingID != -1 ) {
+                            nextToCheck = 
+                                getLiveObject( nextToCheck->followingID );
+                            }
+                        else {
+                            nextToCheck = NULL;
+                            }
+                        }
+
+                    // replace order even if exiled, so we don't have to keep
+                    // checking them later
+                    replaceOrder( o, l->currentOrder, 
+                                  l->currentOrderNumber,
+                                  l->currentOrderOriginatorID );
+
+                    // but don't actually deliver message to them if exiled
+                    if( ! exiled ) {
+                        
+                        // everything after first ** should be translated
+                        
+                        char *fullOrder = stringDuplicate( l->currentOrder );
+                        
+                        char *messageStart = strstr( fullOrder, "**" );
+                        
+                        if( messageStart != NULL ) {
+                            // terminate here
+                            messageStart[0] = '\0';
+                            
+                            messageStart = &( messageStart[2] );
+                            
+                            char *transOrder = translatePhraseFromSpeaker( 
+                                messageStart,
+                                getLiveObject( l->currentOrderOriginatorID ),
+                                o );
+                            
+                            char *fullTransOrder = autoSprintf( "%s**%s",
+                                                                fullOrder,
+                                                                transOrder );
+                            delete [] transOrder;
+                            delete [] fullOrder;
+                            fullOrder = fullTransOrder;
+                            }
+                                
+
+                        sendGlobalMessage( fullOrder, o );
+                        delete [] fullOrder;
+                        }
+                    }
+                }
+            } 
+        }
+    
+    }
+
+
+
+
+
+
+void makePlayerBiomeSick( LiveObject *nextPlayer, 
+                          int sicknessObjectID ) {
+    nextPlayer->holdingID = 
+        sicknessObjectID;
+
+    nextPlayer->holdingBiomeSickness = true;
+
+    ForcedEffects e = 
+        checkForForcedEffects( 
+            nextPlayer->holdingID );
+                            
+    if( e.emotIndex != -1 ) {
+        nextPlayer->emotFrozen = true;
+        nextPlayer->emotFrozenIndex =
+            e.emotIndex;
+        newEmotPlayerIDs.push_back( 
+            nextPlayer->id );
+        newEmotIndices.push_back( 
+            e.emotIndex );
+        newEmotTTLs.push_back( e.ttlSec );
+        interruptAnyKillEmots( 
+            nextPlayer->id, e.ttlSec );
+        }
+    }
+
+
+
+
 
 
 int main() {
@@ -14339,6 +14975,22 @@ int main() {
     readPhrases( "youExilePhrases", &youExilePhrases );
     readPhrases( "namedExilePhrases", &namedExilePhrases );
 
+    readPhrases( "youRedeemPhrases", &youRedeemPhrases );
+    readPhrases( "namedRedeemPhrases", &namedRedeemPhrases );
+
+
+    readPhrases( "youKillPhrases", &youKillPhrases );
+    readPhrases( "namedKillPhrases", &namedKillPhrases );
+    readPhrases( "namedAfterKillPhrases", &namedAfterKillPhrases );
+
+
+    orderPhrase = 
+        SettingsManager::getSettingContents( "orderPhrase", 
+                                             "ORDER," );
+
+    orderDistance = 
+        SettingsManager::getIntSetting( "orderDistance", 10 );
+    
     
     curseYouPhrase = 
         SettingsManager::getSettingContents( "curseYouPhrase", 
@@ -14734,7 +15386,8 @@ int main() {
                 
                 delete [] message;           
                 }
-
+            
+            checkOrderPropagation();
             
             checkCustomGlobalMessage();
             }
@@ -15239,12 +15892,14 @@ int main() {
                      nextConnection->ticketServerAccepted &&
                      ! nextConnection->lifeTokenSpent ) {
 
+                // this "butDisconnected" state applies even if
+                // we see them as connected, becasue they are clearly
+                // reconnecting now
                 char liveButDisconnected = false;
                 
                 for( int p=0; p<players.size(); p++ ) {
                     LiveObject *o = players.getElement( p );
                     if( ! o->error && 
-                        ! o->connected && 
                         strcmp( o->email, 
                                 nextConnection->email ) == 0 ) {
                         liveButDisconnected = true;
@@ -17378,29 +18033,10 @@ int main() {
                                         // biome sickness, which we can now
                                         // freely replace
                                         
-                                        nextPlayer->holdingID = 
-                                            sicknessObjectID;
+                                        makePlayerBiomeSick( nextPlayer, 
+                                                             sicknessObjectID );
                                         playerIndicesToSendUpdatesAbout.
                                             push_back( i );
-
-                                        nextPlayer->holdingBiomeSickness = true;
-
-                                        ForcedEffects e = 
-                                            checkForForcedEffects( 
-                                                nextPlayer->holdingID );
-                            
-                                        if( e.emotIndex != -1 ) {
-                                            nextPlayer->emotFrozen = true;
-                                            nextPlayer->emotFrozenIndex =
-                                                e.emotIndex;
-                                            newEmotPlayerIDs.push_back( 
-                                                nextPlayer->id );
-                                            newEmotIndices.push_back( 
-                                                e.emotIndex );
-                                            newEmotTTLs.push_back( e.ttlSec );
-                                            interruptAnyKillEmots( 
-                                                nextPlayer->id, e.ttlSec );
-                                            }
                                         }
                                     }
                                 else if( sicknessObjectID == -1 &&
@@ -17641,6 +18277,7 @@ int main() {
                         
                         LiveObject *otherToFollow = NULL;
                         LiveObject *otherToExile = NULL;
+                        LiveObject *otherToRedeem = NULL;
                         
                         if( isYouFollowSay( m.saidText ) ) {
                             otherToFollow = getClosestOtherPlayer( nextPlayer );
@@ -17654,7 +18291,9 @@ int main() {
                                    getPlayerByName( namedPlayer, nextPlayer );
                                
                                if( otherToFollow == NULL &&
-                                   strcmp( namedPlayer, "MYSELF" ) == 0 ) {
+                                   ( strcmp( namedPlayer, "MYSELF" ) == 0 ||
+                                     strcmp( namedPlayer, "NO ONE" ) == 0 ||
+                                     strcmp( namedPlayer, "NOBODY" ) == 0 ) ) {
                                    otherToFollow = nextPlayer;
                                    }
                                }
@@ -17672,14 +18311,21 @@ int main() {
                                 nextPlayer->followingID = otherToFollow->id;
                                 nextPlayer->followingUpdate = true;
                                 
+                                if( otherToFollow->leadingColorIndex == -1 ) {
+                                    otherToFollow->leadingColorIndex =
+                                        getUnusedLeadershipColor();
+                                    }
+
                                 // break any loops
                                 LiveObject *o = nextPlayer;
                                 
                                 while( o != NULL && o->followingID != -1 ) {
                                     if( o->followingID == nextPlayer->id ) {
                                         // loop
-                                        o->followingID = -1;
-                                        o->followingUpdate = true;
+                                        // break it by having next player's
+                                        // new leader follow no one
+                                        otherToFollow->followingID = -1;
+                                        otherToFollow->followingUpdate = true;
                                         break;
                                         }
                                     o = getLiveObject( o->followingID );
@@ -17712,8 +18358,117 @@ int main() {
                                     otherToExile->exileUpdate = true;
                                     }
                                 }
+                            else {
+                                if( isYouRedeemSay( m.saidText ) ) {
+                                    otherToRedeem = 
+                                        getClosestOtherPlayer( nextPlayer );
+                                    }
+                                else {
+                                    char *namedPlayer = 
+                                        isNamedRedeemSay( m.saidText );
+                                    
+                                    if( namedPlayer != NULL ) {
+                                        otherToRedeem =
+                                            getPlayerByName( namedPlayer, 
+                                                             nextPlayer );
+                                        }
+                                    }
+                            
+                                if( otherToRedeem != NULL ) {
+                                    // pass redemption downward
+                                    // clearing up exiles perpetrated by
+                                    // our followers
+                                    
+                                    for( int e=0; 
+                                         e<otherToRedeem->exiledByIDs.size();
+                                         e++ ) {
+                                        
+                                        // for
+                                        LiveObject *exiler =
+                                            getLiveObject( 
+                                                otherToRedeem->
+                                                exiledByIDs.
+                                                getElementDirect( e ) );
+                                        
+                                        if( exiler == nextPlayer ) {
+                                            
+                                            otherToRedeem->
+                                                exiledByIDs.deleteElement( e );
+                                            e--;
+                                            otherToRedeem->exileUpdate = true;
+                                            }
+                                        else if( exiler != NULL && 
+                                                 isFollower( nextPlayer,
+                                                             exiler ) ) {
+                                            otherToRedeem->
+                                                exiledByIDs.deleteElement( e );
+                                            e--;
+                                            otherToRedeem->exileUpdate = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        if( strstr( m.saidText, orderPhrase ) == m.saidText ) {
+                            // starts with ORDER phrase
+                            
+                            char *order = 
+                                trimWhitespace(
+                                    &( m.saidText[ strlen( orderPhrase ) ] ) );
+                            
+                            char *leadershipName = 
+                                getLeadershipName( nextPlayer );
+
+                            if( leadershipName != NULL ) {
+                                // they are a leader
+
+                                char *formattedOrder = 
+                                    autoSprintf( "ORDER FROM YOUR %s:**%s",
+                                                 leadershipName, order );
+                                
+                                delete [] leadershipName;
+                                
+                                // originated with this player
+                                replaceOrder( nextPlayer, formattedOrder,
+                                              nextOrderNumber,
+                                              nextPlayer->id );
+                                
+                                delete [] formattedOrder;
+                                nextOrderNumber++;
+                                }
+                            delete [] order;
                             }
                         
+                        
+                        if( nextPlayer->holdingID > 0 &&
+                            getObject( nextPlayer->holdingID )->deadlyDistance
+                            > 0 ) {
+                            // are they speaking intent to kill?
+
+                            LiveObject *otherToKill = NULL;
+                            
+                            if( isYouKillSay( m.saidText ) ) {
+                                otherToKill = 
+                                    getClosestOtherPlayer( nextPlayer );
+                                }
+                            else {
+                                char *namedPlayer = 
+                                    isNamedKillSay( m.saidText );
+                                    
+                                if( namedPlayer != NULL ) {
+                                    otherToKill =
+                                        getPlayerByName( namedPlayer, 
+                                                         nextPlayer );
+                                    delete [] namedPlayer;
+                                    }
+                                }
+
+                            if( otherToKill != NULL ) {
+                                playerIndicesToSendUpdatesAbout.push_back( i );
+                                tryToStartKill( nextPlayer, otherToKill->id );
+                                }
+                            }
                         
 
 
@@ -17867,94 +18622,7 @@ int main() {
                         }
                     else if( m.type == KILL ) {
                         playerIndicesToSendUpdatesAbout.push_back( i );
-                        if( m.id > 0 && 
-                            nextPlayer->holdingID > 0 &&
-                            canPlayerUseOrLearnTool( nextPlayer,
-                                                     nextPlayer->holdingID ) ) {
-                            
-                            ObjectRecord *heldObj = 
-                                getObject( nextPlayer->holdingID );
-                            
-                            
-                            if( heldObj->deadlyDistance > 0 ) {
-                            
-                                // player transitioning into kill state?
-                            
-                                LiveObject *targetPlayer =
-                                    getLiveObject( m.id );
-                            
-                                if( targetPlayer != NULL ) {
-                                    
-                                    // block intra-family kills with
-                                    // otherFamilyOnly weapons
-                                    char weaponBlocked = false;
-                                    
-                                    if( strstr( heldObj->description,
-                                                "otherFamilyOnly" ) ) {
-                                        // make sure victim is in
-                                        // different family
-                                        // AND that there's no peace treaty
-                                        if( targetPlayer->lineageEveID ==
-                                            nextPlayer->lineageEveID
-                                            ||
-                                            isPeaceTreaty( 
-                                                targetPlayer->lineageEveID,
-                                                nextPlayer->lineageEveID )
-                                            ||
-                                            ! isWarState( 
-                                                targetPlayer->lineageEveID,
-                                                nextPlayer->lineageEveID ) ) {
-                                            
-                                            weaponBlocked = true;
-                                            }
-                                        }
-                                    
-                                    if( ! weaponBlocked  &&
-                                        ! isAlreadyInKillState( nextPlayer ) ) {
-                                        // they aren't already in one
-                                        
-                                        removeAnyKillState( nextPlayer );
-                                        
-                                        char enteredState =
-                                            addKillState( nextPlayer,
-                                                          targetPlayer );
-                                        
-                                        if( enteredState && 
-                                            ! isNoWaitWeapon( 
-                                                nextPlayer->holdingID ) ) {
-                                            
-                                            // no killer emote for no-wait
-                                            // weapons (these aren't
-                                            // actually weapons, like
-                                            // tattoo needles and snowballs)
-
-                                            nextPlayer->emotFrozen = true;
-                                            nextPlayer->emotFrozenIndex = 
-                                                killEmotionIndex;
-                                            
-                                            newEmotPlayerIDs.push_back( 
-                                                nextPlayer->id );
-                                            newEmotIndices.push_back( 
-                                                killEmotionIndex );
-                                            newEmotTTLs.push_back( 120 );
-                                            
-                                            if( ! targetPlayer->emotFrozen ) {
-                                                
-                                                targetPlayer->emotFrozen = true;
-                                                targetPlayer->emotFrozenIndex =
-                                                    victimEmotionIndex;
-                                                
-                                                newEmotPlayerIDs.push_back( 
-                                                    targetPlayer->id );
-                                                newEmotIndices.push_back( 
-                                                    victimEmotionIndex );
-                                                newEmotTTLs.push_back( 120 );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        tryToStartKill( nextPlayer, m.id );
                         }
                     else if( m.type == USE ) {
                         // send update even if action fails (to let them
@@ -18356,7 +19024,21 @@ int main() {
                                         if( r->newTarget > 0 &&
                                             getObject( r->newTarget )->
                                             permanent ) {
-                                            couldBeTool = true;
+
+                                            // but ONLY if there's
+                                            // no bare-hand action possible
+                                            // on the result
+
+                                            // if that exists, we took
+                                            // apart the loose tool into
+                                            // a stack of parts
+
+                                            TransRecord *bareTrans =
+                                                getPTrans( 0, r->newTarget );
+                                            
+                                            if( bareTrans == NULL ) {
+                                                couldBeTool = true;
+                                                }
                                             }
                                         }
 
@@ -18810,13 +19492,22 @@ int main() {
                                     
                                     updateYum( nextPlayer, targetObj->id );
                                     
-
+                                    
+                                    int bonus = eatBonus;
+                                    
+                                    if( targetObj->alcohol > 0 ) {
+                                        bonus = 0;
+                                        }
+                                    
                                     logEating( targetObj->id,
-                                               targetObj->foodValue + eatBonus,
+                                               targetObj->foodValue + bonus,
                                                computeAge( nextPlayer ),
                                                m.x, m.y );
                                     
-                                    nextPlayer->foodStore += eatBonus;
+                                    nextPlayer->foodStore += bonus;
+
+                                    checkForFoodEatingEmot( nextPlayer,
+                                                            targetObj->id );
 
                                     int cap =
                                         computeFoodCapacity( nextPlayer );
@@ -19638,13 +20329,21 @@ int main() {
                                     updateYum( targetPlayer, obj->id,
                                                targetPlayer == nextPlayer );
 
+                                    int bonus = eatBonus;
+                                    
+                                    if( obj->alcohol > 0 ) {
+                                        bonus = 0;
+                                        }
+
                                     logEating( obj->id,
-                                               obj->foodValue + eatBonus,
+                                               obj->foodValue + bonus,
                                                computeAge( targetPlayer ),
                                                m.x, m.y );
                                     
-                                    targetPlayer->foodStore += eatBonus;
+                                    targetPlayer->foodStore += bonus;
 
+                                    checkForFoodEatingEmot( targetPlayer,
+                                                            obj->id );
                                     
                                     if( targetPlayer->foodStore > cap ) {
                                         int over = 
@@ -20858,7 +21557,8 @@ int main() {
                             }
                         }
                     }
-                    
+                
+                leaderDied( nextPlayer );
 
                 removeAllOwnership( nextPlayer );
                 
@@ -21079,7 +21779,9 @@ int main() {
                                   male,
                                   dropPos.x, dropPos.y,
                                   players.size() - 1,
-                                  disconnect );
+                                  disconnect,
+                                  nextPlayer->murderPerpID,
+                                  nextPlayer->murderPerpEmail );
                     
                         if( shutdownMode ) {
                             handleShutdownDeath( 
@@ -22151,8 +22853,8 @@ int main() {
 
                     if( nextPlayer->drunkenness > 0 ) {
                         // for every unit of food consumed, consume one
-                        // unit of drunkenness
-                        nextPlayer->drunkenness -= 1.0;
+                        // half unit of drunkenness
+                        nextPlayer->drunkenness -= 0.5;
                         if( nextPlayer->drunkenness < 0 ) {
                             nextPlayer->drunkenness = 0;
                             }
@@ -22206,7 +22908,9 @@ int main() {
                                       ! getFemale( decrementedPlayer ),
                                       deathPos.x, deathPos.y,
                                       players.size() - 1,
-                                      false );
+                                      false,
+                                      nextPlayer->murderPerpID,
+                                      nextPlayer->murderPerpEmail );
                             }
                         
                         if( shutdownMode &&
@@ -23332,7 +24036,7 @@ int main() {
                 int followL = 0;
                 unsigned char *followM = getFollowingMessage( true, &followL );
                 
-                if( followM != NULL ) {
+                if( followM != NULL && nextPlayer->connected ) {
                     nextPlayer->sock->send( 
                         followM, 
                         followL, 
@@ -23346,7 +24050,7 @@ int main() {
                 int exileL = 0;
                 unsigned char *exileM = getExileMessage( true, &exileL );
                 
-                if( exileM != NULL ) {
+                if( exileM != NULL && nextPlayer->connected ) {
                     nextPlayer->sock->send( 
                         exileM, 
                         exileL, 
@@ -24352,17 +25056,14 @@ int main() {
                                 int listenerEveID = nextPlayer->lineageEveID;
                                 int listenerID = nextPlayer->id;
                                 double listenerAge = computeAge( nextPlayer );
-                                int listenerParentID = nextPlayer->parentID;
                                 
                                 int speakerEveID;
                                 double speakerAge;
-                                int speakerParentID = -1;
                                 
                                 if( speakerObj != NULL ) {
                                     speakerEveID = speakerObj->lineageEveID;
                                     speakerID = speakerObj->id;
                                     speakerAge = computeAge( speakerObj );
-                                    speakerParentID = speakerObj->parentID;
                                     }
                                 else {
                                     // speaker dead, doesn't matter what we
@@ -24422,55 +25123,9 @@ int main() {
                                     }
 
                                 
-                                char *translatedPhrase;
-                                
-                                // skip language filtering in some cases
-                                // VOG can talk to anyone
-                                // so can force spawns
-                                // also, skip in on very low pop servers
-                                // (just let everyone talk together)
-                                // also in case where speach is server-forced
-                                // sound representations (like [GASP])
-                                // but NOT for reading written words
-                                if( nextPlayer->vogMode || 
-                                    nextPlayer->forceSpawn || 
-                                    ( speakerObj != NULL &&
-                                      speakerObj->vogMode ) ||
-                                    ( speakerObj != NULL &&
-                                      speakerObj->forceSpawn ) ||
-                                    players.size() < 
-                                    minActivePlayersForLanguages ||
-                                    strlen( trimmedPhrase ) == 0 ||
-                                    trimmedPhrase[0] == '[' ||
-                                    isPolylingual( nextPlayer->displayID ) ||
-                                    ( speakerObj != NULL &&
-                                      isPolylingual( 
-                                          speakerObj->displayID ) ) ) {
-                                    
-                                    translatedPhrase =
-                                        stringDuplicate( trimmedPhrase );
-                                    }
-                                else {
-                                    int speakerDrunkenness = 0;
-                                    
-                                    if( speakerObj != NULL ) {
-                                        speakerDrunkenness =
-                                            speakerObj->drunkenness;
-                                        }
-
-                                    translatedPhrase =
-                                        mapLanguagePhrase( 
-                                            trimmedPhrase,
-                                            speakerEveID,
-                                            listenerEveID,
-                                            speakerID,
-                                            listenerID,
-                                            speakerAge,
-                                            listenerAge,
-                                            speakerParentID,
-                                            listenerParentID,
-                                            speakerDrunkenness / 10.0 );
-                                    }
+                                char *translatedPhrase = 
+                                    translatePhraseFromSpeaker(
+                                        trimmedPhrase, speakerObj, nextPlayer );
                                 
                                 if( speakerEveID != 
                                     listenerEveID
@@ -25089,6 +25744,10 @@ int main() {
                     delete [] nextPlayer->name;
                     }
 
+                if( nextPlayer->currentOrder != NULL ) {
+                    delete [] nextPlayer->currentOrder;
+                    }
+
                 if( nextPlayer->familyName != NULL ) {
                     delete [] nextPlayer->familyName;
                     }
@@ -25182,6 +25841,9 @@ void drawSprite( void*, doublePair, double, double, char ) {
     }
 
 void setDrawColor( float inR, float inG, float inB, float inA ) {
+    }
+
+void setDrawColor( FloatColor inColor ) {
     }
 
 void setDrawFade( float ) {

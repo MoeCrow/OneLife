@@ -5519,6 +5519,14 @@ int checkDecayObject( int inX, int inY, int inID ) {
 
                 char stayInBiome = false;
                 
+                char avoidFloor = false;
+                
+                if( t->newTarget > 0 &&
+                    strstr( getObject( t->newTarget )->description, 
+                            "groundOnly" ) ) {
+                    avoidFloor = true;
+                    }
+                
 
                 if( t->move < 3 ) {
                     
@@ -5599,6 +5607,26 @@ int checkDecayObject( int inX, int inY, int inID ) {
                         dir,
                         2 * M_PI * 
                         randSource.getRandomBoundedInt( 0, 7 ) / 8.0 );
+
+                    // clean up rounding errors
+                    if( fabs( dir.x ) < 0.1 ) {
+                        dir.x = 0;
+                        }
+                    if( fabs( dir.y ) < 0.1 ) {
+                        dir.y = 0;
+                        }
+                    if( dir.x > 0.9 ) {
+                        dir.x = 1;
+                        }
+                    if( dir.x < - 0.9 ) {
+                        dir.x = -1;
+                        }
+                    if( dir.y > 0.9 ) {
+                        dir.y = 1;
+                        }
+                    if( dir.y < - 0.9 ) {
+                        dir.y = -1;
+                        }
                     }
                 
                 if( dir.x != 0 && dir.y != 0 ) {
@@ -5674,16 +5702,29 @@ int checkDecayObject( int inX, int inY, int inID ) {
                                 trans = getPTrans( newID, -1 );
                                 }
                             }
-                            
+                        
+                        
+                        char blockedByFloor = false;
+                        
+                        if( oID == 0 &&
+                            avoidFloor ) {
+                            int floorID = getMapFloor( testX, testY );
+                        
+                            if( floorID > 0 ) {
+                                blockedByFloor = true;
+                                }
+                            }
 
 
                         if( i >= tryDist && oID == 0 ) {
-                            // found a bare ground spot for it to move
-                            newX = testX;
-                            newY = testY;
-                            // keep any bare ground transition (or NULL)
-                            destTrans = trans;
-                            break;
+                            if( ! blockedByFloor ) {
+                                // found a bare ground spot for it to move
+                                newX = testX;
+                                newY = testY;
+                                // keep any bare ground transition (or NULL)
+                                destTrans = trans;
+                                break;
+                                }
                             }
                         else if( i >= tryDist && trans != NULL ) {
                             newX = testX;

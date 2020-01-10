@@ -2426,6 +2426,21 @@ LivingLifePage::LivingLifePage()
         mUsingSteam = true;
         }
 
+
+    const char *badgeSettingsNames[3] = { "badgeObjects",
+                                          "badgeObjectsHalfX",
+                                          "badgeObjectsFullX" };
+    for( int i=0; i<3; i++ ) {
+        SimpleVector<int> *badgeSetting = 
+            SettingsManager::getIntSettingMulti( badgeSettingsNames[i] );
+        
+        mLeadershipBadges[i].push_back_other( badgeSetting );
+        delete badgeSetting;
+        }
+    
+    mFullXObjectID = SettingsManager::getIntSetting( "fullX", 0 );
+    
+
     mHomeSlipSprites[0] = mHomeSlipSprite;
     mHomeSlipSprites[1] = mHomeSlip2Sprite;
     
@@ -4449,6 +4464,32 @@ ObjectAnimPack LivingLifePage::drawLiveObject(
     
     HoldingPos holdingPos;
     holdingPos.valid = false;
+
+    int badge = -1;
+    if( inObj->hasBadge && inObj->clothing.tunic != NULL ) {
+        int badgeXIndex = 0;
+        
+        if( inObj->isDubious ) {
+            badgeXIndex = 1;
+            }
+        if( inObj->isExiled ) {
+            badgeXIndex = 2;
+            }
+        
+        if( inObj->leadershipLevel < mLeadershipBadges[badgeXIndex].size() ) {
+            badge = mLeadershipBadges[badgeXIndex].
+                getElementDirect( inObj->leadershipLevel );
+            }
+        else if( mLeadershipBadges[badgeXIndex].size() > 0 ) {
+            badge = mLeadershipBadges[badgeXIndex].
+                getElementDirect( mLeadershipBadges[badgeXIndex].size() - 1 );
+            }
+        }
+    else if( inObj->isExiled ) {
+        // exiled and no badge visible
+        // show straight X
+        badge = mFullXObjectID;
+        }
     
 
     if( inObj->holdingID > 0 &&
@@ -4518,6 +4559,20 @@ ObjectAnimPack LivingLifePage::drawLiveObject(
             personPos.x -= shiftScale * 32;
             }
         
+        
+        // draw on bare skin only if plain X
+        setAnimationBadge( badge, 
+                           ( badge == mFullXObjectID ) );
+        if( badge != -1 ) {
+            if( badge == mFullXObjectID ) {
+                FloatColor white = { 1, 1, 1, 1 };
+                setAnimationBadgeColor( white );
+                }
+            else {
+                setAnimationBadgeColor( inObj->badgeColor );
+                }
+            }
+
         holdingPos =
             drawObjectAnim( inObj->displayID, 2, curType, 
                             timeVal,
@@ -4542,7 +4597,9 @@ ObjectAnimPack LivingLifePage::drawLiveObject(
                             inObj->clothing,
                             inObj->clothingContained );
         hidePersonShadows( false );
-        
+
+        setAnimationBadge( -1 );
+
         setAnimationEmotion( NULL );
         }
     
@@ -4753,7 +4810,12 @@ ObjectAnimPack LivingLifePage::drawLiveObject(
                 
                 restoreSkipDrawing( heldObject );
                 }
+
             
+            setAnimationBadge( badge );
+            if( badge != -1 ) {
+                setAnimationBadgeColor( inObj->badgeColor );
+                }
 
             // rideable object
             holdingPos =
@@ -4781,6 +4843,8 @@ ObjectAnimPack LivingLifePage::drawLiveObject(
                                 inObj->clothingContained );
             
             setAnimationEmotion( NULL );
+       
+            setAnimationBadge( -1 );
             }
         
 
@@ -6611,17 +6675,34 @@ void LivingLifePage::draw( doublePair inViewCenter,
 
         // are we holding the target of our current hint?
         // if so, hide hint arrows
-        if( mLastHintSortedList.size() > mCurrentHintIndex ) {    
+        if( heldID > 0 &&
+            mLastHintSortedList.size() > mCurrentHintIndex ) {    
+            
             TransRecord *t = 
                 mLastHintSortedList.getElementDirect( mCurrentHintIndex );
             
+            char holdingActor = false;
+            char holdingTarget = false;
+            
+            int heldParent = getObjectParent( heldID );
+
+            if( t->actor > 0 &&
+                getObjectParent( t->actor ) == heldParent ) {
+                holdingActor = true;
+                }
+            if( t->target > 0 &&
+                getObjectParent( t->target ) == heldParent ) {
+                holdingTarget = true;
+                }
+            
+
             
             if( t->newActor > 0 && 
-                t->newActor == heldID  && t->actor != heldID ) {
+                t->newActor == heldID  && ! holdingActor ) {
                 hit = true;
                 }
             else if( t->newTarget > 0 && 
-                     t->newTarget == heldID && t->target != heldID ) {
+                     t->newTarget == heldID && ! holdingTarget ) {
                 hit = true;
                 }
             }
@@ -9865,7 +9946,7 @@ void LivingLifePage::draw( doublePair inViewCenter,
                     desToDelete = des;
                     }
                 
-                if( otherObj->leadershipNameTag != NULL ) {
+                if( otherObj != NULL && otherObj->leadershipNameTag != NULL ) {
                     if( otherObj->name == NULL ) {
                         des = autoSprintf( "%s - %s",
                                            otherObj->leadershipNameTag, des );
@@ -11398,11 +11479,12 @@ char *LivingLifePage::getHintMessage( int inObjectID, int inIndex,
         mCurrentHintTargetObject[1] = 0;
 
         // never show visual pointer toward what we're holding
-        if( target > 0 && target != inObjectID && 
+        // we handle this elsewhere too, so just obey inDoNotPoint here
+        if( target > 0 && 
             target != inDoNotPointAtThis ) {
             mCurrentHintTargetObject[1] = target;
             }
-        if( actor > 0 && actor != inObjectID &&
+        if( actor > 0 &&
                  actor != inDoNotPointAtThis ) {
             mCurrentHintTargetObject[0] = actor;
             }
@@ -11657,6 +11739,35 @@ void LivingLifePage::endExtraObjectMove( int inExtraIndex ) {
 
 
 
+
+// color list from here:
+// https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+
+#define NUM_BADGE_COLORS 17
+static const char *badgeColors[NUM_BADGE_COLORS] = { "#e6194B", 
+                                                     "#3cb44b", 
+                                                     "#ffe119", 
+                                                     "#4363d8", 
+                                                     "#f58231",
+                                                     
+                                                     "#42d4f4", 
+                                                     "#f032e6", 
+                                                     "#fabebe", 
+                                                     "#469990",
+                                                     "#e6beff", 
+                                                     
+                                                     "#9A6324", 
+                                                     "#fffac8", 
+                                                     "#800000", 
+                                                     "#aaffc3", 
+                                                     "#000075", 
+                                                     
+                                                     "#a9a9a9", 
+                                                     "#ffffff" };
+
+
+
+static char justHitTab = false;
 
         
 void LivingLifePage::step() {
@@ -12245,7 +12356,8 @@ void LivingLifePage::step() {
         if( ( isHintFilterStringInvalid() &&
               mCurrentHintObjectID != mNextHintObjectID ) ||
             mCurrentHintIndex != mNextHintIndex ||
-            mForceHintRefresh ) {
+            mForceHintRefresh ||
+            justHitTab ) {
             
             char autoHint = false;
             
@@ -12257,7 +12369,11 @@ void LivingLifePage::step() {
                 // and they don't have a filter applied currently
                 autoHint = true;
                 }
-
+            // or they just hit TAB 
+            if( justHitTab ) {
+                autoHint = false;
+                }
+            justHitTab = false;
             
             mForceHintRefresh = false;
 
@@ -13585,15 +13701,17 @@ void LivingLifePage::step() {
         else if( type == FOLLOWING ) {
             SimpleVector<char*> *tokens = tokenizeString( message );
             
-            if( tokens->size() >= 3 ) {
+            if( tokens->size() >= 4 ) {
              
-                for( int i=1; i< tokens->size() - 1; i += 2 ){
+                for( int i=1; i< tokens->size() - 1; i += 3 ){
                     
                     int f = 0;
                     int l = 0;
-                
+                    int c = -1;
+                    
                     sscanf( tokens->getElementDirect( i ), "%d", &f );
                     sscanf( tokens->getElementDirect( i + 1 ), "%d", &l );
+                    sscanf( tokens->getElementDirect( i + 2 ), "%d", &c );
                     
                     LiveObject *fo = getLiveObject( f );
                     
@@ -13603,6 +13721,18 @@ void LivingLifePage::step() {
                             }
                         else {
                             fo->followingID = -1;
+                            }
+                        }
+                    
+                    if( l > 0 && c != -1 ) {
+                        LiveObject *lo = getLiveObject( l );
+                        if( lo != NULL ) {
+                            while( c >= NUM_BADGE_COLORS ) {
+                                // wrap around
+                                c -= NUM_BADGE_COLORS;
+                                }
+                            lo->personalLeadershipColor = getFloatColor(
+                                badgeColors[c] );
                             }
                         }
                     }
@@ -13628,10 +13758,15 @@ void LivingLifePage::step() {
                     
                     LiveObject *to = getLiveObject( t );
                     
-                    if( to != NULL && p != 0 ) {
-                        
-                        if( to->exiledByIDs.getElementIndex( p ) == -1 ) {
-                            to->exiledByIDs.push_back( p );
+                    if( to != NULL ) {
+                        if( p == -1 ) {
+                            // their exile list has been cleared
+                            to->exiledByIDs.deleteAll();
+                            }
+                        else if( p > 0 ) {
+                            if( to->exiledByIDs.getElementIndex( p ) == -1 ) {
+                                to->exiledByIDs.push_back( p );
+                                }
                             }
                         }
                     }
@@ -15169,9 +15304,13 @@ void LivingLifePage::step() {
                 o.followingID = -1;
                 o.highestLeaderID = -1;
                 o.leadershipLevel = 0;
+                o.personalLeadershipColor.r = 1;
+                o.personalLeadershipColor.g = 1;
+                o.personalLeadershipColor.b = 1;
+                o.personalLeadershipColor.a = 1;
                 o.hasBadge = false;
-                o.hasPersonalLeadershipColor = false;
                 o.isExiled = false;
+                o.isDubious = false;
                 o.followingUs = false;
                 o.leadershipNameTag = NULL;
                 
@@ -16231,7 +16370,8 @@ void LivingLifePage::step() {
                                         getObject( existing->holdingID );
                                     
 
-                                    if( oldHeld > 0 && 
+                                    if( oldHeld > 0 &&
+                                        oldHeld != existing->holdingID &&
                                         heldTransitionSourceID == -1 ) {
                                         // held object auto-decayed from 
                                         // some other object
@@ -16297,7 +16437,8 @@ void LivingLifePage::step() {
                                         }
                                     
                                     
-                                    if( ( ! otherSoundPlayed ||
+                                    if( oldHeld != existing->holdingID &&
+                                        ( ! otherSoundPlayed ||
                                           heldObj->creationSoundForce )
                                           && 
                                         ! clothingChanged &&
@@ -22126,15 +22267,14 @@ void LivingLifePage::pointerDown( float inX, float inY ) {
             delete [] killMessage;
             
 
-            // try to walk near victim right away
-            killMode = true;
-                    
+            // given that there's a cool-down now before killing, don't
+            // auto walk there.
+            // Player will enter kill state, and we'll let them navivate there
+            // after that.
             ourLiveObject->killMode = true;
             ourLiveObject->killWithID = ourLiveObject->holdingID;
-
-            // ignore mod-click from here on out, to avoid
-            // force-dropping weapon
-            modClick = false;
+            
+            return;
             }
         }
     
@@ -22780,8 +22920,6 @@ void LivingLifePage::pointerDown( float inX, float inY ) {
 
 
         
-        ourLiveObject->inMotion = true;
-
         
 
         computePathToDest( ourLiveObject );
@@ -22947,6 +23085,10 @@ void LivingLifePage::pointerDown( float inX, float inY ) {
         delete [] message;
 
         // start moving before we hear back from server
+
+        
+        ourLiveObject->inMotion = true;
+
 
 
 
@@ -23257,6 +23399,7 @@ void LivingLifePage::keyDown( unsigned char inASCII ) {
                     if( mNextHintIndex < 0 ) {
                         mNextHintIndex += num;
                         }
+                    justHitTab = true;
                     }
                 }
             break;
@@ -23751,64 +23894,31 @@ char LivingLifePage::isHintFilterStringInvalid() {
 
 
 
-// color list from here:
-// https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
 
-
-#define NUM_BADGE_COLORS 17
-static const char *badgeColors[NUM_BADGE_COLORS] = { "#e6194B", 
-                                                     "#3cb44b", 
-                                                     "#ffe119", 
-                                                     "#4363d8", 
-                                                     "#f58231",
-                                                     
-                                                     "#42d4f4", 
-                                                     "#f032e6", 
-                                                     "#fabebe", 
-                                                     "#469990",
-                                                     "#e6beff", 
-                                                     
-                                                     "#9A6324", 
-                                                     "#fffac8", 
-                                                     "#800000", 
-                                                     "#aaffc3", 
-                                                     "#000075", 
-                                                     
-                                                     "#a9a9a9", 
-                                                     "#ffffff" };
-
-
-static const char *getUnusedLeadershipColor() {
-    // fixme
-    // look for next unused
-
-    int usedCounts[ NUM_BADGE_COLORS ];
-    memset( usedCounts, 0, NUM_BADGE_COLORS * sizeof( int ) );
+static void prependLeadershipTag( LiveObject *inPlayer, const char *inPrefix ) {
+    LiveObject *o = inPlayer;
     
-    for( int i=0; i<gameObjects.size(); i++ ) {
-        LiveObject *o = gameObjects.getElement( i );
-
-        if( o->hasPersonalLeadershipColor ) {
-            for( int c=0; c<NUM_BADGE_COLORS; c++ ) {
-                if( o->personalLeadershipColorHexString == badgeColors[c] ) {
-                    usedCounts[c]++;
-                    }
-                }
-            }
+    char *newTag;
+    
+    if( o->leadershipNameTag != NULL ) {
+        
+        newTag = autoSprintf( "%s %s", 
+                              inPrefix,
+                              o->leadershipNameTag );
+        
+        delete [] o->leadershipNameTag;
+        }
+    else {
+        newTag = autoSprintf( "%s", inPrefix );
         }
     
-    int minUsedCount = gameObjects.size();
-    int minUsedIndex = -1;
-    
-    for( int c=0; c<NUM_BADGE_COLORS; c++ ) {
-        if( usedCounts[c] < minUsedCount ) {
-            minUsedCount = usedCounts[c];
-            minUsedIndex = c;
-            }
-        }
-
-    return badgeColors[minUsedIndex];
+    o->leadershipNameTag = newTag;
     }
+
+
+
+
+
 
 
 
@@ -23836,17 +23946,6 @@ leadershipNameKeys[NUM_LEADERSHIP_NAMES][2] = { { "lord",
 void LivingLifePage::updateLeadership() {
     for( int i=0; i<gameObjects.size(); i++ ) {
         LiveObject *o = gameObjects.getElement( i );
-
-        if( o->followingID != -1 ) {
-            
-            LiveObject *l = getGameObject( o->followingID );
-            
-            if( l != NULL && ! l->hasPersonalLeadershipColor ) {
-                
-                l->personalLeadershipColorHexString = 
-                    getUnusedLeadershipColor();
-                }
-            }
         
         // reset for now
         // we will rebuild these
@@ -23854,6 +23953,7 @@ void LivingLifePage::updateLeadership() {
         o->highestLeaderID = -1;
         o->hasBadge = false;
         o->isExiled = false;
+        o->isDubious = false;
         o->followingUs = false;
         }
 
@@ -23941,9 +24041,13 @@ void LivingLifePage::updateLeadership() {
             LiveObject *l = getGameObject( o->highestLeaderID );
             if( l != NULL ) {
                 o->hasBadge = true;
-                o->badgeColor = 
-                    getFloatColor( l->personalLeadershipColorHexString );
+                o->badgeColor = l->personalLeadershipColor;
                 }
+            }
+        else if( o->leadershipLevel > 0 ) {
+            // a leader with no other leaders above
+            o->hasBadge = true;
+            o->badgeColor = o->personalLeadershipColor;
             }
         }
 
@@ -23966,8 +24070,21 @@ void LivingLifePage::updateLeadership() {
             nextID = -1;
             }
         }
+
+
+
+    // find our followers
+    for( int i=0; i<gameObjects.size(); i++ ) {
+        LiveObject *o = gameObjects.getElement( i );
+        if( o->followingUs ) {
+            
+            prependLeadershipTag( o, translate( "follower" ) );
+            }
+        }
+
+
     
-    
+    // find exiled people.  We might see ourselves as exiled.
     for( int i=0; i<gameObjects.size(); i++ ) {
         LiveObject *o = gameObjects.getElement( i );
         
@@ -23980,28 +24097,48 @@ void LivingLifePage::updateLeadership() {
                 
                 o->isExiled = true;
                 
-                
-                char *newTag;
-                
-                if( o->leadershipNameTag != NULL ) {
-                
-                    newTag = autoSprintf( "%s %s", 
-                                          translate( "exiled" ),
-                                          o->leadershipNameTag );
+                prependLeadershipTag( o, translate( "exiled" ) );
+                break;
+                }
+            }
+        }
+    // now find dubious people who are following those we see as exiled
+    // we can be dubious too
+    for( int i=0; i<gameObjects.size(); i++ ) {
+        LiveObject *o = gameObjects.getElement( i );
+
+        if( o->isExiled ) {
+            continue;
+            }
+        
+        // not seen as exiled by us
+        
+        // follow their leadership chain up
+        // look for exiled leaders
+        int nextID = o->followingID;
+
+        while( nextID != -1 ) {
+            
+            LiveObject *l = getGameObject( nextID );
+            if( l != NULL ) {
+                if( l->isExiled ) {
                     
-                    delete [] o->leadershipNameTag;
-                    }
-                else {
-                    newTag = autoSprintf( "%s", translate( "exiled" ) );
-                    }
+                    o->isDubious = true;
                     
-                o->leadershipNameTag = newTag;
+                    prependLeadershipTag( o, translate( "dubious" ) );
+                    
+                    break;
+                    }
+                nextID = l->followingID;
+                }
+            else {
+                nextID = -1;
                 }
             }
         }
 
 
-    // add YOUR in front of our leaders, even if exiled
+    // add YOUR in front of our leaders and followers, even if exiled
     for( int i=0; i<ourLeadershipChain.size(); i++ ) {
         
         LiveObject *l = getGameObject( 
@@ -24010,15 +24147,22 @@ void LivingLifePage::updateLeadership() {
         if( l != NULL ) {
             if( l->leadershipNameTag != NULL ) {
                 
-                char *newTag = autoSprintf( "%s %s", translate( "your" ),
-                                            l->leadershipNameTag );
-                
-                delete [] l->leadershipNameTag;
-                
-                l->leadershipNameTag = newTag;
+                prependLeadershipTag( l, translate( "your" ) );
                 }
             }
         }
+    for( int i=0; i<gameObjects.size(); i++ ) {
+        LiveObject *o = gameObjects.getElement( i );
+        if( o->followingUs ) {
+                            
+            if( o->leadershipNameTag != NULL ) {
+                
+                prependLeadershipTag( o, translate( "your" ) );
+                }            
+            }
+        }
+
+
     
 
     // find our allies
@@ -24039,31 +24183,6 @@ void LivingLifePage::updateLeadership() {
         }
 
     
-    // find our followers
-    for( int i=0; i<gameObjects.size(); i++ ) {
-        LiveObject *o = gameObjects.getElement( i );
-        if( o->followingUs && ! o->isExiled ) {
-            
-            char *newTag;
-                            
-            if( o->leadershipNameTag != NULL ) {
-                
-                newTag = autoSprintf( "%s %s %s", 
-                                      translate( "your" ),
-                                      translate( "follower" ),
-                                      o->leadershipNameTag );
-                
-                delete [] o->leadershipNameTag;
-                }
-            else {
-                newTag = autoSprintf( "%s %s", 
-                                      translate( "your" ),
-                                      translate( "follower" ) );
-                }
-            
-            o->leadershipNameTag = newTag;
-            }
-        }
     
     }
 

@@ -1382,6 +1382,19 @@ void parseCommand(LiveObject *player, char *text){
         sendGlobalMessage( "FEED YOU NOW", player);
         return;
     }
+
+    if(strcmp(cmd, "BC")==0 && isOp) {
+        char s[256];
+         if(sscanf(args, "%s", s) != 1) {
+            sendGlobalMessage( "NEED ONE ARGS", player);
+            return;
+        }
+
+        char news[256];
+        sprintf(news, "[AYA NEWS]%s", s);
+        sendGlobalMessage(news);
+        return;
+    }
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {
@@ -9939,7 +9952,7 @@ int processLoggedInPlayer( char inAllowReconnect,
             newObject.holdingID = addMetadata( 1615, metaData );
                 
             //sendGlobalMessage( "WELCOME TO MOELIFE! GO bbs.onehouronelife.cn for more", &newObject );
-            sendGlobalMessage( "WELCOME NEW PLAYER JOIN SERVER!!!" );
+            sendGlobalMessage( "[AYA NEWS]WELCOME NEW PLAYER JOIN SERVER!" );
         }
 		float randAge = ((rand() % 100) < 10 ? 3.f : 14.f);
 		

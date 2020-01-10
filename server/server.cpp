@@ -9936,13 +9936,14 @@ int processLoggedInPlayer( char inAllowReconnect,
             //not found player data
             // give them starter kit
             newObject.clothing = getEmptyClothingSet();
-            //newObject.clothing.hat = getObject(199, true);
-            newObject.clothing.tunic = getObject(711, true);
-            //newObject.clothing.frontShoe = getObject(frontShoe, true);
-            //newObject.clothing.backShoe = getObject(backShoe, true);
-            newObject.clothing.bottom = getObject(128, true);
-            //newObject.clothing.backpack = getObject(198, true);
+            newObject.clothing.hat = getObject(199, true);
+            newObject.clothing.tunic = getObject(201, true);
+            newObject.clothing.frontShoe = getObject(203, true);
+            newObject.clothing.backShoe = getObject(203, true);
+            newObject.clothing.bottom = getObject(200, true);
+            newObject.clothing.backpack = getObject(198, true);
 
+            /*/
             unsigned char metaData[ MAP_METADATA_LENGTH ];
             char paperStr[50];
             sprintf(paperStr, "WELCOME TO MOELIFE! QQ QUN:762642715");
@@ -9952,9 +9953,10 @@ int processLoggedInPlayer( char inAllowReconnect,
             memcpy( metaData, paperStr, len + 1 );
             
             newObject.holdingID = addMetadata( 1615, metaData );
+            //*/
                 
             //sendGlobalMessage( "WELCOME TO MOELIFE! GO bbs.onehouronelife.cn for more", &newObject );
-            sendGlobalMessage( "[AYA NEWS]WELCOME NEW PLAYER JOIN SERVER!" );
+            sendGlobalMessage( "[AYA NEWS]WELCOME NEW PLAYER JOINING SERVER!" );
         }
 		float randAge = ((rand() % 100) < 10 ? 3.f : 14.f);
 		

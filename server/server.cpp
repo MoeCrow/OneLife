@@ -1411,7 +1411,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
+			sendGlobalMessage( "抱着时不可以", player);
 			return;
 		}
 		
@@ -1421,7 +1421,7 @@ void parseCommand(LiveObject *player, char *text){
 		}
 
         if(!isTprAllow(player->email, time(NULL))) {
-            sendGlobalMessage( "NEED TEN MINUTES TO COOL DOWN.", player);
+            sendGlobalMessage( "需要10分钟的冷却时间", player);
             return;
         }
 
@@ -1451,7 +1451,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "BACK")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
+			sendGlobalMessage( "抱着时不可以", player);
 			return;
 		}
 		
@@ -18808,6 +18808,12 @@ int main() {
 									}
 								}
 							}
+
+                            char s[256];
+                            float money = getPlayerMoney(nextPlayer->email);
+                            sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
+                            sendGlobalMessage( s, nextPlayer);
+
 							continue;
 						}
 						

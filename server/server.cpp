@@ -1200,16 +1200,16 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "TP")==0){
         if(!isOp){
-            sendGlobalMessage( "YOU DONT HAVE PERMISSION.", player);
+            sendGlobalMessage( "你没有权限", player);
             return;
         }
 		if(player->heldByOther || player->holdingID < 0) {
-			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
+			sendGlobalMessage( "你抱着或者被抱着的时候不能传送", player);
 			return;
 		}
 		
 		if(shutdownMode) {
-			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
+			sendGlobalMessage( "服务器正在维护状态时不能传送", player);
 			return;
 		}
 		char s[256];
@@ -1236,15 +1236,15 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "PUTP")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d %d %d", &x, &y, &id) != 3) {
-			sprintf(s, "NEED THREE ARGS");
+			sprintf(s, "需要3个参数");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( o == NULL && id != 0) {
-				sendGlobalMessage( "OBJECT ID NOT FOUND.", player);
+				sendGlobalMessage( "物体未找到", player);
 				return;
 			}
 			setMapObject( x, y, id );
-			sprintf(s, "OBJECT PUT.");
+			sprintf(s, "已放置");
 		}
 		
 		sendGlobalMessage( s, player);
@@ -1254,15 +1254,15 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "PUT")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
-			sprintf(s, "NEED ONE ARGS");
+			sprintf(s, "需要1个参数");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( o == NULL && id != 0) {
-				sendGlobalMessage( "OBJECT ID NOT FOUND.", player);
+				sendGlobalMessage( "物体未找到", player);
 				return;
 			}
 			setMapObject( player->xs, player->ys, id );
-			sprintf(s, "OBJECT PUT.");
+			sprintf(s, "已放置");
 		}
 		
 		sendGlobalMessage( s, player);
@@ -1272,15 +1272,15 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "FLR")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
-			sprintf(s, "[SYSTEM]NEED ONE ARGS");
+			sprintf(s, "需要1个参数");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( id != 0 && (o == NULL || !o->floor) ) {
-				sendGlobalMessage( "FLOOR ID NOT FOUND.", player);
+				sendGlobalMessage( "地板未找到", player);
 				return;
 			}
 			setMapFloor( player->xs, player->ys, id );
-			sprintf(s, "FLOOR PUT.");
+			sprintf(s, "已放置");
 		}
 		
 		sendGlobalMessage( s, player);
@@ -1290,15 +1290,15 @@ void parseCommand(LiveObject *player, char *text){
     if(strcmp(cmd, "FLRS")==0 && isOp){
         char s[256];
         if(sscanf(args, "%d", &id) != 1) {
-            sprintf(s, "[SYSTEM]NEED ONE ARGS");
+            sprintf(s, "需要1个参数");
         } else {
             ObjectRecord *o = getObject( id );
             if( id != 0 && (o == NULL || !o->floor) ) {
-                sendGlobalMessage( "FLOOR ID NOT FOUND.", player);
+                sendGlobalMessage( "地板未找到", player);
                 return;
             }
             setMapFloor( player->xs, player->ys - 1, id );
-            sprintf(s, "FLOOR PUT.");
+            sprintf(s, "已放置");
         }
         
         sendGlobalMessage( s, player);
@@ -1308,15 +1308,15 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "PUTS")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
-			sprintf(s, "NEED ONE ARGS");
+			sprintf(s, "需要1个参数");
 		} else {
 			ObjectRecord *o = getObject( id );
 			if( o == NULL && id != 0) {
-				sendGlobalMessage( "OBJECT ID NOT FOUND.", player);
+				sendGlobalMessage( "物体未找到", player);
 				return;
 			}
 			setMapObject( player->xs, player->ys - 1, id );
-			sprintf(s, "OBJECT PUT.");
+			sprintf(s, "已放置");
 		}
 		
 		sendGlobalMessage( s, player);
@@ -1325,7 +1325,7 @@ void parseCommand(LiveObject *player, char *text){
 	
     if(strcmp(cmd, "CIR")==0){
         char s[256];
-        sprintf(s, "You are in circle: %d", getCircle(player->xd, player->yd));
+        sprintf(s, "你在 %d 环", getCircle(player->xd, player->yd));
         sendGlobalMessage( s, player);
         return;
     }
@@ -1346,30 +1346,30 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "RPO")==0){
         player->displayID = getRandomPersonObject();
-        sendGlobalMessage( "PERSON CHANGED", player);
+        sendGlobalMessage( "角色已更换", player);
         return;
     }
 
     if(strcmp(cmd, "CHS")==0){
         if(sscanf(args, "%d", &id) != 1) {
-            sendGlobalMessage( "NEED ONE ARGS", player);
+            sendGlobalMessage( "需要1个参数", player);
             return;
         } else {
             ObjectRecord *o = getObject( id );
             if( !o->person && !isOp) {
-                sendGlobalMessage( "WRONG ID", player);
+                sendGlobalMessage( "ID错误，请到合成表查找", player);
                 return;
             }
             player->displayID = id;
         }
-        sendGlobalMessage( "PERSON CHANGED", player);
+        sendGlobalMessage( "角色已更换", player);
         return;
     }
 
     if(strcmp(cmd, "GMM")==0 && isOp) {
         float added;
         if(sscanf(args, "%f", &added) != 1) {
-            sendGlobalMessage( "NEED ONE ARGS", player);
+            sendGlobalMessage( "需要1个参数", player);
             return;
         }
         float money = getPlayerMoney(player->email) + added;
@@ -1403,14 +1403,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 
     if(strcmp(cmd, "BC")==0 && isOp) {
-        char s[256];
-         if(sscanf(args, "%s", s) != 1) {
-            sendGlobalMessage( "NEED ONE ARGS", player);
-            return;
-        }
-
-        char news[256];
-        sprintf(news, "[AYA NEWS]%s", s);
+        sprintf(news, "[文文新闻]%s", args);
         sendGlobalMessage(news);
         return;
     }
@@ -1436,7 +1429,7 @@ void parseCommand(LiveObject *player, char *text){
 		x = (rand() % (b-a+1))+ a;
 		y = (rand() % (b-a+1))+ a;
 		char s[256];
-		sprintf(s, "teleported");
+		sprintf(s, "已传送");
 		sendGlobalMessage( s, player);
 		setBack(player->email, player->xs, player->ys);
 		player->firstMessageSent = false;
@@ -1468,7 +1461,7 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		Spot* spot = findSpot(&backSpot, player->email);
 		if(spot == NULL)
-			sprintf(s, "YOU HAVE NO PLACE TO GO BACK");
+			sprintf(s, "无处可去");
 		else { 
 			int tx = player->xs;
 			int ty = player->ys;
@@ -1486,7 +1479,7 @@ void parseCommand(LiveObject *player, char *text){
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
 			setBack(player->email, tx, ty);
-			sprintf(s, "teleported");
+			sprintf(s, "已传送");
 		}
 		sendGlobalMessage( s, player);
 		return;
@@ -1514,7 +1507,7 @@ void parseCommand(LiveObject *player, char *text){
         int countH = 0;
         int countW = 0;
         if(sscanf(args, "%d", &range)==0)
-            range = 20;
+            range = 50;
 
         if(range > 100)
             range = 100;
@@ -1540,7 +1533,7 @@ void parseCommand(LiveObject *player, char *text){
         }
 
         char s[256];
-        sprintf(s, "IN RANGE(%d) FIND %d homes and %d warps",
+        sprintf(s, "半径%d格内找到 %d 个家 和 %d 个地标",
             range, countH, countW);
         sendGlobalMessage( s, player );
         return;
@@ -1605,23 +1598,23 @@ void parseCommand(LiveObject *player, char *text){
 		char shopType;
 		float price;
 		if(sscanf(args, "%d %f", &shopType, &price) != 2) {
-			sprintf(s, "NEED TWO ARGS, EX .SHOP 0 1.5");
+			sprintf(s, "需要2个参数，比如打 .SHOP 0 1.5");
 		} else {
 			if(price < 0) {
-				sprintf(s, "PRICE SHOULD NOT BE NEGATIVE");
+				sprintf(s, "价格必须为正");
 			} else {
 			
 				char tEmail[50];
 				x = player->xs;
 				y = player->ys - 1;
 				if(getShop(x, y, tEmail, &shopType, &price)){
-					sprintf(s, "SHOP AT %d %d IS EXISTS", x, y);
+					sprintf(s, "(%d,%d)的商店存在", x, y);
 				} else {
 					if ( shopType < 0 || shopType > 2 ) {
-						sprintf(s, "SHOP TYPE NOT CORRECT, MUST BE {0,1,2}");
+						sprintf(s, "类型错误，必须在0,1,2之中");
 					} else {
 						setShop(x, y, player->email, shopType, price);
-						sprintf(s, "SHOP CREATED AT %d %d", x, y);
+						sprintf(s, "商店已成功创建在 %d %d ！", x, y);
 					}
 				}
 			}
@@ -1640,12 +1633,12 @@ void parseCommand(LiveObject *player, char *text){
 		if(getShop(x, y, tEmail, &shopType, &price)){
 			if(strcmp(player->email, tEmail) == 0 || isOp) {
 				delShop(x, y);
-				sprintf(s, "SHOP AT %d %d DELETED", x, y);
+				sprintf(s, "成功删除商店");
 			} else {
-				sprintf(s, "SHOP AT %d %d IS NOT OWNED BY YOU", x, y);
+				sprintf(s, "这个商店不属于你");
 			}
 		} else {
-			sprintf(s, "SHOP AT %d %d NOT FOUND", x, y);
+			sprintf(s, "这里没有商店");
 		}
 		sendGlobalMessage( s, player);
 		return;
@@ -1664,7 +1657,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "POS")==0){
 		char s[256];
-		sprintf(s, "[POS]%d %d", player->xs, player->ys);
+		sprintf(s, "[坐标]%d %d", player->xs, player->ys);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -1672,7 +1665,7 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "BAL")==0){
 		char s[256];
 		float money = getPlayerMoney(player->email);
-		sprintf(s, "[ECONOMY]YOU HAVE %.2f COINS", money);
+		sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -1682,13 +1675,13 @@ void parseCommand(LiveObject *player, char *text){
 		float num;
 		float money = getPlayerMoney(player->email);
 		if(player->holdingID != 1619) {
-			sprintf(s, "[CHEQUE]YOU HAVE TO HOLD PAPER TO MAKE CHEQUE!");
+			sprintf(s, "[支票]你必须拿着一张白纸，没有笔的那种!");
 			sendGlobalMessage( s, player);
 			return;
 		}
 		
 		if(sscanf(args, "%f", &num) != 1 || num < 0) {
-			sprintf(s, "WRONG NUMBER");
+			sprintf(s, "数字错误");
 		} else {
 			if(num <= money) {
 				player->holdingID = 1615;
@@ -1703,11 +1696,11 @@ void parseCommand(LiveObject *player, char *text){
 				player->holdingID = addMetadata( player->holdingID,
                                                  metaData );
 				
-				sprintf(s, "[CHEQUE]YOU MAKE CHEQUE OF %.2f COINS", num);
+				sprintf(s, "[支票]你签发了一张价值 %.2f 钢的支票", num);
 				money -= num;
 				setPlayerMoney(player->email, money);
 			} else {
-				sprintf(s, "[CHEQUE]YOU ONLY HAVE %.2f COINS", money);
+				sprintf(s, "[支票]你只有 %.2f 钢", money);
 			}
 		}
 		
@@ -1718,12 +1711,12 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "SETHOME")==0){
         int cir = getCircle(player->xd, player->yd);
         if(cir < 3 || cir > 6) {
-            sendGlobalMessage( "This command not allowed here", player);
+            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许3-6", player);
             return;
         }
 		char s[256];
 		setHome(player->email, player->xs, player->ys);
-		sprintf(s, "HOME SET AT %d %d", player->xs, player->ys);
+		sprintf(s, "家已设置在 %d %d", player->xs, player->ys);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -1746,7 +1739,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "HOME")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
+			sendGlobalMessage( "抱着时不可以.", player);
 			return;
 		}
 		
@@ -1757,9 +1750,9 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		Spot* spot = findSpot(&homeSpot, player->email);
 		if(spot == NULL)
-			sprintf(s, "YOU HAVE NO HOME SET");
+			sprintf(s, "无家可回");
 		else {
-            sprintf(s, "teleported");
+            sprintf(s, "已传送");
 			setBack(player->email, player->xs, player->ys);
 			player->firstMessageSent = false;
 			player->firstMapSent = false;
@@ -1782,21 +1775,21 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "SETWARP")==0){
         int cir = getCircle(player->xd, player->yd);
         if(cir < 3 || cir > 6) {
-            sendGlobalMessage( "This command not allowed here", player);
+            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许3-6", player);
             return;
         }
 		char s[256], name[64];
 		if(sscanf(args, "%s", name) == 0) {
-			sprintf(s, "WARP NAME SHOULD NOT BE EMPTY");
+			sprintf(s, "地标名给我一个");
 		}
 		else {
             if(strlen(name) < 6) {
-                sendGlobalMessage( "WARP NAME LENGTH SHOULD BE AT LEAST 6", player);
+                sendGlobalMessage( "地标名至少6位", player);
                 return;
             }
-			sprintf(s, "WARP '%s' SET AT %d %d", name, player->xs, player->ys);
+			sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);
 			if(!setWarp(name, player->email, player->xs, player->ys, isOp))
-				sprintf(s, "WARP NAMED '%s' IS NOT OWNED BY YOU", name);
+				sprintf(s, "这个地标不属于你");
 		}
 		sendGlobalMessage( s, player);
 		return;
@@ -1808,14 +1801,14 @@ void parseCommand(LiveObject *player, char *text){
 		sscanf(args, "%s", name);
 		Spot* spot = findSpot(&warpSpot, name);
 		if(spot == NULL)
-			sprintf(s, "FIND NO WARP NAMED '%s'", name);
+			sprintf(s, "没找到地标 '%s'", name);
 		else {
 			if(!isOp && strcmp(spot->owner, stringToUpperCase(player->email)) != 0) {
-				sprintf(s, "WARP NAMED '%s' IS NOT OWNED BY YOU", name);
+				sprintf(s, "这个地标不属于你", name);
 			} else {
 				delSpot(&warpSpot, name);
 				writeSpotList("warpSpot", &warpSpot);
-				sprintf(s, "WARP NAMED '%s' HAS BEEN REMOVED", name);
+				sprintf(s, "地标 '%s' 已删除", name);
 			}
 		}
 		sendGlobalMessage( s, player);
@@ -1824,7 +1817,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "WARP")==0){
 		if(player->heldByOther || player->holdingID < 0) {
-			sendGlobalMessage( "YOU CANNOT USE THIS WHEN IN HOLD.", player);
+			sendGlobalMessage( "抱着时不可以", player);
 			return;
 		}
 		
@@ -1837,9 +1830,9 @@ void parseCommand(LiveObject *player, char *text){
 		sscanf(args, "%s", name);
 		Spot* spot = findSpot(&warpSpot, name);
 		if(spot == NULL)
-			sprintf(s, "FIND NO WARP NAMED '%s'", name);
+			sprintf(s, "没找到地标 '%s'", name);
 		else {
-            sprintf(s, "teleported");
+            sprintf(s, "已传送");
 			setBack(player->email, player->xs, player->ys);
 			player->firstMessageSent = false;
 			player->firstMapSent = false;
@@ -1859,7 +1852,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-    sendGlobalMessage( "Unknown command", player);
+    sendGlobalMessage( "未知指令", player);
 }
 
 
@@ -10071,10 +10064,10 @@ int processLoggedInPlayer( char inAllowReconnect,
             newObject.clothing.bottom = getObject(200, true);
             newObject.clothing.backpack = getObject(198, true);
 
-            /*/
+            //
             unsigned char metaData[ MAP_METADATA_LENGTH ];
             char paperStr[50];
-            sprintf(paperStr, "WELCOME TO MOELIFE! QQ QUN:762642715");
+            sprintf(paperStr, "欢迎你加入服务器! QQ群:762642715");
             int len = strlen( paperStr );
             
             memset( metaData, 0, MAP_METADATA_LENGTH );
@@ -10084,7 +10077,7 @@ int processLoggedInPlayer( char inAllowReconnect,
             //*/
                 
             //sendGlobalMessage( "WELCOME TO MOELIFE! GO bbs.onehouronelife.cn for more", &newObject );
-            sendGlobalMessage( "[AYA NEWS]WELCOME NEW PLAYER JOINING SERVER!" );
+            sendGlobalMessage( "[文文新闻]欢迎新玩家加入服务器！" );
         }
 		float randAge = ((rand() % 100) < 10 ? 3.f : 14.f);
 		
@@ -16140,7 +16133,7 @@ int main() {
                             -1,
                             -1,
                             NULL,
-                            strstr(nextConnection->clientTag, "client_uni") != NULL );
+                            strstr(nextConnection->clientTag, "client_unity") != NULL );
                         }
                                                         
                     newConnections.deleteElement( i );
@@ -16386,7 +16379,7 @@ int main() {
                                             -1,
                                             -1,
                                             NULL,
-                                            strstr(nextConnection->clientTag, "client_uni") != NULL );
+                                            strstr(nextConnection->clientTag, "client_unity") != NULL );
                                         }
                                                                         
                                     newConnections.deleteElement( i );
@@ -18835,120 +18828,120 @@ int main() {
                                             getObject( checkTarget );
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								if(strcmp(email, nextPlayer->email)!=0){
-								if(type == 0) {
-                                    if(targetObj->permanent && targetObj->slotSize > 0 &&
-                                        getNumContained(m.x, m.y) == 0) {
-                                        delShop(m.x, m.y);
-                                    }
-									if(targetObj && ! targetObj->permanent &&
-									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
-									 checkTarget == 774 || checkTarget == 779) {
-										if(nextPlayer->holdingID == 0) {
-											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-												float money = getPlayerMoney(nextPlayer->email);
-												if(money >= price) {
-													money -= price;
-													setPlayerMoney(nextPlayer->email, money);
-													
-													float skMoney = getPlayerMoney(email);
-													setPlayerMoney(email, skMoney + price);
-													sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
-													sendGlobalMessage(s, nextPlayer);
-													delConfirm(nextPlayer->email);
-												} else {
-													sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
-													sendGlobalMessage(s, nextPlayer);
-													delConfirm(nextPlayer->email);
-													continue;
-												}
-											} else {
-												sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO BUY ONE", price);
-												sendGlobalMessage(s, nextPlayer);
-												setConfirm(nextPlayer->email, m.x, m.y);
-												continue;
-											}
-										} else
-											continue;
-									} else {
-										char s[256];
-										sprintf(s, "[SHOP]PRICE:%.2f", price);
-										sendGlobalMessage(s, nextPlayer);
-										continue;
-									}
-								}
-								
-								if(type == 1) {
-									if(nextPlayer->holdingID == 0 &&
-                                        (getTrans( 0, checkTarget ) != NULL
-                                            || !targetObj->permanent)) {
-										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-											float money = getPlayerMoney(nextPlayer->email);
-											if(money >= price) {
-												money -= price;
-												setPlayerMoney(nextPlayer->email, money);
-												
-												float skMoney = getPlayerMoney(email);
-												setPlayerMoney(email, skMoney + price);
-												sprintf(s, "[SHOP]YOU USE THIS FOR %.2f COINS", price);
-												sendGlobalMessage(s, nextPlayer);
-												delConfirm(nextPlayer->email);
-											} else {
-												sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
-												sendGlobalMessage(s, nextPlayer);
-												delConfirm(nextPlayer->email);
-												continue;
-											}
-										} else {
-											sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO USE", price);
-											sendGlobalMessage(s, nextPlayer);
-											setConfirm(nextPlayer->email, m.x, m.y);
-											continue;
-										}
-									} else {
-										char s[256];
-										sprintf(s, "[SHOP]USE PRICE:%.2f", price);
-										sendGlobalMessage(s, nextPlayer);
-										continue;
-									}
-								}
+    								if(type == 0) {
+                                        if(targetObj->permanent && targetObj->slotSize > 0 &&
+                                            getNumContained(m.x, m.y) == 0) {
+                                            delShop(m.x, m.y);
+                                        }
+    									if(targetObj && ! targetObj->permanent &&
+    									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
+    									 checkTarget == 774 || checkTarget == 779) {
+    										if(nextPlayer->holdingID == 0) {
+    											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+    												float money = getPlayerMoney(nextPlayer->email);
+    												if(money >= price) {
+    													money -= price;
+    													setPlayerMoney(nextPlayer->email, money);
+    													
+    													float skMoney = getPlayerMoney(email);
+    													setPlayerMoney(email, skMoney + price);
+    													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
+    													sendGlobalMessage(s, nextPlayer);
+    													delConfirm(nextPlayer->email);
+    												} else {
+    													sprintf(s, "[商店]你只有 %.2f 钢", money);
+    													sendGlobalMessage(s, nextPlayer);
+    													delConfirm(nextPlayer->email);
+    													continue;
+    												}
+    											} else {
+    												sprintf(s, "[商店]价格:%.2f，再次点击确认购买", price);
+    												sendGlobalMessage(s, nextPlayer);
+    												setConfirm(nextPlayer->email, m.x, m.y);
+    												continue;
+    											}
+    										} else
+    											continue;
+    									} else {
+    										char s[256];
+    										sprintf(s, "[商店]别人的货架商店 价格:%.2f", price);
+    										sendGlobalMessage(s, nextPlayer);
+    										continue;
+    									}
+    								}
+    								
+    								if(type == 1) {
+    									if(nextPlayer->holdingID == 0 &&
+                                            (getTrans( 0, checkTarget ) != NULL
+                                                || !targetObj->permanent)) {
+    										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+    											float money = getPlayerMoney(nextPlayer->email);
+    											if(money >= price) {
+    												money -= price;
+    												setPlayerMoney(nextPlayer->email, money);
+    												
+    												float skMoney = getPlayerMoney(email);
+    												setPlayerMoney(email, skMoney + price);
+    												sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
+    												sendGlobalMessage(s, nextPlayer);
+    												delConfirm(nextPlayer->email);
+    											} else {
+    												sprintf(s, "[商店]你只有 %.2f 钢", money);
+    												sendGlobalMessage(s, nextPlayer);
+    												delConfirm(nextPlayer->email);
+    												continue;
+    											}
+    										} else {
+    											sprintf(s, "[商店]价格:%.2f，再次空手点击确认使用", price);
+    											sendGlobalMessage(s, nextPlayer);
+    											setConfirm(nextPlayer->email, m.x, m.y);
+    											continue;
+    										}
+    									} else {
+    										char s[256];
+    										sprintf(s, "[商店]别人的空手商店 价格:%.2f", price);
+    										sendGlobalMessage(s, nextPlayer);
+    										continue;
+    									}
+    								}
 
-                                if(type == 2) {
-                                    if(nextPlayer->holdingID != 0 && 
-                                        getTrans( nextPlayer->holdingID, checkTarget ) != NULL) {
-                                        if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-                                            float money = getPlayerMoney(nextPlayer->email);
-                                            if(money >= price) {
-                                                money -= price;
-                                                setPlayerMoney(nextPlayer->email, money);
-                                                
-                                                float skMoney = getPlayerMoney(email);
-                                                setPlayerMoney(email, skMoney + price);
-                                                sprintf(s, "[SHOP]YOU USE THIS FOR %.2f COINS", price);
-                                                sendGlobalMessage(s, nextPlayer);
-                                                delConfirm(nextPlayer->email);
+                                    if(type == 2) {
+                                        if(nextPlayer->holdingID != 0 && 
+                                            getTrans( nextPlayer->holdingID, checkTarget ) != NULL) {
+                                            if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+                                                float money = getPlayerMoney(nextPlayer->email);
+                                                if(money >= price) {
+                                                    money -= price;
+                                                    setPlayerMoney(nextPlayer->email, money);
+                                                    
+                                                    float skMoney = getPlayerMoney(email);
+                                                    setPlayerMoney(email, skMoney + price);
+                                                    sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
+                                                    sendGlobalMessage(s, nextPlayer);
+                                                    delConfirm(nextPlayer->email);
+                                                } else {
+                                                    sprintf(s, "[商店]你只有 %.2f 钢", money);
+                                                    sendGlobalMessage(s, nextPlayer);
+                                                    delConfirm(nextPlayer->email);
+                                                    continue;
+                                                }
                                             } else {
-                                                sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+                                                sprintf(s, "[商店]价格:%.2f，再次点击确认使用", price);
                                                 sendGlobalMessage(s, nextPlayer);
-                                                delConfirm(nextPlayer->email);
+                                                setConfirm(nextPlayer->email, m.x, m.y);
                                                 continue;
                                             }
                                         } else {
-                                            sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO USE", price);
+                                            char s[256];
+                                            sprintf(s, "[商店]别人的合成商店 价格:%.2f", price);
                                             sendGlobalMessage(s, nextPlayer);
-                                            setConfirm(nextPlayer->email, m.x, m.y);
                                             continue;
                                         }
-                                    } else {
-                                        char s[256];
-                                        sprintf(s, "[SHOP]USE PRICE:%.2f", price);
-                                        sendGlobalMessage(s, nextPlayer);
-                                        continue;
                                     }
-                                }
 								
 								} else {
 									char s[256];
-									sprintf(s, "[SHOP]PRICE:%.2f", price);
+									sprintf(s, "[商店]你的商店 价格:%.2f", price);
 									sendGlobalMessage(s, nextPlayer);
 								}
 							}
@@ -21249,33 +21242,33 @@ int main() {
 													
 													float skMoney = getPlayerMoney(email);
 													setPlayerMoney(email, skMoney + price);
-													sprintf(s, "[SHOP]YOU BUY ONE FOR %.2f COINS", price);
+													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
 													sendGlobalMessage(s, nextPlayer);
 													delConfirm(nextPlayer->email);
 												} else {
-													sprintf(s, "[SHOP]YOU ONLY HAVE %.2f COINS", money);
+													sprintf(s, "[商店]你只有 %.2f 钢", money);
 													sendGlobalMessage(s, nextPlayer);
 													delConfirm(nextPlayer->email);
 													continue;
 												}
 											} else {
-												sprintf(s, "[SHOP]PRICE:%.2f CLICK AGAIN TO BUY ONE", price);
+												sprintf(s, "[商店]价格:%.2f 再次点击确认购买", price);
 												sendGlobalMessage(s, nextPlayer);
 												setConfirm(nextPlayer->email, m.x, m.y);
 												continue;
 											}
 										} else {
-											sprintf(s, "[SHOP]SELL PRICE:%.2f", price);
+											sprintf(s, "[商店]货架商店 价格:%.2f", price);
 											sendGlobalMessage(s, nextPlayer);
 											continue;
 										}
 									} else {
-										sprintf(s, "[SHOP]USE PRICE:%.2f", price);
+										sprintf(s, "[商店]别人的使用商店 价格:%.2f", price);
 										sendGlobalMessage(s, nextPlayer);
 										continue;
 									}
 								} else {
-									sprintf(s, "[SHOP]YOUR SHOP, PRICE:%.2f TYPE:%d", price, type);
+									sprintf(s, "[商店]你的商店 价格:%.2f 类型:%d", price, type);
 									sendGlobalMessage(s, nextPlayer);
 								}
 							}

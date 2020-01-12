@@ -557,6 +557,8 @@ typedef struct LiveObject {
         // but is still on list
         char *origEmail;
 
+        bool isClientUnicode;
+
         int id;
         
         float fitnessScore;
@@ -1500,7 +1502,7 @@ void parseCommand(LiveObject *player, char *text){
         if(!getShop(x, y, tEmail, &shopType, &price)){
             sprintf(s, "SHOP NOT EXISTS");
         } else {
-            sprintf(s, "SHOP TYPE:%d PRICE:%d OWNER:%s", shopType, price, tEmail);
+            sprintf(s, "SHOP TYPE:%d PRICE:%f OWNER:%s", shopType, price, tEmail);
         }
         sendGlobalMessage( s, player);
         return;
@@ -1523,7 +1525,7 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 
-        fprintf( log, "Logging start center(%d %d) range(%d)\n",
+        fprintf( log, "Logging start center(%d,%d) range(%d)\n",
                     player->xs, player->ys, range );
         
 
@@ -8185,7 +8187,8 @@ int processLoggedInPlayer( char inAllowReconnect,
                            // set to -2 to force Eve
                            int inForceParentID = -1,
                            int inForceDisplayID = -1,
-                           GridPos *inForcePlayerPos = NULL ) {
+                           GridPos *inForcePlayerPos = NULL,
+                           bool isClientUnicode = false ) {
     
 
     int usePersonalCurses = SettingsManager::getIntSetting( "usePersonalCurses",
@@ -9964,6 +9967,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 			newObject.yd = yd;
 			newObject.xs = xd;
 			newObject.ys = yd;
+
+            newObject.isClientUnicode = isClientUnicode;
 
             if(yummy > 0)
                 newObject.displayID = displayID;
@@ -16094,7 +16099,11 @@ int main() {
                             nextConnection->tutorialNumber,
                             nextConnection->curseStatus,
                             nextConnection->lifeStats,
-                            nextConnection->fitnessScore );
+                            nextConnection->fitnessScore
+                            -1,
+                            -1,
+                            NULL,
+                            strstr(nextConnection->clientTag, "client_uni") != NULL );
                         }
                                                         
                     newConnections.deleteElement( i );
@@ -16336,7 +16345,11 @@ int main() {
                                             nextConnection->tutorialNumber,
                                             nextConnection->curseStatus,
                                             nextConnection->lifeStats,
-                                            nextConnection->fitnessScore );
+                                            nextConnection->fitnessScore
+                                            -1,
+                                            -1,
+                                            NULL,
+                                            strstr(nextConnection->clientTag, "client_uni") != NULL );
                                         }
                                                                         
                                     newConnections.deleteElement( i );

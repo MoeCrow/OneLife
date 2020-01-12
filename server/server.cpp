@@ -16099,7 +16099,7 @@ int main() {
                             nextConnection->tutorialNumber,
                             nextConnection->curseStatus,
                             nextConnection->lifeStats,
-                            nextConnection->fitnessScore
+                            nextConnection->fitnessScore,
                             -1,
                             -1,
                             NULL,
@@ -16345,7 +16345,7 @@ int main() {
                                             nextConnection->tutorialNumber,
                                             nextConnection->curseStatus,
                                             nextConnection->lifeStats,
-                                            nextConnection->fitnessScore
+                                            nextConnection->fitnessScore,
                                             -1,
                                             -1,
                                             NULL,

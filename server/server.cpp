@@ -1403,6 +1403,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 
     if(strcmp(cmd, "BC")==0 && isOp) {
+        char news[256];
         sprintf(news, "[文文新闻]%s", args);
         sendGlobalMessage(news);
         return;

@@ -1502,19 +1502,56 @@ void parseCommand(LiveObject *player, char *text){
         if(!getShop(x, y, tEmail, &shopType, &price)){
             sprintf(s, "SHOP NOT EXISTS");
         } else {
-            sprintf(s, "SHOP TYPE:%d PRICE:%f OWNER:%s", shopType, price, tEmail);
+            sprintf(s, "SHOP TYPE:%d PRICE:%.2f OWNER:%s", (int)shopType, price, tEmail);
         }
         sendGlobalMessage( s, player);
         return;
     }
+
+
+    if(strcmp(cmd, "SPOT")==0) {
+        int range;
+        int countH = 0;
+        int countW = 0;
+        if(sscanf(args, "%d", &range)==0)
+            range = 20;
+
+        if(range > 100)
+            range = 100;
+
+        GridPos myPos = { player->xs, player->ys };      
+
+        for( int i=0; i<homeSpot.size(); i++ ) {
+            Spot* s = *homeSpot.getElement(i);
+
+            GridPos nowPos = {s->x, s->y};
+            if(distance(myPos, nowPos) < range){
+                countH++;
+            }
+        }
+
+        for( int i=0; i<warpSpot.size(); i++ ) {
+            Spot* s = *warpSpot.getElement(i);
+
+            GridPos nowPos = {s->x, s->y};
+            if(distance(myPos, nowPos) < range){
+                countW++;
+            }
+        }
+
+        char s[256];
+        sprintf(s, "IN RANGE(%d) FIND %d homes and %d warps",
+            range, countH, countW);
+        sendGlobalMessage( s, player );
+        return;
+    }
+
 
     if(strcmp(cmd, "SPOTCHECK")==0 && isOp) {
         int range;
         int count = 0;
         if(sscanf(args, "%d", &range)==0)
             range = 100;
-        if(range > 200)
-            range = 200;
 
         GridPos myPos = { player->xs, player->ys };
 

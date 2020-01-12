@@ -16130,11 +16130,7 @@ int main() {
                             nextConnection->tutorialNumber,
                             nextConnection->curseStatus,
                             nextConnection->lifeStats,
-                            nextConnection->fitnessScore,
-                            -1,
-                            -1,
-                            NULL,
-                            strstr(nextConnection->clientTag, "client_unity") != NULL );
+                            nextConnection->fitnessScore );
                         }
                                                         
                     newConnections.deleteElement( i );
@@ -16376,11 +16372,7 @@ int main() {
                                             nextConnection->tutorialNumber,
                                             nextConnection->curseStatus,
                                             nextConnection->lifeStats,
-                                            nextConnection->fitnessScore,
-                                            -1,
-                                            -1,
-                                            NULL,
-                                            strstr(nextConnection->clientTag, "client_unity") != NULL );
+                                            nextConnection->fitnessScore );
                                         }
                                                                         
                                     newConnections.deleteElement( i );

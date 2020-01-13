@@ -1734,6 +1734,7 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		sprintf(s, "[SYSTEM]测试中文%s", player->email);
 		sendGlobalMessage( s, player);
+        makePlayerSay(player, s);
 		printf(s);
 		return;
 	}
@@ -18781,13 +18782,12 @@ int main() {
 						int checkTarget = getMapObject( m.x, m.y );
 						if(checkTarget == 2482) {
 							ObjectRecord *holdO = getObject( nextPlayer->holdingID );
+                            float money = getPlayerMoney(nextPlayer->email);
 							if(nextPlayer->holdingID == 326) {
-								float money = getPlayerMoney(nextPlayer->email);
 								setPlayerMoney(nextPlayer->email, money + 1);
 								nextPlayer->holdingID = 0;
 							}
 							else if(nextPlayer->holdingID == 0) {
-								float money = getPlayerMoney(nextPlayer->email);
 								if(money >= 1) {
 									setPlayerMoney(nextPlayer->email, money - 1);
 									nextPlayer->holdingID = 326;
@@ -18802,7 +18802,6 @@ int main() {
 									char cqTitle[50];
 									float cqM;
 									if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2 && strcmp(cqTitle, "[CHEQUE]")==0){
-										float money = getPlayerMoney(nextPlayer->email);
 										setPlayerMoney(nextPlayer->email, money + cqM);
 										nextPlayer->holdingID = 1619;
 									}
@@ -18810,7 +18809,6 @@ int main() {
 							}
 
                             char s[256];
-                            float money = getPlayerMoney(nextPlayer->email);
                             sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
                             sendGlobalMessage( s, nextPlayer);
 

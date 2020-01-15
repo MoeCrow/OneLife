@@ -18825,117 +18825,122 @@ int main() {
                                             getObject( checkTarget );
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								if(strcmp(email, nextPlayer->email)!=0){
-    								if(type == 0) {
-                                        if(targetObj->permanent && targetObj->slotSize > 0 &&
-                                            getNumContained(m.x, m.y) == 0) {
-                                            delShop(m.x, m.y);
-                                        }
-    									if(targetObj && ! targetObj->permanent &&
-    									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
-    									 checkTarget == 774 || checkTarget == 779) {
-    										if(nextPlayer->holdingID == 0) {
-    											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-    												float money = getPlayerMoney(nextPlayer->email);
-    												if(money >= price) {
-    													money -= price;
-    													setPlayerMoney(nextPlayer->email, money);
-    													
-    													float skMoney = getPlayerMoney(email);
-    													setPlayerMoney(email, skMoney + price);
-    													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
-    													sendGlobalMessage(s, nextPlayer);
-    													delConfirm(nextPlayer->email);
-    												} else {
-    													sprintf(s, "[商店]你只有 %.2f 钢", money);
-    													sendGlobalMessage(s, nextPlayer);
-    													delConfirm(nextPlayer->email);
-    													continue;
-    												}
-    											} else {
-    												sprintf(s, "[商店]价格:%.2f，再次点击确认购买", price);
-    												sendGlobalMessage(s, nextPlayer);
-    												setConfirm(nextPlayer->email, m.x, m.y);
-    												continue;
-    											}
-    										} else
-    											continue;
-    									} else {
-    										char s[256];
-    										sprintf(s, "[商店]别人的货架商店 价格:%.2f", price);
-    										sendGlobalMessage(s, nextPlayer);
-    										continue;
-    									}
-    								}
-    								
-    								if(type == 1) {
-    									if(nextPlayer->holdingID == 0 &&
-                                            (getTrans( 0, checkTarget ) != NULL
-                                                || !targetObj->permanent)) {
-    										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-    											float money = getPlayerMoney(nextPlayer->email);
-    											if(money >= price) {
-    												money -= price;
-    												setPlayerMoney(nextPlayer->email, money);
-    												
-    												float skMoney = getPlayerMoney(email);
-    												setPlayerMoney(email, skMoney + price);
-    												sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
-    												sendGlobalMessage(s, nextPlayer);
-    												delConfirm(nextPlayer->email);
-    											} else {
-    												sprintf(s, "[商店]你只有 %.2f 钢", money);
-    												sendGlobalMessage(s, nextPlayer);
-    												delConfirm(nextPlayer->email);
-    												continue;
-    											}
-    										} else {
-    											sprintf(s, "[商店]价格:%.2f，再次空手点击确认使用", price);
-    											sendGlobalMessage(s, nextPlayer);
-    											setConfirm(nextPlayer->email, m.x, m.y);
-    											continue;
-    										}
-    									} else {
-    										char s[256];
-    										sprintf(s, "[商店]别人的空手商店 价格:%.2f", price);
-    										sendGlobalMessage(s, nextPlayer);
-    										continue;
-    									}
-    								}
+                                    if(checkTarget == 0 || targetObj->permanent && targetObj->slotSize > 0 &&
+                                                getNumContained(m.x, m.y) == 0) {
+                                        delShop(m.x, m.y);
+                                    } else {
+        								if(type == 0) {
+                                            if(targetObj->permanent && targetObj->slotSize > 0 &&
+                                                getNumContained(m.x, m.y) == 0) {
+                                                delShop(m.x, m.y);
+                                            }
+        									if(targetObj && ! targetObj->permanent &&
+        									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
+        									 checkTarget == 774 || checkTarget == 779) {
+        										if(nextPlayer->holdingID == 0) {
+        											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+        												float money = getPlayerMoney(nextPlayer->email);
+        												if(money >= price) {
+        													money -= price;
+        													setPlayerMoney(nextPlayer->email, money);
+        													
+        													float skMoney = getPlayerMoney(email);
+        													setPlayerMoney(email, skMoney + price);
+        													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
+        													sendGlobalMessage(s, nextPlayer);
+        													delConfirm(nextPlayer->email);
+        												} else {
+        													sprintf(s, "[商店]你只有 %.2f 钢", money);
+        													sendGlobalMessage(s, nextPlayer);
+        													delConfirm(nextPlayer->email);
+        													continue;
+        												}
+        											} else {
+        												sprintf(s, "[商店]价格:%.2f，再次点击确认购买", price);
+        												sendGlobalMessage(s, nextPlayer);
+        												setConfirm(nextPlayer->email, m.x, m.y);
+        												continue;
+        											}
+        										} else
+        											continue;
+        									} else {
+        										char s[256];
+        										sprintf(s, "[商店]别人的货架商店 价格:%.2f", price);
+        										sendGlobalMessage(s, nextPlayer);
+        										continue;
+        									}
+        								}
+        								
+        								if(type == 1) {
+        									if(nextPlayer->holdingID == 0 &&
+                                                (getTrans( 0, checkTarget ) != NULL
+                                                    || !targetObj->permanent)) {
+        										if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+        											float money = getPlayerMoney(nextPlayer->email);
+        											if(money >= price) {
+        												money -= price;
+        												setPlayerMoney(nextPlayer->email, money);
+        												
+        												float skMoney = getPlayerMoney(email);
+        												setPlayerMoney(email, skMoney + price);
+        												sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
+        												sendGlobalMessage(s, nextPlayer);
+        												delConfirm(nextPlayer->email);
+        											} else {
+        												sprintf(s, "[商店]你只有 %.2f 钢", money);
+        												sendGlobalMessage(s, nextPlayer);
+        												delConfirm(nextPlayer->email);
+        												continue;
+        											}
+        										} else {
+        											sprintf(s, "[商店]价格:%.2f，再次空手点击确认使用", price);
+        											sendGlobalMessage(s, nextPlayer);
+        											setConfirm(nextPlayer->email, m.x, m.y);
+        											continue;
+        										}
+        									} else {
+        										char s[256];
+        										sprintf(s, "[商店]别人的空手商店 价格:%.2f", price);
+        										sendGlobalMessage(s, nextPlayer);
+        										continue;
+        									}
+        								}
 
-                                    if(type == 2) {
-                                        if(nextPlayer->holdingID != 0 && 
-                                            getTrans( nextPlayer->holdingID, checkTarget ) != NULL) {
-                                            if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-                                                float money = getPlayerMoney(nextPlayer->email);
-                                                if(money >= price) {
-                                                    money -= price;
-                                                    setPlayerMoney(nextPlayer->email, money);
-                                                    
-                                                    float skMoney = getPlayerMoney(email);
-                                                    setPlayerMoney(email, skMoney + price);
-                                                    sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
-                                                    sendGlobalMessage(s, nextPlayer);
-                                                    delConfirm(nextPlayer->email);
+                                        if(type == 2) {
+                                            if(nextPlayer->holdingID != 0 && 
+                                                getTrans( nextPlayer->holdingID, checkTarget ) != NULL) {
+                                                if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+                                                    float money = getPlayerMoney(nextPlayer->email);
+                                                    if(money >= price) {
+                                                        money -= price;
+                                                        setPlayerMoney(nextPlayer->email, money);
+                                                        
+                                                        float skMoney = getPlayerMoney(email);
+                                                        setPlayerMoney(email, skMoney + price);
+                                                        sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
+                                                        sendGlobalMessage(s, nextPlayer);
+                                                        delConfirm(nextPlayer->email);
+                                                    } else {
+                                                        sprintf(s, "[商店]你只有 %.2f 钢", money);
+                                                        sendGlobalMessage(s, nextPlayer);
+                                                        delConfirm(nextPlayer->email);
+                                                        continue;
+                                                    }
                                                 } else {
-                                                    sprintf(s, "[商店]你只有 %.2f 钢", money);
+                                                    sprintf(s, "[商店]价格:%.2f，再次点击确认使用", price);
                                                     sendGlobalMessage(s, nextPlayer);
-                                                    delConfirm(nextPlayer->email);
+                                                    setConfirm(nextPlayer->email, m.x, m.y);
                                                     continue;
                                                 }
                                             } else {
-                                                sprintf(s, "[商店]价格:%.2f，再次点击确认使用", price);
+                                                char s[256];
+                                                sprintf(s, "[商店]别人的合成商店 价格:%.2f", price);
                                                 sendGlobalMessage(s, nextPlayer);
-                                                setConfirm(nextPlayer->email, m.x, m.y);
                                                 continue;
                                             }
-                                        } else {
-                                            char s[256];
-                                            sprintf(s, "[商店]别人的合成商店 价格:%.2f", price);
-                                            sendGlobalMessage(s, nextPlayer);
-                                            continue;
                                         }
                                     }
-								
+    								
 								} else {
 									char s[256];
 									sprintf(s, "[商店]你的商店 价格:%.2f", price);

@@ -18825,7 +18825,8 @@ int main() {
                                             getObject( checkTarget );
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								if(strcmp(email, nextPlayer->email)!=0){
-                                    if(checkTarget == 3371 || checkTarget == 3065) {
+                                    if((checkTarget == 3371 || checkTarget == 3065) &&
+                                                getNumContained(m.x, m.y) == 0) {
                                         delShop(m.x, m.y);
                                     } else {
         								if(type == 0) {

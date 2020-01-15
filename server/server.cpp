@@ -1601,13 +1601,21 @@ void parseCommand(LiveObject *player, char *text){
 		if(sscanf(args, "%d %f", &shopType, &price) != 2) {
 			sprintf(s, "需要2个参数，比如打 .SHOP 0 1.5");
 		} else {
+            
+
 			if(price < 0) {
 				sprintf(s, "价格必须为正");
 			} else {
-			
 				char tEmail[50];
 				x = player->xs;
 				y = player->ys - 1;
+
+                int target = getMapObject( x, y );
+                if((target == 3371 || target == 3065)&&shopType > 0) {
+                    sendGlobalMessage( "这里应该设置成货架商店，输入 .shop 0 <价格>", player);
+                    return;
+                }
+
 				if(getShop(x, y, tEmail, &shopType, &price)){
 					sprintf(s, "(%d,%d)的商店存在", x, y);
 				} else {

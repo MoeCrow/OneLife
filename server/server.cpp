@@ -1784,7 +1784,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SETWARP")==0){
         int cir = getCircle(player->xd, player->yd);
-        if(cir < 3 || cir > 6) {
+        if((cir < 3 || cir > 6) && !isOp) {
             sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许3-6", player);
             return;
         }
@@ -1793,7 +1793,7 @@ void parseCommand(LiveObject *player, char *text){
 			sprintf(s, "地标名给我一个");
 		}
 		else {
-            if(strlen(name) < 6) {
+            if(strlen(name) < 6 && !isOp) {
                 sendGlobalMessage( "地标名至少6位", player);
                 return;
             }

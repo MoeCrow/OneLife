@@ -1213,13 +1213,18 @@ void parseCommand(LiveObject *player, char *text){
     }
 
         
+    if(strcmp(cmd, "KICKALL")==0 && isOp) {
+        for( int i=0; i<players.size(); i++ ) {
+            LiveObject *nextPlayer = players.getElement( i );
+            if(nextPlayer != player)
+                setPlayerDisconnected(nextPlayer, "");
+        }
+        sendGlobalMessage( "全部踢出！", player);
+        return;
+    }
 		
 	
-	if(strcmp(cmd, "TP")==0){
-        if(!isOp){
-            sendGlobalMessage( "你没有权限", player);
-            return;
-        }
+	if(strcmp(cmd, "TP")==0 && isOp){
 		if(player->heldByOther || player->holdingID < 0) {
 			sendGlobalMessage( "你抱着或者被抱着的时候不能传送", player);
 			return;

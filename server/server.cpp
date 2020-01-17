@@ -16861,7 +16861,18 @@ int main() {
                                 nextPlayer->heldTransitionSourceID = curOverID;
                                 playerIndicesToSendUpdatesAbout.push_back( i );
 
-                                setMapObject( curPos.x, curPos.y, r->newTarget );
+
+                                if( r->newTarget > 0 
+                                    && getObject( r->newTarget )->
+                                    floor ) {
+                                    
+                                    setMapFloor( curPos.x, curPos.y, 
+                                                 r->newTarget );
+                                }
+                                else {    
+                                    setMapObject( curPos.x, curPos.y, 
+                                                  r->newTarget );
+                                    }
                                 }
                             }   
                         }

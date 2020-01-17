@@ -16868,6 +16868,8 @@ int main() {
                                     
                                     setMapFloor( curPos.x, curPos.y, 
                                                  r->newTarget );
+                                    setMapObject( curPos.x, curPos.y, 
+                                                  0 );
                                 }
                                 else {    
                                     setMapObject( curPos.x, curPos.y, 

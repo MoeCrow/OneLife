@@ -1209,8 +1209,8 @@ void parseCommand(LiveObject *player, char *text){
         std::time_t now_time = time(NULL);
         std::strftime(bufT, 128,"%Y-%m-%d %H:%M:%S", std::localtime(&now_time));
 
-        fprintf( logCmd, "%s %s %s\n",
-                player->email, tmp, bufT );
+        fprintf( logCmd, "%s (%d,%d) %s %s\n",
+                player->email, player->xs, player->ys, tmp, bufT );
 
         fclose(logCmd);
     }

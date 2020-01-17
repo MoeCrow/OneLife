@@ -1177,6 +1177,9 @@ inline int max(int x, int y){return x>y?x:y;}
 inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
 inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs(y)));}
 
+SimpleVector<LiveObject> players;
+SimpleVector<LiveObject> tutorialLoadingPlayers;
+
 void parseCommand(LiveObject *player, char *text){
 	int x = 0, y = 0, id = 0;
 	int a = 10000000, b = 99999999;
@@ -1878,10 +1881,6 @@ void parseCommand(LiveObject *player, char *text){
     sendGlobalMessage( "未知指令", player);
 }
 
-
-
-SimpleVector<LiveObject> players;
-SimpleVector<LiveObject> tutorialLoadingPlayers;
 
 
 

@@ -5,6 +5,7 @@
 #include <math.h>
 #include <assert.h>
 #include <float.h>
+#include <ctime>
 
 
 #include "minorGems/util/stringUtils.h"
@@ -1196,6 +1197,22 @@ void parseCommand(LiveObject *player, char *text){
 	sscanf(tmp, ".%s %[^\n]", cmd, args);
 	bool isOp = isNamingSay(stringToUpperCase(player->email), &opList) != NULL;
 	int shutdownMode = SettingsManager::getIntSetting( "shutdownMode", 0 );
+
+
+    FILE *logCmd = fopen( "commandLog.txt", "a" );
+    
+    if( logCmd != NULL ) {
+        char bufT[32];
+        std::time_t now_time = time(NULL);
+        std::strftime(bufT, 128,"%Y-%m-%d %H:%M:%S", std::localtime(&now_time));
+
+        fprintf( logCmd, "%s %s %s\n",
+                player->email, tmp, bufT );
+
+        fclose(logCmd);
+    }
+
+        
 		
 	
 	if(strcmp(cmd, "TP")==0){
@@ -1738,15 +1755,6 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "TEST")==0){
-		char s[256];
-		sprintf(s, "[SYSTEM]测试中文%s", player->email);
-		sendGlobalMessage( s, player);
-        makePlayerSay(player, s);
-		printf(s);
-		return;
-	}
-	
 	if(strcmp(cmd, "HOME")==0){
 		if(player->heldByOther || player->holdingID < 0) {
 			sendGlobalMessage( "抱着时不可以.", player);
@@ -1760,7 +1768,7 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		Spot* spot = findSpot(&homeSpot, player->email);
 		if(spot == NULL)
-			sprintf(s, "无家可回");
+			sprintf(s, "无家可归");
 		else {
             sprintf(s, "已传送");
 			setBack(player->email, player->xs, player->ys);

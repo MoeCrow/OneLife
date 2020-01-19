@@ -18818,11 +18818,13 @@ int main() {
                             float money = getPlayerMoney(nextPlayer->email);
 							if(nextPlayer->holdingID == 326) {
 								setPlayerMoney(nextPlayer->email, money + 1);
+                                money += 1;
 								nextPlayer->holdingID = 0;
 							}
 							else if(nextPlayer->holdingID == 0) {
 								if(money >= 1) {
 									setPlayerMoney(nextPlayer->email, money - 1);
+                                    money -= 1;
 									nextPlayer->holdingID = 326;
 								}
 							}
@@ -18836,6 +18838,7 @@ int main() {
 									float cqM;
 									if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2 && strcmp(cqTitle, "[CHEQUE]")==0){
 										setPlayerMoney(nextPlayer->email, money + cqM);
+                                        money += cqM;
 										nextPlayer->holdingID = 1619;
 									}
 								}
@@ -18863,10 +18866,6 @@ int main() {
                                         delShop(m.x, m.y);
                                     } else {
         								if(type == 0) {
-                                            if(targetObj->permanent && targetObj->slotSize > 0 &&
-                                                getNumContained(m.x, m.y) == 0) {
-                                                delShop(m.x, m.y);
-                                            }
         									if(targetObj && ! targetObj->permanent &&
         									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
         									 checkTarget == 774 || checkTarget == 779) {

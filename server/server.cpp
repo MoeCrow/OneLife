@@ -17638,7 +17638,8 @@ int main() {
                                 c = nextPlayer->pathLength - 1;
                                 }
 
-                            nextPlayer->travelDistance += c;
+                            if(c > 0)
+                                nextPlayer->travelDistance += c;
                             
                             /*
                             printf( "   we think player in motion or "

@@ -21908,35 +21908,6 @@ int main() {
                     lastBabyPassedThresholdTime = curTime;
                     }
                 
-                // log player play seconds to server
-                char *secretString = 
-                    SettingsManager::getStringSetting( 
-                        "statsServerSharedSecret", "sdfmlk3490sa81m3ug9324" );
-                int playSec = getSecondsPlayed( nextPlayer );
-                char *encodedEmail =
-                    URLUtils::urlEncode( 
-                        nextPlayer->email );
-                char *url = autoSprintf( 
-                    "%s?stats.htm"
-                    "&secret=%s"
-                    "&action=%s"
-                    "&email=%s"
-                    "&play_sec=%d",
-                    ticketServerURL,
-                    secretString,
-                    "PLAYSEC",
-                    encodedEmail,
-                    playSec );
-
-                delete [] encodedEmail;
-
-                printf( "Player %d died sending req %s\n",
-                                nextPlayer->id,
-                                url );
-
-                WebRequest* req = new WebRequest( "GET", url, NULL );
-
-                req->step();
 
                 // don't use age here, because it unfairly gives Eve
                 // +14 years that she didn't actually live
@@ -25914,6 +25885,38 @@ int main() {
 
                 AppLog::infoF( "%d remaining player(s) alive on server ",
                                players.size() - 1 );
+
+
+                // log player play seconds to server
+                char *secretString = 
+                    SettingsManager::getStringSetting( 
+                        "statsServerSharedSecret", "sdfmlk3490sa81m3ug9324" );
+                int playSec = getSecondsPlayed( nextPlayer );
+                char *encodedEmail =
+                    URLUtils::urlEncode( 
+                        nextPlayer->email );
+                char *url = autoSprintf( 
+                    "%s?stats.htm"
+                    "&secret=%s"
+                    "&action=%s"
+                    "&email=%s"
+                    "&play_sec=%d",
+                    ticketServerURL,
+                    secretString,
+                    "PLAYSEC",
+                    encodedEmail,
+                    playSec );
+
+                delete [] encodedEmail;
+
+                printf( "Player %d died sending req %s\n",
+                                nextPlayer->id,
+                                url );
+
+                WebRequest* req = new WebRequest( "GET", url, NULL );
+
+                req->step();
+
                 
                 addPastPlayer( nextPlayer );
 

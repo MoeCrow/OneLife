@@ -21930,7 +21930,13 @@ int main() {
 
                 delete [] encodedEmail;
 
-                new WebRequest( "GET", url, NULL );
+                printf( "Player %d died sending req %s\n",
+                                nextPlayer->id,
+                                url );
+
+                WebRequest* req = new WebRequest( "GET", url, NULL );
+
+                req->step()
 
                 // don't use age here, because it unfairly gives Eve
                 // +14 years that she didn't actually live

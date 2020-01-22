@@ -215,6 +215,8 @@ static SimpleVector<char*> namedKillPhrases;
 static SimpleVector<char*> namedAfterKillPhrases;
 
 
+static SimpleVector<WebRequest*> playerDeathLogging;
+
 
 static int nextOrderNumber = 1;
 
@@ -25871,7 +25873,13 @@ int main() {
             nextPlayer->gotPartOfThisFrame = false;
             }
         
-
+        for(int i = 0; i < playerDeathLogging.size(); i++) {
+            WebRequest* req = playerDeathLogging.getElement(i);
+            if(req->step() != 0) {
+                playerDeathLogging.deleteElement(i);
+                i--;
+            }
+        }
         
         // handle closing any that have an error
         for( int i=0; i<players.size(); i++ ) {
@@ -25914,9 +25922,7 @@ int main() {
                                 url );
 
                 WebRequest* req = new WebRequest( "GET", url, NULL );
-
-                req->step();
-
+                playerDeathLogging.push_back(req);
                 
                 addPastPlayer( nextPlayer );
 

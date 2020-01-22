@@ -21908,6 +21908,29 @@ int main() {
                     lastBabyPassedThresholdTime = curTime;
                     }
                 
+                // log player play seconds to server
+                char *secretString = 
+                    SettingsManager::getStringSetting( 
+                        "statsServerSharedSecret", "sdfmlk3490sa81m3ug9324" );
+                int playSec = getSecondsPlayed( nextPlayer );
+                char *encodedEmail =
+                    URLUtils::urlEncode( 
+                        nextPlayer->email );
+                char *url = autoSprintf( 
+                    "%s?stats.htm"
+                    "&secret=%s"
+                    "&action=%s"
+                    "&email=%s"
+                    "&play_sec=%d",
+                    ticketServerURL,
+                    secretString,
+                    "PLAYSEC",
+                    encodedEmail,
+                    playSec );
+
+                delete [] encodedEmail;
+
+                new WebRequest( "GET", url, NULL );
 
                 // don't use age here, because it unfairly gives Eve
                 // +14 years that she didn't actually live

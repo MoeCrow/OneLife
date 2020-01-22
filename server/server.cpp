@@ -25874,9 +25874,10 @@ int main() {
             }
         
         for(int i = 0; i < playerDeathLogging.size(); i++) {
-            WebRequest* req = playerDeathLogging.getElement(i);
+            WebRequest *req = *playerDeathLogging.getElement(i);
             if(req->step() != 0) {
                 playerDeathLogging.deleteElement(i);
+                delete req;
                 i--;
             }
         }

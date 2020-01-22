@@ -215,7 +215,7 @@ static SimpleVector<char*> namedKillPhrases;
 static SimpleVector<char*> namedAfterKillPhrases;
 
 
-static SimpleVector<WebRequest*> playerDeathLogging;
+static SimpleVector<WebRequest*> globalWebRequests;
 
 
 static int nextOrderNumber = 1;
@@ -570,6 +570,12 @@ typedef struct LiveObject {
         // these aren't object IDs but tool set index numbers
         // some tools are grouped together
         SimpleVector<int> learnedTools;
+
+
+        // player game record
+        int travelDistance;
+        int usingTime;
+        int failTime;
 
 
         // object ID used to visually represent this player
@@ -17631,6 +17637,8 @@ int main() {
                                 // spot on last path
                                 c = nextPlayer->pathLength - 1;
                                 }
+
+                            nextPlayer->travelDistance += c;
                             
                             /*
                             printf( "   we think player in motion or "
@@ -18982,6 +18990,9 @@ int main() {
 								}
 							}
 						}
+
+                        // log usingTime
+                        nextPlayer->usingTime++;
 						
                         // track whether this USE resulted in something
                         // new on the ground in case of placing a grave
@@ -19365,6 +19376,9 @@ int main() {
                                     logTransitionFailure( 
                                         nextPlayer->holdingID,
                                         target );
+
+                                    // log failare
+                                    nextPlayer->failTime++;
                                     }
                                 
                                 double playerAge = computeAge( nextPlayer );
@@ -25873,10 +25887,10 @@ int main() {
             nextPlayer->gotPartOfThisFrame = false;
             }
         
-        for(int i = 0; i < playerDeathLogging.size(); i++) {
-            WebRequest *req = *playerDeathLogging.getElement(i);
+        for(int i = 0; i < globalWebRequests.size(); i++) {
+            WebRequest *req = *globalWebRequests.getElement(i);
             if(req->step() != 0) {
-                playerDeathLogging.deleteElement(i);
+                globalWebRequests.deleteElement(i);
                 delete req;
                 i--;
             }
@@ -25909,12 +25923,19 @@ int main() {
                     "&secret=%s"
                     "&action=%s"
                     "&email=%s"
-                    "&play_sec=%d",
+                    "&play_sec=%d"
+                    "&travel=%d"
+                    "&use=%d"
+                    "&fail=%d"
+                    ,
                     ticketServerURL,
                     secretString,
                     "PLAYSEC",
                     encodedEmail,
-                    playSec );
+                    playSec
+                    nextPlayer->travelDistance,
+                    nextPlayer->usingTime,
+                    nextPlayer->failTime );
 
                 delete [] encodedEmail;
 
@@ -25923,7 +25944,7 @@ int main() {
                                 url );
 
                 WebRequest* req = new WebRequest( "GET", url, NULL );
-                playerDeathLogging.push_back(req);
+                globalWebRequests.push_back(req);
                 
                 addPastPlayer( nextPlayer );
 

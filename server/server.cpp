@@ -21936,7 +21936,7 @@ int main() {
 
                 WebRequest* req = new WebRequest( "GET", url, NULL );
 
-                req->step()
+                req->step();
 
                 // don't use age here, because it unfairly gives Eve
                 // +14 years that she didn't actually live

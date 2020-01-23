@@ -217,6 +217,41 @@ static SimpleVector<char*> namedAfterKillPhrases;
 
 static SimpleVector<WebRequest*> globalWebRequests;
 
+static void sendTransactionRecord(int obj, float price, const char* seller,
+    const char* buyer, int type) {
+    char *secretString = 
+        SettingsManager::getStringSetting( 
+            "statsServerSharedSecret", "sdfmlk3490sa81m3ug9324" );
+    char *encSeller = URLUtils::urlEncode( seller );
+    char *encBuyer = URLUtils::urlEncode( buyer );
+    char *url = autoSprintf( 
+        "%s?stats.htm"
+        "&secret=%s"
+        "&action=%s"
+        "&object=%d"
+        "&price=%.2f"
+        "&seller=%s"
+        "&buyer=%s"
+        "&type=%d"
+        ,
+        ticketServerURL,
+        secretString,
+        "TRANSACTION",
+        obj,
+        price
+        encSeller,
+        encBuyer,
+        type );
+
+    delete [] encSeller;
+    delete [] encBuyer;
+
+    printf( "Record transaction: %s\n", url );
+
+    WebRequest* req = new WebRequest( "GET", url, NULL );
+    globalWebRequests.push_back(req);
+}
+
 
 static int nextOrderNumber = 1;
 

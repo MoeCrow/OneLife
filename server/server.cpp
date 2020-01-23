@@ -238,7 +238,7 @@ static void sendTransactionRecord(int obj, float price, char* seller,
         secretString,
         "TRANSACTION",
         obj,
-        price
+        price,
         encSeller,
         encBuyer,
         type );

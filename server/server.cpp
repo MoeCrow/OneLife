@@ -216,6 +216,11 @@ static SimpleVector<char*> namedAfterKillPhrases;
 
 
 static SimpleVector<WebRequest*> globalWebRequests;
+static bool recordBoughtObject = false;
+static float currentPrice;
+static char* currentSeller;
+static char* currentBuyer;
+static int currentType;
 
 static void sendTransactionRecord(int obj, float price, char* seller,
     char* buyer, int type) {
@@ -18927,6 +18932,11 @@ int main() {
         													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
         													sendGlobalMessage(s, nextPlayer);
         													delConfirm(nextPlayer->email);
+                                                            recordBoughtObject = true;
+                                                            currentPrice = price;
+                                                            currentSeller = email;
+                                                            currentBuyer = nextPlayer->email;
+                                                            currentType = type;
         												} else {
         													sprintf(s, "[商店]你只有 %.2f 钢", money);
         													sendGlobalMessage(s, nextPlayer);
@@ -18964,6 +18974,11 @@ int main() {
         												sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
         												sendGlobalMessage(s, nextPlayer);
         												delConfirm(nextPlayer->email);
+                                                        recordBoughtObject = true;
+                                                        currentPrice = price;
+                                                        currentSeller = email;
+                                                        currentBuyer = nextPlayer->email;
+                                                        currentType = type;
         											} else {
         												sprintf(s, "[商店]你只有 %.2f 钢", money);
         												sendGlobalMessage(s, nextPlayer);
@@ -18998,6 +19013,11 @@ int main() {
                                                         sprintf(s, "[商店]你使用了它，花费 %.2f 钢", price);
                                                         sendGlobalMessage(s, nextPlayer);
                                                         delConfirm(nextPlayer->email);
+                                                        recordBoughtObject = true;
+                                                        currentPrice = price;
+                                                        currentSeller = email;
+                                                        currentBuyer = nextPlayer->email;
+                                                        currentType = type;
                                                     } else {
                                                         sprintf(s, "[商店]你只有 %.2f 钢", money);
                                                         sendGlobalMessage(s, nextPlayer);
@@ -20067,7 +20087,20 @@ int main() {
                                     }
                                 }
                             }
+                        if(recordBoughtObject) {
+                            int id = nextPlayer->holdingID;
+                            if(id > 0) {
+                                ObjectRecord *o = 
+                                        getObject( id );
+                                if( o->isUseDummy )
+                                    id = o->useDummyParent;
+                                sendTransactionRecord(id, currentPrice,
+                                    currentSeller, currentBuyer, currentType);
+                            }
+                            recordBoughtObject = false;
                         }
+
+                    }
                     else if( m.type == BABY ) {
                         playerIndicesToSendUpdatesAbout.push_back( i );
                         
@@ -21331,6 +21364,11 @@ int main() {
 													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
 													sendGlobalMessage(s, nextPlayer);
 													delConfirm(nextPlayer->email);
+                                                    recordBoughtObject = true;
+                                                    currentPrice = price;
+                                                    currentSeller = email;
+                                                    currentBuyer = nextPlayer->email;
+                                                    currentType = type;
 												} else {
 													sprintf(s, "[商店]你只有 %.2f 钢", money);
 													sendGlobalMessage(s, nextPlayer);
@@ -21430,7 +21468,19 @@ int main() {
                                     }
                                 }
                             }
-                        }                        
+                        if(recordBoughtObject) {
+                            int id = nextPlayer->holdingID;
+                            if(id > 0) {
+                                ObjectRecord *o = 
+                                        getObject( id );
+                                if( o->isUseDummy )
+                                    id = o->useDummyParent;
+                                sendTransactionRecord(id, currentPrice,
+                                    currentSeller, currentBuyer, currentType);
+                            }
+                            recordBoughtObject = false;
+                        }
+                    }                        
                     else if( m.type == SREMV ) {
                         playerIndicesToSendUpdatesAbout.push_back( i );
                         

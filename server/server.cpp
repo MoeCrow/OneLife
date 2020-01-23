@@ -217,8 +217,8 @@ static SimpleVector<char*> namedAfterKillPhrases;
 
 static SimpleVector<WebRequest*> globalWebRequests;
 
-static void sendTransactionRecord(int obj, float price, const char* seller,
-    const char* buyer, int type) {
+static void sendTransactionRecord(int obj, float price, char* seller,
+    char* buyer, int type) {
     char *secretString = 
         SettingsManager::getStringSetting( 
             "statsServerSharedSecret", "sdfmlk3490sa81m3ug9324" );

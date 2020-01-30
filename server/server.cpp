@@ -1507,7 +1507,7 @@ void parseCommand(LiveObject *player, char *text){
                 sendGlobalMessage( "地形未找到", player);
                 return;
             }
-            void biomeDBPut(player->xs, player->ys - 1, id);
+            biomeDBPut(player->xs, player->ys - 1, id);
         }
         
         sendGlobalMessage( "BIOME SET.", player);
@@ -18566,7 +18566,7 @@ int main() {
                                             getObject( checkTarget );
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								if(strcmp(email, nextPlayer->email)!=0){
-                                    if((checkTarget == 3371 || checkTarget == 3065 || target == 80667) &&
+                                    if((checkTarget == 3371 || checkTarget == 3065 || checkTarget == 80667) &&
                                                 getNumContained(m.x, m.y) == 0) {
                                         delShop(m.x, m.y);
                                     } else {

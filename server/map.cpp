@@ -600,11 +600,6 @@ static int biomeDBGet( int inX, int inY,
     }
 
 
-void biomeDBSet(int inX, int inY, int value) {
-    biomeDBPut(inX, inY, value, value, 0.5);
-}
-
-
 static void biomeDBPut( int inX, int inY, int inValue, int inSecondPlace,
                         double inSecondPlaceGap ) {
     unsigned char key[8];
@@ -637,7 +632,9 @@ static void biomeDBPut( int inX, int inY, int inValue, int inSecondPlace,
     DB_put( &biomeDB, key, value );
     }
     
-
+void biomeDBSet(int inX, int inY, int value) {
+    biomeDBPut(inX, inY, value, value, 0.5);
+}
 
 
 // returns -1 on failure, 1 on success

@@ -1481,6 +1481,38 @@ void parseCommand(LiveObject *player, char *text){
         sendGlobalMessage(news);
         return;
     }
+
+    if(strcmp(cmd, "BIO")==0 && isOp) {
+        if(sscanf(args, "%d", &id) != 1) {
+            sendGlobalMessage( "需要1个参数", player);
+            return;
+        } else {
+            if( false && id > 6 ) {
+                sendGlobalMessage( "地形未找到", player);
+                return;
+            }
+            void biomeDBPut(player->xs, player->ys, id);
+        }
+        
+        sendGlobalMessage( "BIOME SET.", player);
+        return;
+    }
+
+    if(strcmp(cmd, "BIOS")==0 && isOp) {
+        if(sscanf(args, "%d", &id) != 1) {
+            sendGlobalMessage( "需要1个参数", player);
+            return;
+        } else {
+            if( false && id > 6 ) {
+                sendGlobalMessage( "地形未找到", player);
+                return;
+            }
+            void biomeDBPut(player->xs, player->ys - 1, id);
+        }
+        
+        sendGlobalMessage( "BIOME SET.", player);
+        return;
+    }
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {

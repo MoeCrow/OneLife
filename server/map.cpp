@@ -600,6 +600,10 @@ static int biomeDBGet( int inX, int inY,
     }
 
 
+void biomeDBPut(int inX, int inY, int value) {
+    biomeDBPut(inX, inY, value, value, 0.5);
+}
+
 
 static void biomeDBPut( int inX, int inY, int inValue, int inSecondPlace,
                         double inSecondPlaceGap ) {
@@ -3922,42 +3926,44 @@ char initMap() {
     
     ecoDBOpen = true;
 	
-	unsigned char key[50];
-    unsigned char value[12];
-	int ecoVer = 0;
-	emailToKey("[version]", key);
-	int result = DB_get( &ecoDB, key, value );
-    
-    if( result == 0 ) {
-        // found
-        ecoVer = valueToInt( &( value[0] ) );
+    {
+    	unsigned char key[50];
+        unsigned char value[12];
+    	int ecoVer = 0;
+    	emailToKey("[version]", key);
+    	int result = DB_get( &ecoDB, key, value );
+        
+        if( result == 0 ) {
+            // found
+            ecoVer = valueToInt( &( value[0] ) );
+        }
+    	
+    	if(ecoVer == 0) {
+    		AppLog::infoF( 
+            "Economy DB version is %d ,upgrading!",
+            ecoVer );
+    		
+    		unsigned char keyEco[50];
+    		unsigned char valueEco[12];
+    		
+    		DB_Iterator ecoIterator;
+    		DB_Iterator_init( &ecoDB, &ecoIterator );
+    		while( DB_Iterator_next( &ecoIterator, keyEco, valueEco ) > 0 ) {
+    			int tmp = valueToInt( &( valueEco[0] ) );
+    			float money = static_cast<float>(tmp);
+    			memcpy(&tmp, &money, 4);
+    			intToValue( tmp, &( valueEco[0] ) );
+    			DB_put( &ecoDB, keyEco, valueEco );
+    		}
+    		
+    		ecoVer = 1;
+    		intToValue( ecoVer, &( value[0] ) );
+    		DB_put( &ecoDB, key, value );
+    		AppLog::infoF( 
+            "Economy DB upgrade to version %d!",
+            ecoVer );
+    	}
     }
-	
-	if(ecoVer == 0) {
-		AppLog::infoF( 
-        "Economy DB version is %d ,upgrading!",
-        ecoVer );
-		
-		unsigned char keyEco[50];
-		unsigned char valueEco[12];
-		
-		DB_Iterator ecoIterator;
-		DB_Iterator_init( &ecoDB, &ecoIterator );
-		while( DB_Iterator_next( &ecoIterator, keyEco, valueEco ) > 0 ) {
-			int tmp = valueToInt( &( valueEco[0] ) );
-			float money = static_cast<float>(tmp);
-			memcpy(&tmp, &money, 4);
-			intToValue( tmp, &( valueEco[0] ) );
-			DB_put( &ecoDB, keyEco, valueEco );
-		}
-		
-		ecoVer = 1;
-		intToValue( ecoVer, &( value[0] ) );
-		DB_put( &ecoDB, key, value );
-		AppLog::infoF( 
-        "Economy DB upgrade to version %d!",
-        ecoVer );
-	}
 
 
 	error = DB_open( &shopDB, 
@@ -4024,6 +4030,45 @@ char initMap() {
         }
     
     playerDBOpen = true;
+if(false)
+    {
+        unsigned char key[50];
+        unsigned char value[512];
+        int dbVersion = 0;
+        emailToKey("[version]", key);
+        int result = DB_get( &playerDB, key, value );
+        
+        if( result == 0 ) {
+            // found
+            dbVersion = valueToInt( &( value[0] ) );
+        }
+        
+        if(dbVersion == 0) {
+            AppLog::infoF( 
+            "player DB version is %d ,upgrading!",
+            dbVersion );
+            
+            unsigned char keyLoop[50];
+            unsigned char valueLoop[512];
+            
+            DB_Iterator ecoIterator;
+            DB_Iterator_init( &playerDB, &ecoIterator );
+            while( DB_Iterator_next( &ecoIterator, keyLoop, valueLoop ) > 0 ) {
+                // int tmp = valueToInt( &( valueEco[0] ) );
+                // float money = static_cast<float>(tmp);
+                // memcpy(&tmp, &money, 4);
+                // intToValue( tmp, &( valueEco[0] ) );
+                DB_put( &playerDB, keyLoop, valueLoop );
+            }
+            
+            dbVersion = 1;
+            intToValue( dbVersion, &( value[0] ) );
+            DB_put( &playerDB, key, value );
+            AppLog::infoF( 
+            "player DB upgrade to version %d!",
+            dbVersion );
+        }
+    }
 
 
     error = DB_open( &metaDB, 

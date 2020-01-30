@@ -253,7 +253,7 @@ void restretchMapContainedDecays( int inX, int inY,
 
 int getMapBiome( int inX, int inY );
 
-void biomeDBPut(int inX, int inY, int value);
+void biomeDBSet(int inX, int inY, int value);
 
 
 

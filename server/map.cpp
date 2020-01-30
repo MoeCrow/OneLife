@@ -600,7 +600,7 @@ static int biomeDBGet( int inX, int inY,
     }
 
 
-void biomeDBPut(int inX, int inY, int value) {
+void biomeDBSet(int inX, int inY, int value) {
     biomeDBPut(inX, inY, value, value, 0.5);
 }
 

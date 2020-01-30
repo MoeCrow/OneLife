@@ -1716,7 +1716,7 @@ void parseCommand(LiveObject *player, char *text){
 				y = player->ys - 1;
 
                 int target = getMapObject( x, y );
-                if((target == 3371 || target == 3065)&&shopType > 0) {
+                if((target == 3371 || target == 3065 || target == 80667)&&shopType > 0) {
                     sendGlobalMessage( "这里应该设置成货架商店，输入 .shop 0 <价格>", player);
                     return;
                 }
@@ -18566,7 +18566,7 @@ int main() {
                                             getObject( checkTarget );
 							if(getShop(m.x, m.y, email, &type, &price)) {
 								if(strcmp(email, nextPlayer->email)!=0){
-                                    if((checkTarget == 3371 || checkTarget == 3065) &&
+                                    if((checkTarget == 3371 || checkTarget == 3065 || target == 80667) &&
                                                 getNumContained(m.x, m.y) == 0) {
                                         delShop(m.x, m.y);
                                     } else {

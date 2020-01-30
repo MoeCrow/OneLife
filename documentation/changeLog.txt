@@ -3,6 +3,110 @@ This file only list changes to game code.  Changes to content can be found here:
 http://onehouronelife.com/updateLog.php
 
 
+NOTE:
+As part of this week's update process, check bigserver2 logs post-restart as
+part of:  https://github.com/jasonrohrer/OneLife/issues/510
+
+
+Version 306   ???
+
+--Fixed PGUP/PGDOWN in category editor when pattern has same object repeated.
+
+--Fixed removal in category editor when pattern has same object repeated.
+
+--Added d/D key to category editor for duplicating object in a pattern.
+
+--Made playback of recorded web events more robust in the face of (admitedly
+  mysterious) playback timing variations.
+
+--Finally fixed client-side cause of dropping stuff in a bad biome.  Fixes #479
+
+--Support for +blocksMoving tag to prevent animals from walking through
+  auto-open doors.  Part of #504
+
+--Improved spacing of speech bubbles (no more extra space at end of string).
+
+--Grabbing an unlearned tool (or trying to use an unlearned ground tool) puts a
+  + speech bubble above the heads of nearby people who already know that tool.
+  Fixes #517
+
+--Fixed case of usingSound for target not playing if actor object also has uses.
+
+
+
+Server Fixes
+
+--Keeping diffWorking directory around after content build for forensic
+  purposes (in case the weird Steam build bug happens again).
+
+--Cursing by name radius is now 200 (was 32), and is a live server setting.
+  Part of #496
+
+--Server name at bottom of character detail page in family tree.
+
+--Data-only diff bundle script has optional pause to check Steam build.
+
+--Curse DB dump utility program prints date stamp for each entry.
+
+--Fixed glitch in names timing out for curse purposes after someone dies.
+  Fixes #511
+
+--Fixed spurious creation of new family population logs when tutorial or cursed
+  Eve picks a name.
+ 
+--Improved reflector split/unsplit behavior in case where servers are spuriously
+  offline.
+
+--New format for links to Wondible full family tree viewer.  Fixes #509
+
+--Added more logging around decision of when to spawn a new Eve.  Related to
+  #510
+
+--Server notifies leader when they correctly issue an order.  Thanks David J.
+
+
+
+
+Version 304   2020-January-17
+
+--No longer playing eating animation when sticking food in clothing container.
+  Fixes #490
+
+--Fix overlap of hidden email/SteamID with GENETIC FITNESS label.  Fixes #491
+
+
+
+Server Fixes
+
+--Rewrote baby placement code, removing a bunch of deprecated cases.  When
+  placing a player, we first find all non-curse-blocked, non-cooldown, 
+  non-lineage-limit mothers, expanding to include cooldown mothers if we can't
+  find any, and then expanding to include lineage limit mothers if we still 
+  can't find any.  Then, from those available, we pick the mothers from the
+  weakest race, and then, from those, we pick the mothers from the weakest
+  family.  From those, we send the baby to one of those mothers at random, 
+  weighted by Yum and warmth.  If there exist some fertile mothers, but all of
+  them are curse-blocked, the player goes to d-town.  If there are absolutely
+  no fertile mothers, or if > 2/3 of the player population are helpless babies,
+  or if there are > 4 babies per mother on the server, we spawn an Eve of the 
+  weakest race.  We also force-spawn an Eve for any non-existant race if 
+  specialty biomes are in effect (when we have >= 15 players).  Fixes #493
+
+--Fitness leaderboard now has clickable detail links.
+
+--New fitness score update formula (thanks wondible).  Scores return again to
+  being capped at 60, and update based on how long you live relative to your
+  own score, or how long your offspring live relative to their score.  Help
+  them to live longer than their current score, and your score will go up.
+  Hurt them so that they live shorter than their current score, and your score
+  will go down.  This also ends the exploit where you push your own average
+  down to farm score boosts from long lives later.
+
+--New tool slot formula based on new 0-60 capped fitness scores.
+
+
+
+
 Version 302    2020-January-9
 
 --Fixed editor skipping gaps in numbering in sprite import cache.

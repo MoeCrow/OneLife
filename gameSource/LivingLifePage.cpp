@@ -1077,6 +1077,7 @@ typedef enum messageType {
     GLOBAL_MESSAGE,
     WAR_REPORT,
     LEARNED_TOOL_REPORT,
+    TOOL_EXPERTS,
     PONG,
     COMPRESSED_MESSAGE,
     UNKNOWN
@@ -1232,6 +1233,9 @@ messageType getMessageType( char *inMessage ) {
         }
     else if( strcmp( copy, "LR" ) == 0 ) {
         returnValue = LEARNED_TOOL_REPORT;
+        }
+    else if( strcmp( copy, "TE" ) == 0 ) {
+        returnValue = TOOL_EXPERTS;
         }
     
     delete [] copy;
@@ -1817,6 +1821,12 @@ void LivingLifePage::computePathToDest( LiveObject *inObject ) {
 
             start = inObject->pathToDest[ closestI ];
             }
+        }
+    else {
+        // no path exists to find closest point on
+        // our last known grid position is our closest point
+        start.x = inObject->xServer;
+        start.y = inObject->yServer;
         }
     
     
@@ -3313,6 +3323,17 @@ void LivingLifePage::drawChalkBackgroundString( doublePair inPos,
     
         doublePair firstBlot = 
             { inPos.x, firstLineY - i * lineSpacing};
+
+        
+        if( numBlots == 1 ) {
+            // center first and only blot on line of text 
+            // (probably one char of text)
+            firstBlot.x += length / 2;
+            }
+        else {
+            // stretch blots so they just perfectly cover this line
+            blotSpacing.x = length / ( numBlots - 1 );
+            }
 
         
         for( int b=0; b<numBlots; b++ ) {
@@ -13154,6 +13175,40 @@ void LivingLifePage::step() {
             tokens->deallocateStringElements();
             delete tokens;
             }
+        else if( type == TOOL_EXPERTS ) {
+            SimpleVector<char *> *tokens = tokenizeString( message );
+            
+            double curTime = game_getCurrentTime();
+            
+            // first token is LR
+            // rest are learned IDs
+            for( int i=1; i < tokens->size(); i++ ) {
+                char *tok = tokens->getElementDirect( i );
+                
+                int id = 0;
+                sscanf( tok, "%d", &id );
+                if( id > 0 ) {
+                    LiveObject *o = getLiveObject( id );
+                   
+                    if( o != NULL ) {
+
+                        if( o->currentSpeech != NULL ) {
+                            delete [] o->currentSpeech;
+                            o->currentSpeech = NULL;
+                            }
+                        
+                        o->currentSpeech = stringDuplicate( "+" );
+                        o->speechFade = 1.0;
+                                
+                        o->speechIsSuccessfulCurse = false;
+
+                        o->speechFadeETATime = curTime + 3;
+                        }
+                    }
+                }
+            tokens->deallocateStringElements();
+            delete tokens;
+            }
         else if( type == SEQUENCE_NUMBER ) {
             // need to respond with LOGIN message
             
@@ -16673,7 +16728,11 @@ void LivingLifePage::step() {
                                           heldTransitionSourceID );
                             
                             if( tr != NULL &&
-                                tr->newActor == existing->holdingID &&
+                                ( tr->newActor == existing->holdingID
+                                  ||
+                                  bothSameUseParent( tr->newActor,
+                                                     existing->holdingID ) )
+                                &&
                                 tr->target == heldTransitionSourceID &&
                                 ( tr->newTarget == tr->target 
                                   ||
@@ -22012,6 +22071,15 @@ void LivingLifePage::pointerDown( float inX, float inY ) {
                 if( ourLiveObject->holdingID > 0 &&
                     getObject( ourLiveObject->holdingID )->foodValue > 0 ) {
                     nextActionEating = true;
+
+                    if( p.hitClothingIndex >= 0 &&
+                        clothingByIndex( ourLiveObject->clothing,
+                                         p.hitClothingIndex )->numSlots > 0 ) {
+                        // clicked on container clothing
+                        // server interprets this as an insert request, not
+                        // an eat request
+                        nextActionEating = false;
+                        }
                     }
     
                 nextActionMessageToSend = 

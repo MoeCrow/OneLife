@@ -1491,7 +1491,7 @@ void parseCommand(LiveObject *player, char *text){
                 sendGlobalMessage( "地形未找到", player);
                 return;
             }
-            void biomeDBPut(player->xs, player->ys, id);
+            biomeDBPut(player->xs, player->ys, id);
         }
         
         sendGlobalMessage( "BIOME SET.", player);

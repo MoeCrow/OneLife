@@ -4559,6 +4559,64 @@ static void rememberDummy( FILE *inFile, int inX, int inY,
     }
 
 
+static void rememberDummy( FILE *inFile, char *email, 
+                           ObjectRecord *inDummyO, 
+                           int inSlot = -1, int inB = 0 ) {
+    
+    if( inFile == NULL ) {
+        return;
+        }
+    
+    int parent = -1;
+    int dummyIndex = -1;
+
+    char marker = 'x';
+
+    if( inDummyO->isUseDummy ) {
+        marker = 'u';
+        
+        parent = inDummyO->useDummyParent;
+        ObjectRecord *parentO = getObject( parent );
+        
+        if( parentO != NULL ) {    
+            for( int i=0; i<parentO->numUses - 1; i++ ) {
+                if( parentO->useDummyIDs[i] == inDummyO->id ) {
+                    dummyIndex = i;
+                    break;
+                    }
+                }
+            }
+        }
+    else if( inDummyO->isVariableDummy ) {
+        marker = 'v';
+        
+        parent = inDummyO->variableDummyParent;
+        ObjectRecord *parentO = getObject( parent );
+        
+        if( parentO != NULL ) {    
+            for( int i=0; i<parentO->numVariableDummyIDs; i++ ) {
+                if( parentO->variableDummyIDs[i] == inDummyO->id ) {
+                    dummyIndex = i;
+                    break;
+                    }
+                }
+            }
+        }
+    
+    if( parent > 0 && dummyIndex >= 0 ) {
+        if( inSlot == -1 && inB == 0 ) {   
+            fprintf( inFile, "%s %c %d %d\n", 
+                     email, 
+                     marker, parent, dummyIndex );
+            }
+        else {
+            fprintf( inFile, "%s %c %d %d [%d %d]\n", 
+                     email, 
+                     marker, parent, dummyIndex, inSlot, inB );
+            }
+        }
+    }
+
 
 void freeMap( char inSkipCleanup ) {
     if( mapChangeLogFile != NULL ) {
@@ -4745,7 +4803,25 @@ void freeMap( char inSkipCleanup ) {
                 "...%d contained useDummy/variable objects present and changed "
                 "back to usused parent.",
                 numContChanged );
-            }
+
+            // unsigned char pKey[50];
+    
+            // unsigned char pData[512];
+
+            // dummyFile = fopen( "playerDummyRecall.txt", "w" );
+
+            // DB_Iterator_init( &playerDB, &dbi );
+            
+            // while( DB_Iterator_next( &dbi, pKey, pData ) > 0 ) {
+
+            // }
+
+            // if( dummyFile != NULL ) {
+            //     fclose( dummyFile );
+            // }
+
+
+        }
         else {
             AppLog::info( "Skipping use dummy cleanup." );
             }

@@ -1824,7 +1824,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SETHOME")==0){
         int cir = getCircle(player->xd, player->yd);
-        if(cir < 3 || cir > 6) {
+        if(cir < 4 || cir > 6) {
             sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许3-6", player);
             return;
         }

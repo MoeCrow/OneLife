@@ -9678,6 +9678,9 @@ int processLoggedInPlayer( char inAllowReconnect,
 	newObject.containedEtaDecays = NULL;
     newObject.subContainedEtaDecays = NULL;
 	{
+        newObject.name = new char[256];
+        strcpy(newObject.name, newObject.email);
+
 		int displayID, xd, yd, yummy, holding,
 			hat, tunic, frontShoe, backShoe, bottom, backPack;
 		double age;

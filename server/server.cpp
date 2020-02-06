@@ -15999,13 +15999,15 @@ int main() {
                                     "&hash_value=%s"
                                     "&string_to_hash=%s"
 									"&coins=%.2f"
-                                    "&yummy=%d",
+                                    "&yummy=%d"
+                                    "&ip=%s",
                                     ticketServerURL,
                                     encodedEmail,
                                     keyHash,
                                     nextConnection->sequenceNumberString,
 									money,
-                                    yummy );
+                                    yummy
+                                    nextConnection->sock->mAddressString );
 
                                 delete [] encodedEmail;
 

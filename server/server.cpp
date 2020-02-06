@@ -16025,7 +16025,7 @@ int main() {
                                     nextConnection->sequenceNumberString,
 									money,
                                     yummy,
-                                    nextConnection->sock->mAddressString );
+                                    nextConnection->sock->getRemoteHostAddress()->mAddressString );
 
                                 delete [] encodedEmail;
 

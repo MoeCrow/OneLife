@@ -1609,7 +1609,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 
-    if(strcmp(cmd, "SHOPT")==0 && isOp){
+    if(strcmp(cmd, "SHOPT")==0){
         char s[256];
         char tEmail[50];
         char shopType;
@@ -1617,9 +1617,9 @@ void parseCommand(LiveObject *player, char *text){
         x = player->xs;
         y = player->ys - 1;
         if(!getShop(x, y, tEmail, &shopType, &price)){
-            sprintf(s, "SHOP NOT EXISTS");
+            sprintf(s, "商店不存在");
         } else {
-            sprintf(s, "SHOP TYPE:%d PRICE:%.2f OWNER:%s", (int)shopType, price, tEmail);
+            sprintf(s, "商店类型:%d 价格:%.2f 拥有者:%s", (int)shopType, price, tEmail);
         }
         sendGlobalMessage( s, player);
         return;

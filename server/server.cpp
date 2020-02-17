@@ -1459,7 +1459,7 @@ void parseCommand(LiveObject *player, char *text){
                 bool isVip = isNamingSay(stringToUpperCase(player->email), &vipList) != NULL;
                 if(!isOp && !isVip) {
                     sendGlobalMessage("你不能选择氪金角色",player);
-                    return
+                    return;
                 }
             } 
             player->displayID = id;

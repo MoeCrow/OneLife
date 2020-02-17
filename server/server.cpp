@@ -999,6 +999,8 @@ typedef struct LiveObject {
 
 static SimpleVector<char*> opList;
 static SimpleVector<char*> banList;
+static SimpleVector<char*> vipList;
+
 
 
 typedef struct Spot {
@@ -1451,6 +1453,15 @@ void parseCommand(LiveObject *player, char *text){
                 sendGlobalMessage( "ID错误，请到合成表查找", player);
                 return;
             }
+                
+            if( o->personNoSpawn) {
+                readPhrases( "vip", &vipList );
+                bool isVip = isNamingSay(stringToUpperCase(player->email), &vipList) != NULL;
+                if(!isOp && !isVip) {
+                    sendGlobalMessage("你不能选择氪金角色",player);
+                    return
+                }
+            } 
             player->displayID = id;
         }
         sendGlobalMessage( "角色已更换", player);
@@ -14815,6 +14826,7 @@ int main() {
 	
 	readPhrases( "ops", &opList );
 	readPhrases( "ban", &banList );
+    readPhrases( "vip", &vipList );
 	
 	readSpotList( "warpSpot", &warpSpot);
 	readSpotList( "homeSpot", &homeSpot);

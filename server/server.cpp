@@ -1854,7 +1854,7 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "SETHOME")==0){
         int cir = getCircle(player->xd, player->yd);
         if(cir < 4 || cir > 6) {
-            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许3-6", player);
+            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
             return;
         }
 		char s[256];
@@ -1910,7 +1910,7 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "SETWARP")==0){
         int cir = getCircle(player->xd, player->yd);
         if((cir < 3 || cir > 6) && !isOp) {
-            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许3-6", player);
+            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
             return;
         }
 		char s[256], name[64];

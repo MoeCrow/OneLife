@@ -4047,10 +4047,13 @@ if(false)
             
             unsigned char keyLoop[50];
             unsigned char valueLoop[512];
+            unsigned char valueTmp[512];
             
-            DB_Iterator ecoIterator;
-            DB_Iterator_init( &playerDB, &ecoIterator );
-            while( DB_Iterator_next( &ecoIterator, keyLoop, valueLoop ) > 0 ) {
+            DB_Iterator dbIterator;
+            DB_Iterator_init( &playerDB, &dbIterator );
+            while( DB_Iterator_next( &dbIterator, keyLoop, valueLoop ) > 0 ) {
+                
+                Dummy* dummy = writeDummy()
                 // int tmp = valueToInt( &( valueEco[0] ) );
                 // float money = static_cast<float>(tmp);
                 // memcpy(&tmp, &money, 4);
@@ -4600,8 +4603,34 @@ static void rememberDummy( FILE *inFile, int inX, int inY,
         }
     }
 
+static int readDummy(char marker, int parentID, int dummyIndex) {
+    ObjectRecord *parent = getObject( parentID );
+                
+    int dummyID = -1;
+    
+    if( parent != NULL ) {
+        
+        if( marker == 'u' && parent->numUses-1 > dummyIndex ) {
+            dummyID = parent->useDummyIDs[ dummyIndex ];
+            }
+        else if( marker == 'v' && 
+                 parent->numVariableDummyIDs > dummyIndex ) {
+            dummyID = parent->variableDummyIDs[ dummyIndex ];
+        } else
+            return parentID;
+    }
 
-static void rememberDummy( FILE *inFile, char *email, 
+    return dummyID;
+}
+
+struct Dummy
+{
+    char marker;
+    int parentID;
+    int dummyIndex;
+};
+
+static Dummy* writeDummy( FILE *inFile, char *email, 
                            ObjectRecord *inDummyO, 
                            int inSlot = -1, int inB = 0 ) {
     
@@ -4613,6 +4642,7 @@ static void rememberDummy( FILE *inFile, char *email,
     int dummyIndex = -1;
 
     char marker = 'x';
+
 
     if( inDummyO->isUseDummy ) {
         marker = 'u';
@@ -4646,18 +4676,13 @@ static void rememberDummy( FILE *inFile, char *email,
         }
     
     if( parent > 0 && dummyIndex >= 0 ) {
-        if( inSlot == -1 && inB == 0 ) {   
-            fprintf( inFile, "%s %c %d %d\n", 
-                     email, 
-                     marker, parent, dummyIndex );
-            }
-        else {
-            fprintf( inFile, "%s %c %d %d [%d %d]\n", 
-                     email, 
-                     marker, parent, dummyIndex, inSlot, inB );
-            }
-        }
+        Dummy* dummy = new Dummy();
+        dummy->marker = marker;
+        dummy->parentID = parent;
+        dummy->dummyIndex = dummyIndex;
     }
+    return NULL;
+}
 
 
 void freeMap( char inSkipCleanup ) {

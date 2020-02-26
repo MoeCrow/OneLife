@@ -130,6 +130,87 @@
 #include "../gameSource/objectMetadata.h"
 
 
+static int readDummy(char marker, int parentID, int dummyIndex) {
+    ObjectRecord *parent = getObject( parentID );
+                
+    int dummyID = -1;
+    
+    if( parent != NULL ) {
+        
+        if( marker == 'u' && parent->numUses-1 > dummyIndex ) {
+            dummyID = parent->useDummyIDs[ dummyIndex ];
+            }
+        else if( marker == 'v' && 
+                 parent->numVariableDummyIDs > dummyIndex ) {
+            dummyID = parent->variableDummyIDs[ dummyIndex ];
+        } else
+            return parentID;
+    }
+
+    return dummyID;
+}
+
+struct Dummy
+{
+    char marker;
+    int parentID;
+    int dummyIndex;
+};
+
+static Dummy* writeDummy( FILE *inFile, char *email, 
+                           ObjectRecord *inDummyO, 
+                           int inSlot = -1, int inB = 0 ) {
+    
+    if( inFile == NULL ) {
+        return;
+        }
+    
+    int parent = -1;
+    int dummyIndex = -1;
+
+    char marker = 'x';
+
+
+    if( inDummyO->isUseDummy ) {
+        marker = 'u';
+        
+        parent = inDummyO->useDummyParent;
+        ObjectRecord *parentO = getObject( parent );
+        
+        if( parentO != NULL ) {    
+            for( int i=0; i<parentO->numUses - 1; i++ ) {
+                if( parentO->useDummyIDs[i] == inDummyO->id ) {
+                    dummyIndex = i;
+                    break;
+                    }
+                }
+            }
+        }
+    else if( inDummyO->isVariableDummy ) {
+        marker = 'v';
+        
+        parent = inDummyO->variableDummyParent;
+        ObjectRecord *parentO = getObject( parent );
+        
+        if( parentO != NULL ) {    
+            for( int i=0; i<parentO->numVariableDummyIDs; i++ ) {
+                if( parentO->variableDummyIDs[i] == inDummyO->id ) {
+                    dummyIndex = i;
+                    break;
+                    }
+                }
+            }
+        }
+    
+    if( parent > 0 && dummyIndex >= 0 ) {
+        Dummy* dummy = new Dummy();
+        dummy->marker = marker;
+        dummy->parentID = parent;
+        dummy->dummyIndex = dummyIndex;
+    }
+    return NULL;
+}
+
 
 timeSec_t startFrozenTime = -1;
 
@@ -4602,87 +4683,6 @@ static void rememberDummy( FILE *inFile, int inX, int inY,
             }
         }
     }
-
-static int readDummy(char marker, int parentID, int dummyIndex) {
-    ObjectRecord *parent = getObject( parentID );
-                
-    int dummyID = -1;
-    
-    if( parent != NULL ) {
-        
-        if( marker == 'u' && parent->numUses-1 > dummyIndex ) {
-            dummyID = parent->useDummyIDs[ dummyIndex ];
-            }
-        else if( marker == 'v' && 
-                 parent->numVariableDummyIDs > dummyIndex ) {
-            dummyID = parent->variableDummyIDs[ dummyIndex ];
-        } else
-            return parentID;
-    }
-
-    return dummyID;
-}
-
-struct Dummy
-{
-    char marker;
-    int parentID;
-    int dummyIndex;
-};
-
-static Dummy* writeDummy( FILE *inFile, char *email, 
-                           ObjectRecord *inDummyO, 
-                           int inSlot = -1, int inB = 0 ) {
-    
-    if( inFile == NULL ) {
-        return;
-        }
-    
-    int parent = -1;
-    int dummyIndex = -1;
-
-    char marker = 'x';
-
-
-    if( inDummyO->isUseDummy ) {
-        marker = 'u';
-        
-        parent = inDummyO->useDummyParent;
-        ObjectRecord *parentO = getObject( parent );
-        
-        if( parentO != NULL ) {    
-            for( int i=0; i<parentO->numUses - 1; i++ ) {
-                if( parentO->useDummyIDs[i] == inDummyO->id ) {
-                    dummyIndex = i;
-                    break;
-                    }
-                }
-            }
-        }
-    else if( inDummyO->isVariableDummy ) {
-        marker = 'v';
-        
-        parent = inDummyO->variableDummyParent;
-        ObjectRecord *parentO = getObject( parent );
-        
-        if( parentO != NULL ) {    
-            for( int i=0; i<parentO->numVariableDummyIDs; i++ ) {
-                if( parentO->variableDummyIDs[i] == inDummyO->id ) {
-                    dummyIndex = i;
-                    break;
-                    }
-                }
-            }
-        }
-    
-    if( parent > 0 && dummyIndex >= 0 ) {
-        Dummy* dummy = new Dummy();
-        dummy->marker = marker;
-        dummy->parentID = parent;
-        dummy->dummyIndex = dummyIndex;
-    }
-    return NULL;
-}
 
 
 void freeMap( char inSkipCleanup ) {

@@ -9808,7 +9808,7 @@ int processLoggedInPlayer( char inAllowReconnect,
             memset( metaData, 0, MAP_METADATA_LENGTH );
             memcpy( metaData, paperStr, len + 1 );
             
-            newObject.holdingID = addMetadata( 1615, metaData );
+            newObject.holdingID = addMetadata( 1627, metaData );
             //*/
                 
             //sendGlobalMessage( "WELCOME TO MOELIFE! GO bbs.onehouronelife.cn for more", &newObject );

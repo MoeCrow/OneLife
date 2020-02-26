@@ -19787,9 +19787,9 @@ int main() {
                                         getObject( id );
                                 if( o->isUseDummy )
                                     id = o->useDummyParent;
-                                sendTransactionRecord(id, currentPrice,
-                                    currentSeller, currentBuyer, currentType);
                             }
+                            sendTransactionRecord(id, currentPrice,
+                                    currentSeller, currentBuyer, currentType);
                             recordBoughtObject = false;
                         }
 
@@ -21168,9 +21168,9 @@ int main() {
                                         getObject( id );
                                 if( o->isUseDummy )
                                     id = o->useDummyParent;
-                                sendTransactionRecord(id, currentPrice,
-                                    currentSeller, currentBuyer, currentType);
                             }
+                            sendTransactionRecord(id, currentPrice,
+                                currentSeller, currentBuyer, currentType);
                             recordBoughtObject = false;
                         }
                     }                        

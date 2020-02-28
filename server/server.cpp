@@ -18641,7 +18641,7 @@ int main() {
 
                         if(checkTarget != 0 && strstr( getObject( checkTarget )->description,"+residence" ) != NULL) {
                             Spot* spot = findSpotByXY(&residenceSpot, m.x, m.y);
-                            if(spot == NULL)
+                            if(spot == NULL) {
                                 Spot *spot = new Spot();
                                 spot->name = "-";
                                 spot->owner = "-";
@@ -18651,7 +18651,7 @@ int main() {
                                 replaceOrCreateSpot(&residenceSpot, spot);
                                 writeSpotList("residenceSpot", &residenceSpot);
                                 sendGlobalMessage( "领地石已激活", nextPlayer);
-                            else {
+                            } else {
                                 delSpotByXY(&residenceSpot, name);
                                 writeSpotList("residenceSpot", &residenceSpot);
                                 sendGlobalMessage( "领地石已关闭", nextPlayer);

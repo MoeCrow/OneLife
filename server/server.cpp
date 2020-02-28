@@ -1900,6 +1900,16 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 		char s[256];
+
+        for( int i=0; i<residenceSpot.size(); i++ ) {
+            Spot* s = *residenceSpot.getElement(i);
+
+            GridPos nowPos = {s->x, s->y};
+            if(distance(myPos, nowPos) < 50){
+                sendGlobalMessage( "半径50格内有激活的领地石，设置失败", player);
+                return;
+            }
+        }
 		setHome(player->email, player->xs, player->ys);
 		sprintf(s, "家已设置在 %d %d", player->xs, player->ys);
 		sendGlobalMessage( s, player);
@@ -1963,6 +1973,16 @@ void parseCommand(LiveObject *player, char *text){
             if(strlen(name) < 6 && !isOp) {
                 sendGlobalMessage( "地标名至少6位", player);
                 return;
+            }
+
+            for( int i=0; i<residenceSpot.size(); i++ ) {
+                Spot* s = *residenceSpot.getElement(i);
+
+                GridPos nowPos = {s->x, s->y};
+                if(distance(myPos, nowPos) < 50){
+                    sendGlobalMessage( "半径50格内有激活的领地石，设置失败", player);
+                    return;
+                }
             }
 			sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);
 			if(!setWarp(name, player->email, player->xs, player->ys, isOp))

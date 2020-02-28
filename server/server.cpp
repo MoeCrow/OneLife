@@ -17006,13 +17006,17 @@ int main() {
                 else if( m.type == DIE ) {
                     // killed self
                     // SID triggers a lineage ban
-                    nextPlayer->suicide = true;
+                    if(player->heldByOther || player->holdingID < 0) {
+                        sendGlobalMessage( "抱着时不可以", player);
+                    } else {
+                        nextPlayer->suicide = true;
 
-                    setDeathReason( nextPlayer, "SID" );
+                        setDeathReason( nextPlayer, "SID" );
 
-                    nextPlayer->error = true;
-                    nextPlayer->errorCauseString = "suicide";
-                    nextPlayer->heldByOther = false;       
+                        nextPlayer->error = true;
+                        nextPlayer->errorCauseString = "suicide";
+                        nextPlayer->heldByOther = false;       
+                    }
                 }
                 else if( m.type == GRAVE ) {
                     // immediately send GO response

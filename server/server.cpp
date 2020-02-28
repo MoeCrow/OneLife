@@ -1067,6 +1067,11 @@ static void writeSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotL
 
 void readPhrases( const char *inSettingsName, 
                   SimpleVector<char*> *inList );
+char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
+static void sendGlobalMessage( char *inMessage, LiveObject *inOnePlayerOnly = NULL );
+int computeFoodCapacity( LiveObject *inPlayer );
+
+
 static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotList)
 {
 	spotList->deleteAll();
@@ -1221,10 +1226,6 @@ static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 	writeSpotList("warpSpot", &warpSpot);
 	return true;
 }
-
-char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
-static void sendGlobalMessage( char *inMessage, LiveObject *inOnePlayerOnly = NULL );
-int computeFoodCapacity( LiveObject *inPlayer );
 
 
 inline int max(int x, int y){return x>y?x:y;}
@@ -17006,7 +17007,7 @@ int main() {
                 else if( m.type == DIE ) {
                     // killed self
                     // SID triggers a lineage ban
-                    if(player->heldByOther || player->holdingID < 0) {
+                    if(nextPlayer->heldByOther || nextPlayer->holdingID < 0) {
                         sendGlobalMessage( "抱着时不可以", player);
                     } else {
                         nextPlayer->suicide = true;

@@ -2338,6 +2338,10 @@ char skipRemovedObjectCleanup = 0;
 int cellsLookedAtToInit = 0;
 
 
+// only when shrink tiles number reach this percentage we do shrink
+const float minimumShrinkRatio = 0.01f;
+
+
 
 // version of open call that checks whether look time exists in lookTimeDB
 // for each record in opened DB, and clears any entries that are not
@@ -2480,59 +2484,63 @@ int DB_open_timeShrunk(
                    path, 
                    DB_getCurrentSize( &oldDB ), 
                    newSize );
-
-
-    DB tempDB;
+  
     
-    error = DB_open( &tempDB, 
-                         dbTempName, 
-                         mode,
-                         newSize,
-                         key_size,
-                         value_size );
-    if( error ) {
-        AppLog::errorF( "Failed to open DB file %s in DB_open_timeShrunk",
-                        dbTempName );
-        delete [] dbTempName;
+    if(oldDB - nonStale > minimumShrinkRatio * oldDB) {
+        DB tempDB;
+        error = DB_open( &tempDB, 
+                             dbTempName, 
+                             mode,
+                             newSize,
+                             key_size,
+                             value_size );
+        if( error ) {
+            AppLog::errorF( "Failed to open DB file %s in DB_open_timeShrunk",
+                            dbTempName );
+            delete [] dbTempName;
+            DB_close( &oldDB );
+            return error;
+            }
+
+
+        // now that we have new temp db properly sized,
+        // iterate again and insert, but don't count
+        DB_Iterator_init( &oldDB, &dbi );
+
+        while( DB_Iterator_next( &dbi, key, value ) > 0 ) {
+            int x = valueToInt( key );
+            int y = valueToInt( &( key[4] ) );
+
+            if( dbLookTimeGet( x, y ) > 0 ) {
+                // keep
+                // insert it in temp
+                DB_put_new( &tempDB, key, value );
+                }
+            else {
+                // stale
+                // ignore
+                }
+            }
+
+
+        
+        AppLog::infoF( "Cleaned %d / %d stale map cells from %s", stale, total,
+                       path );
+
+        printf( "\n" );
+        
+        
+        DB_close( &tempDB );
         DB_close( &oldDB );
-        return error;
-        }
 
+        dbTempFile.copy( &dbFile );
+        dbTempFile.remove();
 
-    // now that we have new temp db properly sized,
-    // iterate again and insert, but don't count
-    DB_Iterator_init( &oldDB, &dbi );
-
-    while( DB_Iterator_next( &dbi, key, value ) > 0 ) {
-        int x = valueToInt( key );
-        int y = valueToInt( &( key[4] ) );
-
-        if( dbLookTimeGet( x, y ) > 0 ) {
-            // keep
-            // insert it in temp
-            DB_put_new( &tempDB, key, value );
-            }
-        else {
-            // stale
-            // ignore
-            }
-        }
-
-
-    
-    AppLog::infoF( "Cleaned %d / %d stale map cells from %s", stale, total,
-                   path );
-
-    printf( "\n" );
-    
-    
-    DB_close( &tempDB );
-    DB_close( &oldDB );
-
-    dbTempFile.copy( &dbFile );
-    dbTempFile.remove();
-
-    delete [] dbTempName;
+        delete [] dbTempName;
+    } else {
+        AppLog::infoF( "Skipped shrinking phase");
+        DB_close( &oldDB );
+    }
 
     // now open new, shrunk file
     return DB_open( db, 

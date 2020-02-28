@@ -1014,6 +1014,7 @@ typedef struct Spot {
 static SimpleVector<Spot*> warpSpot;
 static SimpleVector<Spot*> homeSpot;
 static SimpleVector<Spot*> backSpot;
+static SimpleVector<Spot*> residenceSpot;
 static SimpleVector<Spot*> confirmSpot;
 static SimpleVector<Spot*> tprSpot;
 static SimpleVector<Spot*> deathSpot;
@@ -1196,6 +1197,17 @@ static Spot* findSpot(SimpleVector<Spot*> *spotList, char* name)
 	return NULL;
 }
 
+static Spot* findSpotByXY(SimpleVector<Spot*> *spotList, int x, int y)
+{
+    for( int i=0; i<spotList->size(); i++ ) {
+        Spot* s = *spotList->getElement(i);
+        if(s->x == x && s->y == y){
+            return s;
+        }
+    }
+    return NULL;
+}
+
 static void delSpot(SimpleVector<Spot*> *spotList, char* name)
 {
 	for( int i=0; i<spotList->size(); i++ ) {
@@ -1206,6 +1218,18 @@ static void delSpot(SimpleVector<Spot*> *spotList, char* name)
 		}
 	}
 	return;
+}
+
+static void delSpotByXY(SimpleVector<Spot*> *spotList, int x, int y)
+{
+    for( int i=0; i<spotList->size(); i++ ) {
+        Spot* s = *spotList->getElement(i);
+        if(s->x == x && s->y == y){
+            spotList->deleteElement(i);
+            return;
+        }
+    }
+    return;
 }
 
 static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
@@ -1457,6 +1481,7 @@ void parseCommand(LiveObject *player, char *text){
         readSpotList( "warpSpot", &warpSpot);
         readSpotList( "homeSpot", &homeSpot);
         readSpotList( "backSpot", &backSpot);
+        readSpotList( "residenceSpot", &residenceSpot);
         sendGlobalMessage( "重载设置", player);
         return;
     }
@@ -14849,6 +14874,7 @@ int main() {
 	readSpotList( "warpSpot", &warpSpot);
 	readSpotList( "homeSpot", &homeSpot);
 	readSpotList( "backSpot", &backSpot);
+    readSpotList( "residenceSpot", &residenceSpot);
 	readSpotList( "deathSpot", &deathSpot);
 
     
@@ -18612,6 +18638,26 @@ int main() {
 
 							continue;
 						}
+
+                        if(checkTarget != 0 && strstr( getObject( checkTarget )->description,"+residence" ) != NULL) {
+                            Spot* spot = findSpotByXY(&residenceSpot, m.x, m.y);
+                            if(spot == NULL)
+                                Spot *spot = new Spot();
+                                spot->name = "-";
+                                spot->owner = "-";
+                                spot->x = m.x;
+                                spot->y = m.y;
+                                
+                                replaceOrCreateSpot(&residenceSpot, spot);
+                                writeSpotList("residenceSpot", &residenceSpot);
+                                sendGlobalMessage( "领地石已激活", nextPlayer);
+                            else {
+                                delSpotByXY(&residenceSpot, name);
+                                writeSpotList("residenceSpot", &residenceSpot);
+                                sendGlobalMessage( "领地石已关闭", nextPlayer);
+                            }
+                            continue;
+                        }
 						
 						
 						{

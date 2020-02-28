@@ -1900,6 +1900,7 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 		char s[256];
+        GridPos myPos = { player->xs, player->ys };
 
         for( int i=0; i<residenceSpot.size(); i++ ) {
             Spot* s = *residenceSpot.getElement(i);
@@ -1974,6 +1975,7 @@ void parseCommand(LiveObject *player, char *text){
                 sendGlobalMessage( "地标名至少6位", player);
                 return;
             }
+            GridPos myPos = { player->xs, player->ys };
 
             for( int i=0; i<residenceSpot.size(); i++ ) {
                 Spot* s = *residenceSpot.getElement(i);

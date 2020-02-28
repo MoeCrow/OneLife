@@ -1255,6 +1255,7 @@ static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 inline int max(int x, int y){return x>y?x:y;}
 inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
 inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs(y)));}
+inline int getSquareDistance( GridPos inA, GridPos inB ) {int dx=abs(inA.x-inB.x);int dy=abs(inA.y-inB.y);return max(dx,dy);}
 
 SimpleVector<LiveObject> players;
 SimpleVector<LiveObject> tutorialLoadingPlayers;
@@ -1906,7 +1907,7 @@ void parseCommand(LiveObject *player, char *text){
             Spot* s = *residenceSpot.getElement(i);
 
             GridPos nowPos = {s->x, s->y};
-            if(distance(myPos, nowPos) < 50){
+            if(getSquareDistance(myPos, nowPos) <= 50){
                 sendGlobalMessage( "半径50格内有激活的领地石，设置失败", player);
                 return;
             }
@@ -1981,7 +1982,7 @@ void parseCommand(LiveObject *player, char *text){
                 Spot* s = *residenceSpot.getElement(i);
 
                 GridPos nowPos = {s->x, s->y};
-                if(distance(myPos, nowPos) < 50){
+                if(getSquareDistance(myPos, nowPos) <= 50){
                     sendGlobalMessage( "半径50格内有激活的领地石，设置失败", player);
                     return;
                 }

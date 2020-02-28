@@ -17008,7 +17008,7 @@ int main() {
                     // killed self
                     // SID triggers a lineage ban
                     if(nextPlayer->heldByOther || nextPlayer->holdingID < 0) {
-                        sendGlobalMessage( "抱着时不可以", player);
+                        sendGlobalMessage( "抱着时不可以", nextPlayer);
                     } else {
                         nextPlayer->suicide = true;
 

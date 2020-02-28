@@ -18648,7 +18648,7 @@ int main() {
                                 spot->x = m.x;
                                 spot->y = m.y;
                                 
-                                replaceOrCreateSpot(&residenceSpot, spot);
+                                residenceSpot.push_back(spot);
                                 writeSpotList("residenceSpot", &residenceSpot);
                                 sendGlobalMessage( "领地石已激活", nextPlayer);
                             } else {

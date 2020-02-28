@@ -18652,7 +18652,7 @@ int main() {
                                 writeSpotList("residenceSpot", &residenceSpot);
                                 sendGlobalMessage( "领地石已激活", nextPlayer);
                             } else {
-                                delSpotByXY(&residenceSpot, name);
+                                delSpotByXY(&residenceSpot, m.x, m.y);
                                 writeSpotList("residenceSpot", &residenceSpot);
                                 sendGlobalMessage( "领地石已关闭", nextPlayer);
                             }

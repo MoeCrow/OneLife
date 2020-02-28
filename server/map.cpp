@@ -2479,14 +2479,15 @@ int DB_open_timeShrunk(
 
     // optimial size for DB of remaining elements
     unsigned int newSize = DB_getShrinkSize( &oldDB, nonStale );
+    int currentSize = DB_getCurrentSize( &oldDB );
 
     AppLog::infoF( "Shrinking hash table in %s from %d down to %d", 
                    path, 
-                   DB_getCurrentSize( &oldDB ), 
+                   currentSize, 
                    newSize );
   
     
-    if(oldDB - nonStale > minimumShrinkRatio * oldDB) {
+    if(currentSize - newSize > minimumShrinkRatio * currentSize) {
         DB tempDB;
         error = DB_open( &tempDB, 
                              dbTempName, 

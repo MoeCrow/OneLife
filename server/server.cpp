@@ -1000,6 +1000,7 @@ typedef struct LiveObject {
 static SimpleVector<char*> opList;
 static SimpleVector<char*> banList;
 static SimpleVector<char*> vipList;
+static SimpleVector<char*> viptprList;
 
 
 
@@ -1104,6 +1105,9 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 }
 
 static bool isTprAllow(char* name, int time) {
+    bool isVip = isNamingSay(stringToUpperCase(player->email), &viptprList) != NULL;
+    if(isVip)
+        return true;
     for( int i=0; i<tprSpot.size(); i++ ) {
         Spot* s = *tprSpot.getElement(i);
         
@@ -1443,6 +1447,19 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 
+    if(strcmp(cmd, "REL")==0){
+        readPhrases( "ops", &opList );
+        readPhrases( "ban", &banList );
+        readPhrases( "vip", &vipList );
+        readPhrases( "viptpr", &viptprList );
+        
+        readSpotList( "warpSpot", &warpSpot);
+        readSpotList( "homeSpot", &homeSpot);
+        readSpotList( "backSpot", &backSpot);
+        sendGlobalMessage( "重载设置", player);
+        return;
+    }
+
     if(strcmp(cmd, "CHS")==0){
         if(sscanf(args, "%d", &id) != 1) {
             sendGlobalMessage( "需要1个参数", player);
@@ -1455,7 +1472,6 @@ void parseCommand(LiveObject *player, char *text){
             }
                 
             if( o->personNoSpawn) {
-                readPhrases( "vip", &vipList );
                 bool isVip = isNamingSay(stringToUpperCase(player->email), &vipList) != NULL;
                 if(!isOp && !isVip) {
                     sendGlobalMessage("你不能选择氪金角色",player);
@@ -14827,6 +14843,7 @@ int main() {
 	readPhrases( "ops", &opList );
 	readPhrases( "ban", &banList );
     readPhrases( "vip", &vipList );
+    readPhrases( "viptpr", &viptprList );
 	
 	readSpotList( "warpSpot", &warpSpot);
 	readSpotList( "homeSpot", &homeSpot);

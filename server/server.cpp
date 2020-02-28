@@ -1105,7 +1105,7 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 }
 
 static bool isTprAllow(char* name, int time) {
-    bool isVip = isNamingSay(stringToUpperCase(player->email), &viptprList) != NULL;
+    bool isVip = isNamingSay(stringToUpperCase(email), &viptprList) != NULL;
     if(isVip)
         return true;
     for( int i=0; i<tprSpot.size(); i++ ) {

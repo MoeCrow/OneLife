@@ -1684,6 +1684,7 @@ void parseCommand(LiveObject *player, char *text){
         int range;
         int countH = 0;
         int countW = 0;
+        int countM = 0;
         if(sscanf(args, "%d", &range)==0)
             range = 50;
 
@@ -1698,6 +1699,8 @@ void parseCommand(LiveObject *player, char *text){
             GridPos nowPos = {s->x, s->y};
             if(distance(myPos, nowPos) < range){
                 countH++;
+                if(strcmp(s->name, stringToUpperCase(player->email))==0)
+                    countM++;
             }
         }
 
@@ -1707,12 +1710,14 @@ void parseCommand(LiveObject *player, char *text){
             GridPos nowPos = {s->x, s->y};
             if(distance(myPos, nowPos) < range){
                 countW++;
+                if(strcmp(s->owner, stringToUpperCase(player->email))==0)
+                    countM++;
             }
         }
 
         char s[256];
-        sprintf(s, "半径%d格内找到 %d 个家 和 %d 个地标",
-            range, countH, countW);
+        sprintf(s, "半径%d格内找到 %d 个家 和 %d 个地标，其中属于你的有 %d 个",
+            range, countH, countW, countM);
         sendGlobalMessage( s, player );
         return;
     }

@@ -9885,6 +9885,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 				case 1384:
 				case 1365:
 				case 2155:
+                case 3816:
+                case 3817:
 					newObject.holdingID = 0;
 					break;
 				default:

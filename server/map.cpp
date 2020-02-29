@@ -2339,7 +2339,7 @@ int cellsLookedAtToInit = 0;
 
 
 // only when shrink tiles number reach this percentage we do shrink
-const float minimumShrinkRatio = 0.01f;
+const float minimumShrinkRatio = 0.1f;
 
 
 

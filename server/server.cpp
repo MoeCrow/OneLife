@@ -9827,7 +9827,7 @@ int processLoggedInPlayer( char inAllowReconnect,
 						newObject.clothingContained
 		)) {
 
-            newObject.foodStore = computeFoodCapacity( &newObject );
+            newObject.foodStore = computeFoodCapacity( &newObject ) / 2;
             newObject.yummyBonusStore = yummy;
 
 			newObject.xd = xd;
@@ -18695,7 +18695,7 @@ int main() {
                                             nextPlayer->yummyBonusStore += (int)cqM;
                                             nextPlayer->holdingID = 1619;
                                             char s[256];
-                                            sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", cqM);
+                                            sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", (int)cqM);
                                             sendGlobalMessage( s, nextPlayer);
                                             continue;
                                         }

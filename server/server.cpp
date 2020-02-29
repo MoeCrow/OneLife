@@ -1855,6 +1855,43 @@ void parseCommand(LiveObject *player, char *text){
 		sendGlobalMessage( s, player);
 		return;
 	}
+
+    if(strcmp(cmd, "FOOD")==0){
+        char s[256];
+        int num;
+        int yum = player->yummyBonusStore;
+        if(player->holdingID != 1619) {
+            sprintf(s, "[餐券]你必须拿着一张白纸，没有笔的那种!");
+            sendGlobalMessage( s, player);
+            return;
+        }
+        
+        if(sscanf(args, "%d", &num) != 1 || num < 0) {
+            sprintf(s, "数字错误");
+        } else {
+            if(num <= yum) {
+                player->holdingID = 1615;
+                unsigned char metaData[ MAP_METADATA_LENGTH ];
+                char chequeStr[50];
+                sprintf(chequeStr, "[FOOD] %d POINTS", num);
+                int len = strlen( chequeStr );
+                
+                memset( metaData, 0, MAP_METADATA_LENGTH );
+                memcpy( metaData, chequeStr, len + 1 );
+                
+                player->holdingID = addMetadata( player->holdingID,
+                                                 metaData );
+                
+                sprintf(s, "[餐券]你签发了一张价值 %d 点的餐票", num);
+                player->yummyBonusStore -= num;
+            } else {
+                sprintf(s, "[餐券]你只有 %d 食物溢出点", yum);
+            }
+        }
+        
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "CHQ")==0){
 		char s[256];
@@ -18647,11 +18684,22 @@ int main() {
 									char *chequeStr = autoSprintf( "%s", metaData );
 									char cqTitle[50];
 									float cqM;
-									if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2 && strcmp(cqTitle, "[CHEQUE]")==0){
-										setPlayerMoney(nextPlayer->email, money + cqM);
-                                        money += cqM;
-										nextPlayer->holdingID = 1619;
-									}
+									if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2){
+                                        if(strcmp(cqTitle, "[CHEQUE]")==0){
+                                            setPlayerMoney(nextPlayer->email, money + cqM);
+                                            money += cqM;
+                                            nextPlayer->holdingID = 1619;
+                                        }
+
+                                        if(strcmp(cqTitle, "[FOOD]")==0){
+                                            player->yummyBonusStore += (int)cqM;
+                                            nextPlayer->holdingID = 1619;
+                                            char s[256];
+                                            sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", cqM);
+                                            sendGlobalMessage( s, nextPlayer);
+                                            continue;
+                                        }
+                                    } 
 								}
 							}
 

@@ -18692,7 +18692,7 @@ int main() {
                                         }
 
                                         if(strcmp(cqTitle, "[FOOD]")==0){
-                                            player->yummyBonusStore += (int)cqM;
+                                            nextPlayer->yummyBonusStore += (int)cqM;
                                             nextPlayer->holdingID = 1619;
                                             char s[256];
                                             sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", cqM);

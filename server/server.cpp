@@ -2036,6 +2036,30 @@ void parseCommand(LiveObject *player, char *text){
 		sendGlobalMessage( s, player);
 		return;
 	}
+
+        if(strcmp(cmd, "SETWARPOP")==0 && isOp){
+        int cir = getCircle(player->xd, player->yd);
+        if((cir < 3 || cir > 6) && !isOp) {
+            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
+            return;
+        }
+        char s[256], name[64];
+        if(sscanf(args, "%s", name) == 0) {
+            sprintf(s, "地标名给我一个");
+        }
+        else {
+            if(strlen(name) < 6 && !isOp) {
+                sendGlobalMessage( "地标名至少6位", player);
+                return;
+            }
+
+            sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);
+            if(!setWarp(name, player->email, player->xs, player->ys, isOp))
+                sprintf(s, "这个地标不属于你");
+        }
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "DELWARP")==0){
 		char s[256], name[64];
@@ -9861,6 +9885,8 @@ int processLoggedInPlayer( char inAllowReconnect,
 				case 1384:
 				case 1365:
 				case 2155:
+                case 3816:
+                case 3817:
 					newObject.holdingID = 0;
 					break;
 				default:

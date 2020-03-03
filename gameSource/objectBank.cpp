@@ -6047,6 +6047,10 @@ void restoreSkipDrawing( ObjectRecord *inObject ) {
 
 
 char canPickup( int inObjectID, double inPlayerAge ) {
+    //if survival server just return true
+    if(true)
+        return true;
+
     ObjectRecord *o = getObject( inObjectID );
     
     if( o->minPickupAge > inPlayerAge ) {

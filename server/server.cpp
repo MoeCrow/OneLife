@@ -18954,9 +18954,8 @@ int main() {
                                                 char s[256];
                                                 sprintf(s, "[商店]别人的收购商店 收购物:%d 价格:%.2f", data, price);
                                                 sendGlobalMessage(s, nextPlayer);
+                                                continue;
                                             }
-                                            
-                                            continue;
                                         }
                                     }
     								
@@ -21282,6 +21281,7 @@ int main() {
                                         char s[256];
                                         sprintf(s, "[商店]别人的收购商店 收购物:%d 价格:%.2f", data, price);
                                         sendGlobalMessage(s, nextPlayer);
+                                        continue;
                                     }
 
 									if(type == 0) {

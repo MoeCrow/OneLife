@@ -1799,10 +1799,6 @@ void parseCommand(LiveObject *player, char *text){
 				y = player->ys - 1;
 
                 int target = getMapObject( x, y );
-                if((target == 3371 || target == 3065 || target == 80667)&&shopType > 0) {
-                    sendGlobalMessage( "这里应该设置成货架商店，输入 .shop 0 <价格>", player);
-                    return;
-                }
 
 				if(getShop(x, y, tEmail, &shopType, &price, &data)){
 					sprintf(s, "(%d,%d)的商店存在", x, y);

@@ -757,7 +757,7 @@ static void shopDBPut( int inX, int inY, unsigned char *inBuffer ) {
 }
 	
 	
-char getShop( int inX, int inY, char *email, char *shopType, float *price) {
+char getShop( int inX, int inY, char *email, char *shopType, float *price, int *data) {
 	unsigned char value[64];
 	char found = shopDBGet(inX, inY, value);
 	if(found) {
@@ -766,18 +766,20 @@ char getShop( int inX, int inY, char *email, char *shopType, float *price) {
 			return false;
 		memcpy(shopType, &( value[50] ), 1);
 		memcpy(price, &( value[51] ), 4);
+        memcpy(data, &( value[55] ), 4);
 		return true;
 	}
 	return false;
 }
 
 
-void setShop( int inX, int inY, char *email, char shopType, float price) {
+void setShop( int inX, int inY, char *email, char shopType, float price, int data) {
 	unsigned char value[64];
 	memset(value, 0, 64 );
 	memcpy(value, email, strlen(email));
 	memcpy(&( value[50] ), &shopType, 1);
 	memcpy(&( value[51] ), &price, 4);
+    memcpy(&( value[55] ), &data, 4);
 	shopDBPut(inX, inY, value);
 }
 

@@ -1668,12 +1668,16 @@ void parseCommand(LiveObject *player, char *text){
         char tEmail[50];
         char shopType;
         float price;
+        int data;
         x = player->xs;
         y = player->ys - 1;
-        if(!getShop(x, y, tEmail, &shopType, &price)){
+        if(!getShop(x, y, tEmail, &shopType, &price, &data)){
             sprintf(s, "商店不存在");
         } else {
-            sprintf(s, "商店类型:%d 价格:%.2f 拥有者:%s", (int)shopType, price, tEmail);
+            if(shopType == 3)
+                sprintf(s, "商店类型:%d 收购物:%d 价格:%.2f 拥有者:%s", (int)shopType, data, price, tEmail);
+            else
+                sprintf(s, "商店类型:%d 价格:%.2f 拥有者:%s", (int)shopType, price, tEmail);
         }
         sendGlobalMessage( s, player);
         return;
@@ -1780,8 +1784,10 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		char shopType;
 		float price;
-		if(sscanf(args, "%d %f", &shopType, &price) != 2) {
-			sprintf(s, "需要2个参数，比如打 .SHOP 0 1.5");
+        int data;
+        int snum = sscanf(args, "%d %f %d", &shopType, &price, &data);
+		if( snum < 2) {
+			sprintf(s, "至少需要2个参数，比如打 .SHOP 0 1.5");
 		} else {
             
 
@@ -1798,13 +1804,26 @@ void parseCommand(LiveObject *player, char *text){
                     return;
                 }
 
-				if(getShop(x, y, tEmail, &shopType, &price)){
+				if(getShop(x, y, tEmail, &shopType, &price, &data)){
 					sprintf(s, "(%d,%d)的商店存在", x, y);
 				} else {
-					if ( shopType < 0 || shopType > 2 ) {
-						sprintf(s, "类型错误，必须在0,1,2之中");
+					if ( shopType < 0 || shopType > 3 ) {
+						sprintf(s, "类型错误，必须在0~3之间");
 					} else {
-						setShop(x, y, player->email, shopType, price);
+                        if(shopType == 3) {
+                            if(snum < 3) {
+                                sendGlobalMessage( "收购商店需要3个参数，比如收购碗 .SHOP 3 1.5 235", player);
+                                return;
+                            }
+
+                            ObjectRecord *o = getObject( data );
+                            if( o == NULL && data != 0) {
+                                sendGlobalMessage( "你不能收购不存在的物体", player);
+                                return;
+                            }
+                        }
+
+						setShop(x, y, player->email, shopType, price, data);
 						sprintf(s, "商店已成功创建在 %d %d ！", x, y);
 					}
 				}
@@ -1819,9 +1838,10 @@ void parseCommand(LiveObject *player, char *text){
 		char tEmail[50];
 		char shopType;
 		float price;
+        int data;
 		x = player->xs;
 		y = player->ys - 1;
-		if(getShop(x, y, tEmail, &shopType, &price)){
+		if(getShop(x, y, tEmail, &shopType, &price, &data)){
 			if(strcmp(player->email, tEmail) == 0 || isOp) {
 				delShop(x, y);
 				sprintf(s, "成功删除商店");
@@ -5861,8 +5881,9 @@ char isMapSpotEmpty( int inX, int inY, char inConsiderPlayers = true ) {
     char tEmail[50];
 	char shopType;
 	float price;
+    int data;
 	
-    if( target != 0 || getShop(inX, inY, tEmail, &shopType, &price)) {
+    if( target != 0 || getShop(inX, inY, tEmail, &shopType, &price, &data)) {
         return false;
         }
     
@@ -18767,12 +18788,13 @@ int main() {
 							char email[50];
 							char type;
 							float price;
+                            int data;
 							ObjectRecord *targetObj =
                                             getObject( checkTarget );
-							if(getShop(m.x, m.y, email, &type, &price)) {
+							if(getShop(m.x, m.y, email, &type, &price, &data)) {
 								if(strcmp(email, nextPlayer->email)!=0){
                                     if((checkTarget == 3371 || checkTarget == 3065 || checkTarget == 80667) &&
-                                                getNumContained(m.x, m.y) == 0) {
+                                                getNumContained(m.x, m.y) == 0 && type < 3) {
                                         delShop(m.x, m.y);
                                     } else {
         								if(type == 0) {
@@ -18896,11 +18918,58 @@ int main() {
                                                 continue;
                                             }
                                         }
+
+                                        if(type == 3) {
+                                            if(nextPlayer->holdingID == data) {
+                                                if(isConfirmed(nextPlayer->email, m.x, m.y)) {
+                                                    float money = getPlayerMoney(nextPlayer->email);
+                                                    float skMoney = getPlayerMoney(email);
+                                                    if(skMoney >= price) {
+                                                        money += price;
+                                                        setPlayerMoney(nextPlayer->email, money);
+                                                        
+                                                        setPlayerMoney(email, skMoney - price);
+                                                        sprintf(s, "[商店]你出售了它，获得 %.2f 钢", price);
+                                                        sendGlobalMessage(s, nextPlayer);
+                                                        delConfirm(nextPlayer->email);
+
+                                                        int id = data;
+                                                        if(id > 0) {
+                                                            ObjectRecord *o = 
+                                                                    getObject( id );
+                                                            if( o->isUseDummy )
+                                                                id = o->useDummyParent;
+                                                        }
+                                                        sendTransactionRecord(id, price,
+                                                                nextPlayer->email, email, type);
+                                                    } else {
+                                                        sprintf(s, "[商店]收购商没钱了...", money);
+                                                        sendGlobalMessage(s, nextPlayer);
+                                                        delConfirm(nextPlayer->email);
+                                                        continue;
+                                                    }
+                                                } else {
+                                                    sprintf(s, "[商店]收购价格:%.2f，再次点击确认出售", price);
+                                                    sendGlobalMessage(s, nextPlayer);
+                                                    setConfirm(nextPlayer->email, m.x, m.y);
+                                                    continue;
+                                                }
+                                            } else {
+                                                char s[256];
+                                                sprintf(s, "[商店]别人的收购商店 收购物:%d 价格:%.2f", data, price);
+                                                sendGlobalMessage(s, nextPlayer);
+                                            }
+                                            
+                                            continue;
+                                        }
                                     }
     								
 								} else {
 									char s[256];
-									sprintf(s, "[商店]你的商店 价格:%.2f", price);
+                                    if(type == 3)
+								        sprintf(s, "[商店]你的收购商店 收购物:%d 价格:%.2f", data, price);
+                                    else
+                                        sprintf(s, "[商店]你的商店 价格:%.2f", price);
 									sendGlobalMessage(s, nextPlayer);
 								}
 							}
@@ -20821,8 +20890,9 @@ int main() {
 							char email[50];
 							char type;
 							float price;
+                            int data;
 							int checkTarget = getMapObject( m.x, m.y );
-                            bool hasShop = getShop(m.x, m.y, email, &type, &price);
+                            bool hasShop = getShop(m.x, m.y, email, &type, &price, &data);
 							ObjectRecord *targetObj = getObject(checkTarget);
 
                             if(hasShop) {
@@ -21206,11 +21276,18 @@ int main() {
 							char email[50];
 							char type;
 							float price;
+                            int data;
 							int checkTarget = getMapObject( m.x, m.y );
                             ObjectRecord *targetObj = getObject(checkTarget);
-							if(getShop(m.x, m.y, email, &type, &price)) {
+							if(getShop(m.x, m.y, email, &type, &price, &data)) {
 								char s[256];
 								if(strcmp(email, nextPlayer->email)!=0) {
+                                    if(type == 3) {
+                                        char s[256];
+                                        sprintf(s, "[商店]别人的收购商店 收购物:%d 价格:%.2f", data, price);
+                                        sendGlobalMessage(s, nextPlayer);
+                                    }
+
 									if(type == 0) {
 										if(targetObj->permanent && targetObj->slotSize > 0) {
 											if(getNumContained(m.x, m.y) == 0) {

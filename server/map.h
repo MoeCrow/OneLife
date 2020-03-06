@@ -76,8 +76,8 @@ void mapEveDeath( const char *inEmail, double inAge, GridPos inDeathMapPos );
 float getPlayerMoney(const char *inEmail);
 void setPlayerMoney(const char *inEmail, float money);
 
-char getShop( int inX, int inY, char *email, char *shopType, float *price);
-void setShop( int inX, int inY, char *email, char shopType, float price);
+char getShop( int inX, int inY, char *email, char *shopType, float *price, int *data);
+void setShop( int inX, int inY, char *email, char shopType, float price, int data);
 void delShop(int inX, int inY);
 
 char playerDBGet( const char *inEmail, int *displayID,

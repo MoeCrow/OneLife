@@ -1526,8 +1526,12 @@ void parseCommand(LiveObject *player, char *text){
     }
 
     if(strcmp(cmd, "FEED")==0 && isOp) {
+        int f;
+        if(sscanf(args, "%d", &f)==0)
+            f = 100;
+
         player->foodStore = computeFoodCapacity( player );
-        player->yummyBonusStore += 100;
+        player->yummyBonusStore += f;
         sendGlobalMessage( "FEED YOU NOW", player);
         return;
     }

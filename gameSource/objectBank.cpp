@@ -2123,20 +2123,29 @@ void initObjectBankFinish() {
                 char *vertKey = autoSprintf( "+vertical%s", label );
                 char *cornerKey = autoSprintf( "+corner%s", label );
                 
+                int vertKeyLen = strlen( vertKey );
+                int cornerKeyLen = strlen( cornerKey );
+
                 for( int j=0; j<mapSize; j++ ) {
                     // consider self too, because horizontal and vertical
                     // might be the same
                     if( idMap[j] != NULL ) {
                         ObjectRecord *oOther = idMap[j];
                         
-                        if( strstr( oOther->description, vertKey ) ) {
+                        char *keyPos = strstr( oOther->description, vertKey );
+                        if( keyPos != NULL &&
+                            ( keyPos[ vertKeyLen ] == ' ' ||
+                              keyPos[ vertKeyLen ] == '\0' ) ) {
                             o->verticalVersionID = oOther->id;
                             }
                         // not else if
                         // vert and corner might be the same
                         // (in case of door, which doesn't have a corner
                         //  version)
-                        if( strstr( oOther->description, cornerKey ) ) {
+                        keyPos = strstr( oOther->description, cornerKey );
+                        if( keyPos != NULL &&
+                            ( keyPos[ cornerKeyLen ] == ' ' ||
+                              keyPos[ cornerKeyLen ] == '\0' ) ) {
                             o->cornerVersionID = oOther->id;
                             }
                         }
@@ -4138,7 +4147,14 @@ HoldingPos drawObject( ObjectRecord *inObject, doublePair inPos, double inRot,
                 inHeldNotInPlaceYet,
                 inClothing );
 
-    
+    char allBehind = true;
+    for( int i=0; i< inObject->numSprites; i++ ) {
+        if( ! inObject->spriteBehindSlots[i] ) {
+            allBehind = false;
+            break;
+            }
+        }
+
     setDrawnObjectContained( true );
     
     int numSlots = getNumContainerSlots( inObject->id );
@@ -4152,8 +4168,15 @@ HoldingPos drawObject( ObjectRecord *inObject, doublePair inPos, double inRot,
         ObjectRecord *contained = getObject( inContainedIDs[i] );
         
 
-        doublePair centerOffset = getObjectCenterOffset( contained );
-        
+        doublePair centerOffset;
+
+        if( allBehind ) {
+            centerOffset = getObjectBottomCenterOffset( contained );
+            }
+        else {
+            centerOffset = getObjectCenterOffset( contained );
+            }
+
         double rot = inRot;
         
         if( inObject->slotVert[i] ) {
@@ -5704,6 +5727,74 @@ doublePair getObjectCenterOffset( ObjectRecord *inObject ) {
 
 
 
+
+doublePair getObjectBottomCenterOffset( ObjectRecord *inObject ) {
+
+
+    // find center of lowessprite
+
+    SpriteRecord *lowestRecord = NULL;
+    
+    int lowestIndex = -1;
+    double lowestYPos = 0;
+    
+    for( int i=0; i<inObject->numSprites; i++ ) {
+        SpriteRecord *sprite = getSpriteRecord( inObject->sprites[i] );
+    
+        if( sprite->multiplicativeBlend ) {
+            // don't consider translucent sprites when finding bottom
+            continue;
+            }
+
+        if( inObject->spriteInvisibleWhenWorn[i] == 2 ) {
+            // don't consider parts visible only when worn
+            continue;
+            }
+        
+
+        double y = inObject->spritePos[i].y;
+
+
+        if( lowestRecord == NULL ||
+            // wider than what we've seen so far
+            y < lowestYPos ) {
+
+            lowestRecord = sprite;
+            lowestIndex = i;
+            lowestYPos = inObject->spritePos[i].y;
+            }
+        }
+    
+
+    if( lowestRecord == NULL ) {
+        doublePair result = { 0, 0 };
+        return result;
+        }
+    
+    
+        
+    doublePair centerOffset = { (double)lowestRecord->centerXOffset,
+                                (double)lowestRecord->centerYOffset };
+        
+    centerOffset = rotate( centerOffset, 
+                           2 * M_PI * inObject->spriteRot[lowestIndex] );
+
+    doublePair spriteCenter = add( inObject->spritePos[lowestIndex], 
+                                   centerOffset );
+
+    doublePair wideCenter = getObjectCenterOffset( inObject );
+    
+    
+    // adjust y based on lowest sprite
+    // but keep center from widest sprite
+    // (in case object has "feet" that are not centered)
+    wideCenter.y = spriteCenter.y;
+
+    return wideCenter;    
+    }
+
+
+
 int getMaxWideRadius() {
     return maxWideRadius;
     }
@@ -5711,6 +5802,7 @@ int getMaxWideRadius() {
 
 
 char isSpriteSubset( int inSuperObjectID, int inSubObjectID,
+                     char inIgnoreColors,
                      SimpleVector<SubsetSpriteIndexMap> *outMapping ) {
 
     ObjectRecord *superO = getObject( inSuperObjectID );
@@ -5734,7 +5826,12 @@ char isSpriteSubset( int inSuperObjectID, int inSubObjectID,
         
         for( int ss=0; ss<superO->numSprites; ss++ ) {
             if( superO->sprites[ ss ] == spriteID ) {
-                return true;
+
+                // do make sure that color matches too
+                if( inIgnoreColors || equal( superO->spriteColor[ ss ],
+                                             subO->spriteColor[ 0 ] ) ) {
+                    return true;
+                    }
                 }
             }
         // if our sub-obj's single sprite does not occur, 
@@ -5791,8 +5888,7 @@ char isSpriteSubset( int inSuperObjectID, int inSubObjectID,
         
         char spriteHFlip = subO->spriteHFlip[s];
 
-        // ignore sprite color for now
-        //FloatRGB spriteColor = subO->spriteColor[s];
+        FloatRGB spriteColor = subO->spriteColor[s];
 
         char found = false;
         
@@ -5802,8 +5898,9 @@ char isSpriteSubset( int inSuperObjectID, int inSubObjectID,
                             spriteSuperZeroPos ), spritePosRel ) &&
                 superO->spriteRot[ ss ] == spriteRot &&
                 superO->spriteHFlip[ ss ] == spriteHFlip 
-                /* &&
-                   equal( superO->spriteColor[ ss ], spriteColor ) */ ) {
+                &&
+                ( inIgnoreColors ||
+                  equal( superO->spriteColor[ ss ], spriteColor ) ) ) {
                 
                 if( outMapping != NULL ) {
                     SubsetSpriteIndexMap m = { s, ss };

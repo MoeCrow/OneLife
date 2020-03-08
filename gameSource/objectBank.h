@@ -806,12 +806,14 @@ float getBiomeHeatValue( int inBiome );
 
 
 // offset of object pixel center from 0,0
-// Note that this is computed as the center of centers, 
-// which is the only the approximate pixel center of the whole object.  
-// Long sprites that stick
-// out far from their centers, mixed with short sprites, will make 
-// it somewhat inaccurate, but good enough.
+// note that this is computed based on the center of the widest sprite
 doublePair getObjectCenterOffset( ObjectRecord *inObject );
+
+
+// this is computed based on the center of the lower-most sprite
+// in the object
+doublePair getObjectBottomCenterOffset( ObjectRecord *inObject );
+
 
 
 // gets the largest possible radius of all wide objects
@@ -828,6 +830,7 @@ typedef struct SubsetSpriteIndexMap {
 // pass in empty vector if index mapping is desired
 // passed-in vector is NOT filled with anything if object is not a sprite subset
 char isSpriteSubset( int inSuperObjectID, int inSubObjectID,
+                     char inIgnoreColors = false,
                      SimpleVector<SubsetSpriteIndexMap> *outMapping = NULL );
 
 

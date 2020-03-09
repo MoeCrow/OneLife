@@ -256,11 +256,13 @@ static void sendTransactionRecord(int obj, float price, char* seller,
 
     delete [] encSeller;
     delete [] encBuyer;
+    delete [] secretString;
 
     printf( "Record transaction: %s\n", url );
 
     WebRequest* req = new WebRequest( "GET", url, NULL );
     globalWebRequests.push_back(req);
+    delete [] url;
 }
 
 
@@ -1694,7 +1696,7 @@ void parseCommand(LiveObject *player, char *text){
 	}
 
     if(strcmp(cmd, "SFL") == 0 && isOp) {
-        stepFoodLog(true);
+        stepFoodLog(&SimpleVector<WebRequest*>, true);
         sendGlobalMessage( "step food log", player);
         return;
     }
@@ -16434,7 +16436,7 @@ int main() {
             
             //checkBackup();
 
-            stepFoodLog();
+            stepFoodLog(&SimpleVector<WebRequest*>);
             stepFailureLog();
             
             stepPlayerStats();
@@ -27356,6 +27358,7 @@ int main() {
                     nextPlayer->usingTime,
                     nextPlayer->failTime );
 
+                delete [] secretString;
                 delete [] encodedEmail;
 
                 printf( "Player %d died sending req %s\n",
@@ -27364,6 +27367,7 @@ int main() {
 
                 WebRequest* req = new WebRequest( "GET", url, NULL );
                 globalWebRequests.push_back(req);
+                delete [] url;
                 
                 addPastPlayer( nextPlayer );
 

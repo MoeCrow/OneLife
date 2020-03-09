@@ -12,6 +12,9 @@
 
 #include "../gameSource/objectBank.h"
 
+#include "minorGems/network/web/WebRequest.h"
+#include "minorGems/util/SettingsManager.h"
+
 
 static FILE *logFile;
 
@@ -111,15 +114,7 @@ void initFoodLog() {
     }
 
 
-
-
-
-
-
-
-
-
-static void stepLog( char inForceOutput ) {
+static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceOutput ) {
     time_t t = time( NULL );
     struct tm *timeStruct = localtime( &t );
     
@@ -128,10 +123,13 @@ static void stepLog( char inForceOutput ) {
         // add latest data averages to file
         
         fprintf( logFile, "hour=%d\n", currentHour );
+        int count = 0;
+        char *arrStr = "";
 
         for( int i=0; i<=maxSeenObjectID; i++ ) {
             
             if( eatFoodCounts[i] > 0 ) {
+                count++;
                 
                 fprintf( 
                     logFile, 
@@ -148,8 +146,49 @@ static void stepLog( char inForceOutput ) {
                 eaterAgeSums[i] = 0.0;
                 mapLocationSums[i].x = 0.0;
                 mapLocationSums[i].y = 0.0;
+
+                char *tmp = arrStr;
+                arrStr = autoSprintf( 
+                    "%s"
+                    "&objects[]=%d"
+                    "&counts[]=%d"
+                    "&values[]=%d"
+                    ,
+                    arrStr
+                    i,
+                    eatFoodCounts[i],
+                    eatFoodValueCounts[i]
+                    );
+                delete [] tmp;
                 }
             }
+
+        char *ticketServerURL = 
+            SettingsManager::getStringSetting( "ticketServerURL" );
+        char *secretString = 
+            SettingsManager::getStringSetting( 
+                "statsServerSharedSecret", "sdfmlk3490sa81m3ug9324" );
+        char *url = autoSprintf( 
+            "%s?stats.htm"
+            "&secret=%s"
+            "&action=%s"
+            "%s"
+            "&length=%d"
+            ,
+            ticketServerURL,
+            secretString,
+            "FOODLOG",
+            arrStr,
+            count );
+
+        printf( "Record transaction: %s\n", url );
+
+        WebRequest* req = new WebRequest( "GET", url, NULL );
+        globalWebRequests->push_back(req);
+        delete [] arrStr;
+        delete [] ticketServerURL;
+        delete [] secretString;
+        delete [] url;
         
         fflush( logFile );
 
@@ -187,9 +226,9 @@ void freeFoodLog() {
 
 
 
-void stepFoodLog(bool inForceOutput) {
+void stepFoodLog(SimpleVector<WebRequest*>* globalWebRequests, bool inForceOutput) {
     if( logFile != NULL ) {
-        stepLog( inForceOutput );
+        stepLog( globalWebRequests, inForceOutput );
         }
     }
 

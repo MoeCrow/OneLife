@@ -1021,6 +1021,7 @@ static SimpleVector<char*> opList;
 static SimpleVector<char*> banList;
 static SimpleVector<char*> vipList;
 static SimpleVector<char*> viptprList;
+static SimpleVector<char*> delshopPermList;
 
 
 
@@ -1142,6 +1143,10 @@ static bool isTprAllow(char* name, int time) {
         }
     }
     return true;
+}
+
+static bool isEmailInList(SimpleVector<char*> *list, char* name) {
+    return isNamingSay(stringToUpperCase(name), list) != NULL;
 }
 
 static void updateTprTime(char* name, int time) {
@@ -1498,6 +1503,7 @@ void parseCommand(LiveObject *player, char *text){
         readPhrases( "ban", &banList );
         readPhrases( "vip", &vipList );
         readPhrases( "viptpr", &viptprList );
+        readPhrases( "delshop_perm", &delshopPermList );
         
         readSpotList( "warpSpot", &warpSpot);
         readSpotList( "homeSpot", &homeSpot);
@@ -1687,6 +1693,12 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 
+    if(strcmp(cmd, "SFL") == 0 && isOp) {
+        stepFoodLog(true);
+        sendGlobalMessage( "step food log", player);
+        return;
+    }
+
     if(strcmp(cmd, "SHOPT")==0){
         char s[256];
         char tEmail[50];
@@ -1808,7 +1820,7 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		char shopType;
 		float price;
-        int data;
+        int data = 0;
         int snum = sscanf(args, "%d %f %d", &shopType, &price, &data);
 		if( snum < 2) {
 			sprintf(s, "至少需要2个参数，比如打 .SHOP 0 1.5");
@@ -1827,8 +1839,8 @@ void parseCommand(LiveObject *player, char *text){
 				if(getShop(x, y, tEmail, &shopType, &price, &data)){
 					sprintf(s, "(%d,%d)的商店存在", x, y);
 				} else {
-					if ( shopType < 0 || shopType > 3 ) {
-						sprintf(s, "类型错误，必须在0~3之间");
+					if ( shopType < 0 || shopType > 4 ) {
+						sprintf(s, "类型错误，必须在0~4之间");
 					} else {
                         if(shopType == 3) {
                             if(snum < 3) {
@@ -1854,6 +1866,7 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "DELSHOP")==0){
+        bool hasPerm = isOp || isEmailInList(&delshopPermList, player->email);
 		char s[256];
 		char tEmail[50];
 		char shopType;
@@ -1862,7 +1875,7 @@ void parseCommand(LiveObject *player, char *text){
 		x = player->xs;
 		y = player->ys - 1;
 		if(getShop(x, y, tEmail, &shopType, &price, &data)){
-			if(strcmp(player->email, tEmail) == 0 || isOp) {
+			if(strcmp(player->email, tEmail) == 0 || hasPerm) {
 				delShop(x, y);
 				sprintf(s, "成功删除商店");
 			} else {
@@ -16038,6 +16051,7 @@ int main() {
 	readPhrases( "ban", &banList );
     readPhrases( "vip", &vipList );
     readPhrases( "viptpr", &viptprList );
+    readPhrases( "delshop_perm", &delshopPermList );
 	
 	readSpotList( "warpSpot", &warpSpot);
 	readSpotList( "homeSpot", &homeSpot);

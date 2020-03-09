@@ -187,9 +187,9 @@ void freeFoodLog() {
 
 
 
-void stepFoodLog() {
+void stepFoodLog(bool inForceOutput) {
     if( logFile != NULL ) {
-        stepLog( false );
+        stepLog( inForceOutput );
         }
     }
 

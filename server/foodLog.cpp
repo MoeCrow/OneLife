@@ -124,7 +124,7 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
         
         fprintf( logFile, "hour=%d\n", currentHour );
         int count = 0;
-        char *arrStr = "";
+        char *arrStr = autoSprintf("");
 
         for( int i=0; i<=maxSeenObjectID; i++ ) {
             

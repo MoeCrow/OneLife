@@ -1696,7 +1696,7 @@ void parseCommand(LiveObject *player, char *text){
 	}
 
     if(strcmp(cmd, "SFL") == 0 && isOp) {
-        stepFoodLog(&SimpleVector<WebRequest*>, true);
+        stepFoodLog(&globalWebRequests, true);
         sendGlobalMessage( "step food log", player);
         return;
     }
@@ -16436,7 +16436,7 @@ int main() {
             
             //checkBackup();
 
-            stepFoodLog(&SimpleVector<WebRequest*>);
+            stepFoodLog(&globalWebRequests);
             stepFailureLog();
             
             stepPlayerStats();

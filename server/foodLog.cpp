@@ -140,13 +140,6 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
                     (int)lrint( mapLocationSums[i].x / eatFoodCounts[i] ),
                     (int)lrint( mapLocationSums[i].y / eatFoodCounts[i] ) );
                 
-                
-                eatFoodCounts[i] = 0;
-                eatFoodValueCounts[i] = 0;
-                eaterAgeSums[i] = 0.0;
-                mapLocationSums[i].x = 0.0;
-                mapLocationSums[i].y = 0.0;
-
                 count++;
                 char *tmp = arrStr;
                 arrStr = autoSprintf( 
@@ -161,6 +154,12 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
                     eatFoodValueCounts[i]
                     );
                 delete [] tmp;
+
+                eatFoodCounts[i] = 0;
+                eatFoodValueCounts[i] = 0;
+                eaterAgeSums[i] = 0.0;
+                mapLocationSums[i].x = 0.0;
+                mapLocationSums[i].y = 0.0;
                 }
             }
 

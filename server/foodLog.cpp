@@ -124,7 +124,7 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
         
         fprintf( logFile, "hour=%d\n", currentHour );
         int count = 0;
-        char *arrStr = autoSprintf("");
+        char *arrStr = autoSprintf("data");
 
         for( int i=0; i<=maxSeenObjectID; i++ ) {
             
@@ -172,18 +172,16 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
             "%s?stats.htm"
             "&secret=%s"
             "&action=%s"
-            "%s"
             "&length=%d"
             ,
             ticketServerURL,
             secretString,
             "FOODLOG",
-            arrStr,
             count );
 
-        printf( "Record transaction: %s\n", url );
+        printf( "Record food log: %s %s\n", url, arrStr );
 
-        WebRequest* req = new WebRequest( "GET", url, NULL );
+        WebRequest* req = new WebRequest( "POST", url, arrStr );
         globalWebRequests->push_back(req);
         delete [] arrStr;
         delete [] ticketServerURL;

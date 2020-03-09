@@ -3026,7 +3026,7 @@ void quitCleanup() {
 
     freeLifeLog();
     
-    freeFoodLog();
+    freeFoodLog(globalWebRequests);
     freeFailureLog();
     
     freeObjectSurvey();
@@ -20955,7 +20955,7 @@ int main() {
                                         bonus = 0;
                                         }
                                     
-                                    logEating( targetObj->id,
+                                    logEating( globalWebRequests, targetObj->id,
                                                targetObj->foodValue + bonus,
                                                computeAge( nextPlayer ),
                                                m.x, m.y );
@@ -21853,7 +21853,7 @@ int main() {
                                         bonus = 0;
                                         }
 
-                                    logEating( obj->id,
+                                    logEating( globalWebRequests, obj->id,
                                                obj->foodValue + bonus,
                                                computeAge( targetPlayer ),
                                                m.x, m.y );

@@ -129,7 +129,7 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
         for( int i=0; i<=maxSeenObjectID; i++ ) {
             
             if( eatFoodCounts[i] > 0 ) {
-                count++;
+                
                 
                 fprintf( 
                     logFile, 
@@ -147,6 +147,7 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
                 mapLocationSums[i].x = 0.0;
                 mapLocationSums[i].y = 0.0;
 
+                count++;
                 char *tmp = arrStr;
                 arrStr = autoSprintf( 
                     "%s"
@@ -154,7 +155,7 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
                     "&counts[]=%d"
                     "&values[]=%d"
                     ,
-                    arrStr
+                    arrStr,
                     i,
                     eatFoodCounts[i],
                     eatFoodValueCounts[i]
@@ -210,11 +211,11 @@ static void stepLog( SimpleVector<WebRequest*>* globalWebRequests, char inForceO
 
 
 
-void freeFoodLog() {
+void freeFoodLog(SimpleVector<WebRequest*>* globalWebRequests) {
     
     if( logFile != NULL ) {
         // final output
-        stepLog( true );
+        stepLog( globalWebRequests, true );
         
         fclose( logFile );
         }
@@ -235,11 +236,11 @@ void stepFoodLog(SimpleVector<WebRequest*>* globalWebRequests, bool inForceOutpu
 
 
 
-void logEating( int inFoodID, int inFoodValue, double inEaterAge,
+void logEating( SimpleVector<WebRequest*>* globalWebRequests, int inFoodID, int inFoodValue, double inEaterAge,
                 int inMapX, int inMapY ) {
     
     if( logFile != NULL ) {
-        stepLog( false );
+        stepLog( globalWebRequests, false );
         }
 
     int idToLog = inFoodID;

@@ -19875,75 +19875,6 @@ int main() {
 							continue; 
 						
 						int checkTarget = getMapObject( m.x, m.y );
-						if(checkTarget == 2482) {
-							ObjectRecord *holdO = getObject( nextPlayer->holdingID );
-                            float money = getPlayerMoney(nextPlayer->email);
-							if(nextPlayer->holdingID == 326) {
-								setPlayerMoney(nextPlayer->email, money + 1);
-                                money += 1;
-								nextPlayer->holdingID = 0;
-							}
-							else if(nextPlayer->holdingID == 0) {
-								if(money >= 1) {
-									setPlayerMoney(nextPlayer->email, money - 1);
-                                    money -= 1;
-									nextPlayer->holdingID = 326;
-								}
-							}
-							else if(holdO != NULL && holdO->written) {
-								char metaData[ MAP_METADATA_LENGTH ];
-								char found = getMetadata( nextPlayer->holdingID, 
-                                      (unsigned char*)metaData );
-								if( found ) {
-									char *chequeStr = autoSprintf( "%s", metaData );
-									char cqTitle[50];
-									float cqM;
-									if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2){
-                                        if(strcmp(cqTitle, "[CHEQUE]")==0){
-                                            setPlayerMoney(nextPlayer->email, money + cqM);
-                                            money += cqM;
-                                            nextPlayer->holdingID = 1619;
-                                        }
-
-                                        if(strcmp(cqTitle, "[FOOD]")==0){
-                                            nextPlayer->yummyBonusStore += (int)cqM;
-                                            nextPlayer->holdingID = 1619;
-                                            char s[256];
-                                            sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", (int)cqM);
-                                            sendGlobalMessage( s, nextPlayer);
-                                            continue;
-                                        }
-                                    } 
-								}
-							}
-
-                            char s[256];
-                            sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
-                            sendGlobalMessage( s, nextPlayer);
-
-							continue;
-						}
-
-                        if(checkTarget != 0 && strstr( getObject( checkTarget )->description,"+residence" ) != NULL) {
-                            Spot* spot = findSpotByXY(&residenceSpot, m.x, m.y);
-                            if(spot == NULL) {
-                                Spot *spot = new Spot();
-                                spot->name = "-";
-                                spot->owner = "-";
-                                spot->x = m.x;
-                                spot->y = m.y;
-                                
-                                residenceSpot.push_back(spot);
-                                writeSpotList("residenceSpot", &residenceSpot);
-                                sendGlobalMessage( "领地石已激活", nextPlayer);
-                            } else {
-                                delSpotByXY(&residenceSpot, m.x, m.y);
-                                writeSpotList("residenceSpot", &residenceSpot);
-                                sendGlobalMessage( "领地石已关闭", nextPlayer);
-                            }
-                            continue;
-                        }
-						
 						
 						{
 							char s[256];
@@ -20137,6 +20068,75 @@ int main() {
 								}
 							}
 						}
+
+                        if(checkTarget == 2482) {
+                            ObjectRecord *holdO = getObject( nextPlayer->holdingID );
+                            float money = getPlayerMoney(nextPlayer->email);
+                            if(nextPlayer->holdingID == 326) {
+                                setPlayerMoney(nextPlayer->email, money + 1);
+                                money += 1;
+                                nextPlayer->holdingID = 0;
+                            }
+                            else if(nextPlayer->holdingID == 0) {
+                                if(money >= 1) {
+                                    setPlayerMoney(nextPlayer->email, money - 1);
+                                    money -= 1;
+                                    nextPlayer->holdingID = 326;
+                                }
+                            }
+                            else if(holdO != NULL && holdO->written) {
+                                char metaData[ MAP_METADATA_LENGTH ];
+                                char found = getMetadata( nextPlayer->holdingID, 
+                                      (unsigned char*)metaData );
+                                if( found ) {
+                                    char *chequeStr = autoSprintf( "%s", metaData );
+                                    char cqTitle[50];
+                                    float cqM;
+                                    if(sscanf(chequeStr, "%s %f", cqTitle, &cqM)>=2){
+                                        if(strcmp(cqTitle, "[CHEQUE]")==0){
+                                            setPlayerMoney(nextPlayer->email, money + cqM);
+                                            money += cqM;
+                                            nextPlayer->holdingID = 1619;
+                                        }
+
+                                        if(strcmp(cqTitle, "[FOOD]")==0){
+                                            nextPlayer->yummyBonusStore += (int)cqM;
+                                            nextPlayer->holdingID = 1619;
+                                            char s[256];
+                                            sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", (int)cqM);
+                                            sendGlobalMessage( s, nextPlayer);
+                                            continue;
+                                        }
+                                    } 
+                                }
+                            }
+
+                            char s[256];
+                            sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
+                            sendGlobalMessage( s, nextPlayer);
+
+                            continue;
+                        }
+
+                        if(checkTarget != 0 && strstr( getObject( checkTarget )->description,"+residence" ) != NULL) {
+                            Spot* spot = findSpotByXY(&residenceSpot, m.x, m.y);
+                            if(spot == NULL) {
+                                Spot *spot = new Spot();
+                                spot->name = "-";
+                                spot->owner = "-";
+                                spot->x = m.x;
+                                spot->y = m.y;
+                                
+                                residenceSpot.push_back(spot);
+                                writeSpotList("residenceSpot", &residenceSpot);
+                                sendGlobalMessage( "领地石已激活", nextPlayer);
+                            } else {
+                                delSpotByXY(&residenceSpot, m.x, m.y);
+                                writeSpotList("residenceSpot", &residenceSpot);
+                                sendGlobalMessage( "领地石已关闭", nextPlayer);
+                            }
+                            continue;
+                        }
 
                         // log usingTime
                         nextPlayer->usingTime++;

@@ -19891,46 +19891,10 @@ int main() {
                                         delShop(m.x, m.y);
                                     } else {
         								if(type == 0) {
-        									if(targetObj && ! targetObj->permanent &&
-        									 targetObj->minPickupAge <= computeAge( nextPlayer ) ||
-        									 checkTarget == 774 || checkTarget == 779) {
-        										if(nextPlayer->holdingID == 0) {
-        											if(isConfirmed(nextPlayer->email, m.x, m.y)) {
-        												float money = getPlayerMoney(nextPlayer->email);
-        												if(money >= price) {
-        													money -= price;
-        													setPlayerMoney(nextPlayer->email, money);
-        													
-        													float skMoney = getPlayerMoney(email);
-        													setPlayerMoney(email, skMoney + price);
-        													sprintf(s, "[商店]你购买了它，花费 %.2f 钢", price);
-        													sendGlobalMessage(s, nextPlayer);
-        													delConfirm(nextPlayer->email);
-                                                            recordBoughtObject = true;
-                                                            currentPrice = price;
-                                                            currentSeller = email;
-                                                            currentBuyer = nextPlayer->email;
-                                                            currentType = type;
-        												} else {
-        													sprintf(s, "[商店]你只有 %.2f 钢", money);
-        													sendGlobalMessage(s, nextPlayer);
-        													delConfirm(nextPlayer->email);
-        													continue;
-        												}
-        											} else {
-        												sprintf(s, "[商店]价格:%.2f，再次点击确认购买", price);
-        												sendGlobalMessage(s, nextPlayer);
-        												setConfirm(nextPlayer->email, m.x, m.y);
-        												continue;
-        											}
-        										} else
-        											continue;
-        									} else {
-        										char s[256];
-        										sprintf(s, "[商店]别人的货架商店 价格:%.2f", price);
-        										sendGlobalMessage(s, nextPlayer);
-        										continue;
-        									}
+    										char s[256];
+    										sprintf(s, "[商店]别人的货架商店 价格:%.2f", price);
+    										sendGlobalMessage(s, nextPlayer);
+    										continue;
         								}
         								
         								if(type == 1) {

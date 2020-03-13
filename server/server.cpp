@@ -1042,6 +1042,7 @@ static SimpleVector<Spot*> backSpot;
 static SimpleVector<Spot*> residenceSpot;
 static SimpleVector<Spot*> confirmSpot;
 static SimpleVector<Spot*> tprSpot;
+static SimpleVector<Spot*> superBackSpot;
 static SimpleVector<Spot*> deathSpot;
 
 static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOptionalID = 0);
@@ -1159,6 +1160,15 @@ static void updateTprTime(char* name, int time) {
     strcpy(spot->name, name);
     spot->x = time;
     replaceOrCreateSpot(&tprSpot, spot);
+}
+
+static void updateSuperBackSpot(char* name, int x, int y) {
+    Spot *spot = new Spot();
+    spot->name = new char[256];
+    strcpy(spot->name, name);
+    spot->x = x;
+    spot->y = y;
+    replaceOrCreateSpot(&superBackSpot, spot);
 }
 
 static bool isConfirmed(char* name, int x, int y) {
@@ -1619,6 +1629,44 @@ void parseCommand(LiveObject *player, char *text){
         sendGlobalMessage( "BIOME SET.", player);
         return;
     }
+
+    if(strcmp(cmd, "SB")==0){
+        if(player->heldByOther || player->holdingID < 0) {
+            sendGlobalMessage( "抱着时不可以", player);
+            return;
+        }
+        
+        if(shutdownMode) {
+            sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
+            return;
+        }
+
+        char s[256];
+        Spot* spot = findSpot(&superBackSpot, player->email);
+        if(spot == NULL)
+            sprintf(s, "无处可去");
+        else { 
+            int tx = player->xs;
+            int ty = player->ys;
+            player->firstMessageSent = false;
+            player->firstMapSent = false;
+            player->inFlight = true;
+            player->xs = spot->x;
+            player->ys = spot->y;
+            player->xd = spot->x;
+            player->yd = spot->y;
+            player->birthPos.x = player->xs;
+            player->birthPos.y = player->ys;
+            player->heldOriginX = player->xs;
+            player->heldOriginY = player->ys;
+            player->actionTarget.x = player->xs;
+            player->actionTarget.y = player->ys;
+            setBack(player->email, tx, ty);
+            sprintf(s, "你回到了上一个郊外点");
+        }
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {
@@ -1635,6 +1683,9 @@ void parseCommand(LiveObject *player, char *text){
             sendGlobalMessage( "需要10分钟的冷却时间", player);
             return;
         }
+
+        if(getCircle(player->xd, player->yd) > 6)
+            updateSuperBackSpot(player->email, player->xd, player->yd);
 
         updateTprTime(player->email, time(NULL) + 600);
 		srand(time(NULL) + rand()); 
@@ -1675,6 +1726,9 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "无处可去");
 		else { 
+            if(getCircle(player->xd, player->yd) > 6)
+                updateSuperBackSpot(player->email, player->xd, player->yd);
+
 			int tx = player->xs;
 			int ty = player->ys;
 			player->firstMessageSent = false;
@@ -2040,6 +2094,9 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "无家可归");
 		else {
+            if(getCircle(player->xd, player->yd) > 6)
+                updateSuperBackSpot(player->email, player->xd, player->yd);
+
             sprintf(s, "已传送");
 			setBack(player->email, player->xs, player->ys);
 			player->firstMessageSent = false;
@@ -2155,6 +2212,9 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);
 		else {
+            if(getCircle(player->xd, player->yd) > 6)
+                updateSuperBackSpot(player->email, player->xd, player->yd);
+
             sprintf(s, "已传送");
 			setBack(player->email, player->xs, player->ys);
 			player->firstMessageSent = false;

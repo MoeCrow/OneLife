@@ -1512,7 +1512,7 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 
-    if(strcmp(cmd, "REL")==0){
+    if(strcmp(cmd, "REL")==0 && isOp){
         readPhrases( "ops", &opList );
         readPhrases( "ban", &banList );
         readPhrases( "vip", &vipList );
@@ -1523,7 +1523,7 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 
-    if(strcmp(cmd, "RELS")==0){
+    if(strcmp(cmd, "RELS")==0 && isOp){
         
         readSpotList( "warpSpot", &warpSpot);
         readSpotList( "homeSpot", &homeSpot);

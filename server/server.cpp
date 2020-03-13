@@ -1025,7 +1025,7 @@ static SimpleVector<char*> opList;
 static SimpleVector<char*> banList;
 static SimpleVector<char*> vipList;
 static SimpleVector<char*> viptprList;
-static SimpleVector<char*> delshopPermList;
+static SimpleVector<char*> shopPermList;
 
 
 
@@ -1517,7 +1517,7 @@ void parseCommand(LiveObject *player, char *text){
         readPhrases( "ban", &banList );
         readPhrases( "vip", &vipList );
         readPhrases( "viptpr", &viptprList );
-        readPhrases( "delshop_perm", &delshopPermList );
+        readPhrases( "delshop_perm", &shopPermList );
         
         sendGlobalMessage( "重载设置", player);
         return;
@@ -1783,6 +1783,34 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 
+    if(strcmp(cmd, "SHOPC")==0){
+        bool hasPerm = isOp || isEmailInList(&shopPermList, player->email);
+        if(hasPerm) {
+            int num;
+            if(sscanf(args, "%d", &num) < 1 || num < 0 || num > 4) {
+                sendGlobalMessage( "数字错误", player);
+                return;
+            }
+            char s[256];
+            char tEmail[50];
+            char shopType;
+            float price;
+            int data;
+            x = player->xs;
+            y = player->ys - 1;
+            if(!getShop(x, y, tEmail, &shopType, &price, &data)){
+                sprintf(s, "商店不存在");
+            } else {
+                setShop(x, y, tEmail, shopType, price, data);
+                sprintf(s, "修改为:%d", (int)shopType);
+            }
+            sendGlobalMessage( s, player);
+            return;
+        }
+        
+    }
+    
+
 
     if(strcmp(cmd, "SPOT")==0) {
         int range;
@@ -1930,7 +1958,7 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "DELSHOP")==0){
-        bool hasPerm = isOp || isEmailInList(&delshopPermList, player->email);
+        bool hasPerm = isOp || isEmailInList(&shopPermList, player->email);
 		char s[256];
 		char tEmail[50];
 		char shopType;
@@ -16291,7 +16319,7 @@ int main() {
 	readPhrases( "ban", &banList );
     readPhrases( "vip", &vipList );
     readPhrases( "viptpr", &viptprList );
-    readPhrases( "delshop_perm", &delshopPermList );
+    readPhrases( "delshop_perm", &shopPermList );
 	
 	readSpotList( "warpSpot", &warpSpot);
 	readSpotList( "homeSpot", &homeSpot);

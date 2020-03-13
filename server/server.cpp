@@ -22901,6 +22901,8 @@ int main() {
                                                     currentSeller = email;
                                                     currentBuyer = nextPlayer->email;
                                                     currentType = type;
+
+                                                    randomizeContained(m.x, m.y, time(NULL));
                                                 } else {
                                                     sprintf(s, "[商店]你只有 %.2f 钢", money);
                                                     sendGlobalMessage(s, nextPlayer);

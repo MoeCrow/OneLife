@@ -169,6 +169,10 @@ void setContainedEtaDecay( int inX, int inY, int inNumContained,
                            timeSec_t *inContainedEtaDecay,
                            int inSubCont = 0 );
 
+// randomize contained item order
+void randomizeContained(int inX, int inY, int seed);
+
+
 // removes contained item from specified slot, or remove from top of stack
 // if inSlot is -1
 // if inSubCont = 0, then sub-container in that slot is cleared by this call

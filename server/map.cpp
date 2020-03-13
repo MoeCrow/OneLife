@@ -8015,6 +8015,90 @@ int getContained( int inX, int inY, int inSlot, int inSubCont ) {
     }
 
 
+
+void randomizeContained(int inX, int inY, int seed) {
+    int oldNum = getNumContained( inX, inY, 0 );
+
+    if(oldNum <= 1)
+        return;
+
+    int *oldContained = getContained( inX, inY, &oldNum, 0 );
+
+    timeSec_t *oldContainedETA = getContainedEtaDecay( inX, inY, &oldNum, 0 );
+
+    SimpleVector<int> newContainedList;
+    SimpleVector<timeSec_t> newContainedETAList;
+
+    SimpleVector<int> newSubContainedNumList;
+    SimpleVector<int*> newSubContainedList;
+    SimpleVector<timeSec_t*> newSubContainedEtaList;
+
+    SimpleVector<int> randIdx;
+
+    for( int i=0; i<oldNum; i++ ) {
+        randIdx.push_back(i);
+    }
+
+    srand(seed);
+    for( int i=0; i<oldNum; i++ ) {
+        int idx = (rand() % oldNum);
+        if( i != idx) {
+            int tmp = randIdx->getElementDirect( i )
+
+            *( randIdx->getElement( i ) ) = 
+                randIdx->getElementDirect( idx );
+        
+            *( randIdx->getElement( idx ) ) = tmp;
+        }
+    }
+
+    for( int i=0; i<oldNum; i++ ) {
+        newContainedList.push_back( oldContained[randIdx->getElementDirect( i )] );
+        newContainedETAList.push_back( oldContainedETA[randIdx->getElementDirect( i )] );
+
+        int num;
+        
+        newSubContainedList.push_back(
+            getContained( inX, inY, &num, randIdx->getElementDirect( i ) + 1 ) );
+        newSubContainedNumList.push_back( num );
+
+        newSubContainedEtaList.push_back(
+            getContainedEtaDecay( inX, inY, &num, randIdx->getElementDirect( i ) + 1 ) );
+    }
+
+    clearAllContained( inX, inY );
+
+    int *newContained = newContainedList.getElementArray();
+    timeSec_t *newContainedETA = newContainedETAList.getElementArray();
+
+    int newNum = oldNum;
+
+    setContained( inX, inY, newNum, newContained, 0 );
+    setContainedEtaDecay( inX, inY, newNum, newContainedETA, 0 );
+
+
+    for( int i=0; i<newNum; i++ ) {
+        int *idList = newSubContainedList.getElementDirect( i );
+        timeSec_t *etaList = newSubContainedEtaList.getElementDirect( i );
+        
+        if( idList != NULL ) {
+            int num = newSubContainedNumList.getElementDirect( i );
+            
+            setContained( inX, inY, num, idList, i + 1 );
+            setContainedEtaDecay( inX, inY, num, etaList, i + 1 );
+            
+            delete [] idList;
+            delete [] etaList;
+        }
+    }
+    
+
+    
+    delete [] oldContained;
+    delete [] oldContainedETA;
+    delete [] newContained;
+    delete [] newContainedETA;
+}
     
 
 // removes from top of stack

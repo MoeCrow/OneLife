@@ -1519,6 +1519,12 @@ void parseCommand(LiveObject *player, char *text){
         readPhrases( "viptpr", &viptprList );
         readPhrases( "delshop_perm", &delshopPermList );
         
+        sendGlobalMessage( "重载设置", player);
+        return;
+    }
+
+    if(strcmp(cmd, "RELS")==0){
+        
         readSpotList( "warpSpot", &warpSpot);
         readSpotList( "homeSpot", &homeSpot);
         readSpotList( "backSpot", &backSpot);

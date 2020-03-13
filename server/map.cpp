@@ -8043,12 +8043,7 @@ void randomizeContained(int inX, int inY, int seed) {
     for( int i=0; i<oldNum; i++ ) {
         int idx = (rand() % oldNum);
         if( i != idx) {
-            int tmp = randIdx.getElementDirect( i )
-
-            *( randIdx.getElement( i ) ) = 
-                randIdx.getElementDirect( idx );
-        
-            *( randIdx.getElement( idx ) ) = tmp;
+            randIdx.swap(i, idx);
         }
     }
 

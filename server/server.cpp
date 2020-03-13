@@ -1802,8 +1802,8 @@ void parseCommand(LiveObject *player, char *text){
                 sprintf(s, "商店不存在");
             } else {
                 delShop(x, y);
-                setShop(x, y, tEmail, shopType, price, data);
-                sprintf(s, "修改为:%d", (int)shopType);
+                setShop(x, y, tEmail, (char)num, price, data);
+                sprintf(s, "修改为:%d", num);
             }
             sendGlobalMessage( s, player);
             return;

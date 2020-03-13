@@ -1165,7 +1165,7 @@ static void updateTprTime(char* name, int time) {
 static void updateSuperBackSpot(char* name, int x, int y) {
     Spot *spot = new Spot();
     spot->name = new char[256];
-    strcpy(spot->name, name);
+    strcpy(spot->name, stringToUpperCase(name));
     spot->x = x;
     spot->y = y;
     replaceOrCreateSpot(&superBackSpot, spot);

@@ -22920,7 +22920,7 @@ int main() {
                                             sendGlobalMessage(s, nextPlayer);
                                             continue;
                                         }
-                                    }
+                                    } else
 
 									if(type == 0) {
 										if(targetObj->permanent && targetObj->slotSize > 0) {

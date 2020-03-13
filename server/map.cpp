@@ -8043,27 +8043,27 @@ void randomizeContained(int inX, int inY, int seed) {
     for( int i=0; i<oldNum; i++ ) {
         int idx = (rand() % oldNum);
         if( i != idx) {
-            int tmp = randIdx->getElementDirect( i )
+            int tmp = randIdx.getElementDirect( i )
 
-            *( randIdx->getElement( i ) ) = 
-                randIdx->getElementDirect( idx );
+            *( randIdx.getElement( i ) ) = 
+                randIdx.getElementDirect( idx );
         
-            *( randIdx->getElement( idx ) ) = tmp;
+            *( randIdx.getElement( idx ) ) = tmp;
         }
     }
 
     for( int i=0; i<oldNum; i++ ) {
-        newContainedList.push_back( oldContained[randIdx->getElementDirect( i )] );
-        newContainedETAList.push_back( oldContainedETA[randIdx->getElementDirect( i )] );
+        newContainedList.push_back( oldContained[randIdx.getElementDirect( i )] );
+        newContainedETAList.push_back( oldContainedETA[randIdx.getElementDirect( i )] );
 
         int num;
         
         newSubContainedList.push_back(
-            getContained( inX, inY, &num, randIdx->getElementDirect( i ) + 1 ) );
+            getContained( inX, inY, &num, randIdx.getElementDirect( i ) + 1 ) );
         newSubContainedNumList.push_back( num );
 
         newSubContainedEtaList.push_back(
-            getContainedEtaDecay( inX, inY, &num, randIdx->getElementDirect( i ) + 1 ) );
+            getContainedEtaDecay( inX, inY, &num, randIdx.getElementDirect( i ) + 1 ) );
     }
 
     clearAllContained( inX, inY );

@@ -1485,6 +1485,42 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 
+    if(strcmp(cmd, "PUTW")==0 && isOp){
+        char s[256];
+        if(sscanf(args, "%d", &id) != 1) {
+            sprintf(s, "需要1个参数");
+        } else {
+            ObjectRecord *o = getObject( id );
+            if( o == NULL && id != 0) {
+                sendGlobalMessage( "物体未找到", player);
+                return;
+            }
+            setMapObject( player->xs - 1, player->ys, id );
+            sprintf(s, "已放置");
+        }
+        
+        sendGlobalMessage( s, player);
+        return;
+    }
+
+    if(strcmp(cmd, "PUTN")==0 && isOp){
+        char s[256];
+        if(sscanf(args, "%d", &id) != 1) {
+            sprintf(s, "需要1个参数");
+        } else {
+            ObjectRecord *o = getObject( id );
+            if( o == NULL && id != 0) {
+                sendGlobalMessage( "物体未找到", player);
+                return;
+            }
+            setMapObject( player->xs, player->ys + 1, id );
+            sprintf(s, "已放置");
+        }
+        
+        sendGlobalMessage( s, player);
+        return;
+    }
+
     if(strcmp(cmd, "CIR")==0){
         char s[256];
         sprintf(s, "你在 %d 环", getCircle(player->xd, player->yd));
@@ -1547,7 +1583,7 @@ void parseCommand(LiveObject *player, char *text){
             if( o->personNoSpawn) {
                 bool isVip = isNamingSay(stringToUpperCase(player->email), &vipList) != NULL;
                 if(!isOp && !isVip) {
-                    sendGlobalMessage("你不能选择氪金角色",player);
+                    sendGlobalMessage("你不能选择定制角色",player);
                     return;
                 }
             } 

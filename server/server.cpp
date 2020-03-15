@@ -1801,7 +1801,6 @@ void parseCommand(LiveObject *player, char *text){
             if(!getShop(x, y, tEmail, &shopType, &price, &data)){
                 sprintf(s, "商店不存在");
             } else {
-                delShop(x, y);
                 setShop(x, y, tEmail, (char)num, price, data);
                 sprintf(s, "修改为:%d", num);
             }
@@ -2266,6 +2265,12 @@ void parseCommand(LiveObject *player, char *text){
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
 		}
+
+
+        if(strcmp(player->email, stringToLowerCase(player->email))!=0) {
+            sprintf(s, "你的账号包含了大写，请使用全小写的账号。");
+        }
+
 		sendGlobalMessage( s, player);
 		return;
 	}

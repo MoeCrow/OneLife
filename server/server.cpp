@@ -1620,7 +1620,7 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "AGE")==0 && isOp) {
         float age;
-        if(sscanf(args, "%d", &age) != 1) {
+        if(sscanf(args, "%f", &age) != 1) {
             sendGlobalMessage( "NEED ONE ARGS", player);
             return;
         }

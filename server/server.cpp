@@ -1089,6 +1089,11 @@ static void writeSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotL
 			sequencedList.push_back(autoSprintf("%s %d %d %s", spot->name, spot->x, spot->y, spot->owner));
 	}
 	SettingsManager::setSetting(inSettingsName, &sequencedList);
+
+    for( int i=0; i<sequencedList.size(); i++ ) {
+        char *line = *sequencedList.getElement(i);
+        delete [] line;
+    }
 	
 }
 

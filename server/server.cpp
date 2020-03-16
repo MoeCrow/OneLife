@@ -20318,7 +20318,9 @@ int main() {
                             int data;
 							ObjectRecord *targetObj =
                                             getObject( checkTarget );
-							if(getShop(m.x, m.y, email, &type, &price, &data)) {
+                            char accessBlocked = isAccessBlocked( nextPlayer, 
+                                 m.x, m.y, checkTarget );
+							if(getShop(m.x, m.y, email, &type, &price, &data) && !accessBlocked) {
 								if(strcmp(email, nextPlayer->email)!=0){
                                     if((checkTarget == 3371 || checkTarget == 3065 || checkTarget == 80667) &&
                                                 getNumContained(m.x, m.y) == 0 && type < 3) {
@@ -23005,8 +23007,10 @@ int main() {
 							float price;
                             int data;
 							int checkTarget = getMapObject( m.x, m.y );
+                            char accessBlocked = isAccessBlocked( nextPlayer, 
+                                             m.x, m.y, checkTarget );
                             ObjectRecord *targetObj = getObject(checkTarget);
-							if(getShop(m.x, m.y, email, &type, &price, &data)) {
+							if(getShop(m.x, m.y, email, &type, &price, &data) && ! accessBlocked) {
 								char s[256];
 								if(strcmp(email, nextPlayer->email)!=0) {
                                     if(type == 3) {

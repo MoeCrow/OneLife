@@ -1103,6 +1103,22 @@ char *isNamingSay( char *inSaidString, SimpleVector<char*> *inPhraseList );
 static void sendGlobalMessage( char *inMessage, LiveObject *inOnePlayerOnly = NULL );
 int computeFoodCapacity( LiveObject *inPlayer );
 
+bool strcmpUpper(char *str1, char *str2) {
+    char *u1 = stringToUpperCase(str1);
+    char *u2 = stringToUpperCase(str2);
+    bool r = strcmp(u1, u2) == 0;
+    delete [] u1;
+    delete [] u2;
+    return r;
+}
+
+char *isNamingSayUpper(char *str, SimpleVector<char*> *inPhraseList ) {
+    char *ustr = stringToUpperCase(str);
+    char *r = isNamingSay(ustr, inPhraseList);
+    delete [] ustr;
+    return r;
+}
+
 
 static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotList)
 {
@@ -1139,7 +1155,7 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 	for( int i=0; i<spotList->size(); i++ ) {
 		Spot* s = *spotList->getElement(i);
 		
-		if(strcmp(stringToUpperCase(s->name), stringToUpperCase(spot->name))==0){
+		if(strcmpUpper(s->name, spot->name)){
 			spotList->deleteElement(i);
             delete [] s->name;
             if(s->owner != NULL)
@@ -1153,7 +1169,7 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 }
 
 static bool isTprAllow(char* name, int time) {
-    bool isVip = isNamingSay(stringToUpperCase(name), &viptprList) != NULL;
+    bool isVip = isNamingSayUpper(name, &viptprList) != NULL;
     if(isVip)
         return true;
     for( int i=0; i<tprSpot.size(); i++ ) {
@@ -1167,7 +1183,7 @@ static bool isTprAllow(char* name, int time) {
 }
 
 static bool isEmailInList(SimpleVector<char*> *list, char* name) {
-    return isNamingSay(stringToUpperCase(name), list) != NULL;
+    return isNamingSayUpper(name, list) != NULL;
 }
 
 static void updateTprTime(char* name, int time) {
@@ -1181,9 +1197,8 @@ static void updateTprTime(char* name, int time) {
 
 static void updateSuperBackSpot(char* name, int x, int y) {
     Spot *spot = new Spot();
-    spot->name = new char[256];
+    spot->name = stringToUpperCase(name);
     spot->owner = NULL;
-    strcpy(spot->name, stringToUpperCase(name));
     spot->x = x;
     spot->y = y;
     replaceOrCreateSpot(&superBackSpot, spot);
@@ -1226,9 +1241,8 @@ static void delConfirm(char* name) {
 static void setBack(char* name, int x, int y)
 {
 	Spot *spot = new Spot();
-	spot->name = new char[256];
+	spot->name = stringToUpperCase(name);
     spot->owner = NULL;
-	strcpy(spot->name, stringToUpperCase(name));
 	spot->x = x;
 	spot->y = y;
 	replaceOrCreateSpot(&backSpot, spot);
@@ -1238,9 +1252,8 @@ static void setBack(char* name, int x, int y)
 static void setHome(char* name, int x, int y)
 {
 	Spot *spot = new Spot();
-	spot->name = new char[256];
+	spot->name = stringToUpperCase(name);
     spot->owner = NULL;
-	strcpy(spot->name, stringToUpperCase(name));
 	spot->x = x;
 	spot->y = y;
 	replaceOrCreateSpot(&homeSpot, spot);
@@ -1251,7 +1264,7 @@ static Spot* findSpot(SimpleVector<Spot*> *spotList, char* name)
 {
 	for( int i=0; i<spotList->size(); i++ ) {
 		Spot* s = *spotList->getElement(i);
-		if(strcmp(s->name, stringToUpperCase(name))==0){
+		if(strcmpUpper(s->name, name)){
 			return s;
 		}
 	}
@@ -1273,7 +1286,7 @@ static void delSpot(SimpleVector<Spot*> *spotList, char* name)
 {
 	for( int i=0; i<spotList->size(); i++ ) {
 		Spot* s = *spotList->getElement(i);
-		if(strcmp(s->name, stringToUpperCase(name))==0){
+		if(strcmpUpper(s->name, name)){
 			spotList->deleteElement(i);
             delete [] s->name;
             if(s->owner != NULL)
@@ -1304,14 +1317,15 @@ static void delSpotByXY(SimpleVector<Spot*> *spotList, int x, int y)
 static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 {
 	Spot *spot = new Spot();
-	spot->name = new char[256];
-	strcpy(spot->name, stringToUpperCase(name));
+	spot->name = stringToUpperCase(name);
 	spot->x = x;
 	spot->y = y;
-	spot->owner = new char[256];
-	strcpy(spot->owner, stringToUpperCase(owner));
+	spot->owner = stringToUpperCase(owner);
 	Spot *oldSpot = findSpot(&warpSpot, name);
 	if(!isOp && oldSpot != NULL && *oldSpot->owner != '\0' && strcmp(spot->owner, oldSpot->owner) != 0) {
+        delete [] spot->name;
+        delete [] spot->owner;
+        delete spot;
 		return false;
 	}
 	
@@ -1347,7 +1361,7 @@ void parseCommand(LiveObject *player, char *text){
 	tmp[pti] = 0;
 	
 	sscanf(tmp, ".%s %[^\n]", cmd, args);
-	bool isOp = isNamingSay(stringToUpperCase(player->email), &opList) != NULL;
+	bool isOp = isNamingSayUpper(player->email, &opList) != NULL;
 	int shutdownMode = SettingsManager::getIntSetting( "shutdownMode", 0 );
 
 
@@ -1611,7 +1625,7 @@ void parseCommand(LiveObject *player, char *text){
             }
                 
             if( o->personNoSpawn) {
-                bool isVip = isNamingSay(stringToUpperCase(player->email), &vipList) != NULL;
+                bool isVip = isNamingSayUpper(player->email, &vipList) != NULL;
                 if(!isOp && !isVip) {
                     sendGlobalMessage("你不能选择定制角色",player);
                     return;
@@ -1897,7 +1911,7 @@ void parseCommand(LiveObject *player, char *text){
             GridPos nowPos = {s->x, s->y};
             if(distance(myPos, nowPos) < range){
                 countH++;
-                if(strcmp(s->name, stringToUpperCase(player->email))==0)
+                if(strcmpUpper(s->name, player->email))
                     countM++;
             }
         }
@@ -1908,7 +1922,7 @@ void parseCommand(LiveObject *player, char *text){
             GridPos nowPos = {s->x, s->y};
             if(distance(myPos, nowPos) < range){
                 countW++;
-                if(strcmp(s->owner, stringToUpperCase(player->email))==0)
+                if(strcmpUpper(s->owner, player->email))
                     countM++;
             }
         }
@@ -2283,7 +2297,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);
 		else {
-			if(!isOp && strcmp(spot->owner, stringToUpperCase(player->email)) != 0) {
+			if(!isOp && !strcmpUpper(spot->owner, player->email)) {
 				sprintf(s, "这个地标不属于你", name);
 			} else {
 				delSpot(&warpSpot, name);

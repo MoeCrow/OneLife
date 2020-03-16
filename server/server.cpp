@@ -1106,6 +1106,10 @@ int computeFoodCapacity( LiveObject *inPlayer );
 
 static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotList)
 {
+    for( int i=0; i<spotList->size(); i++ ) {
+        Spot* spot = *spotList->getElement(i);
+        delete spot;
+    }
 	spotList->deleteAll();
 	SimpleVector<char*> sequencedList;
 	readPhrases(inSettingsName, &sequencedList);

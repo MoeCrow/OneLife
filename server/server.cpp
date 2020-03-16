@@ -1108,8 +1108,12 @@ static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotLi
 {
     for( int i=0; i<spotList->size(); i++ ) {
         Spot* spot = *spotList->getElement(i);
+        delete [] spot->name;
+        if(spot->owner != NULL)
+            delete [] spot->owner;
         delete spot;
     }
+
 	spotList->deleteAll();
 	SimpleVector<char*> sequencedList;
 	readPhrases(inSettingsName, &sequencedList);
@@ -1137,6 +1141,9 @@ static void replaceOrCreateSpot(SimpleVector<Spot*> *spotList, Spot* spot)
 		
 		if(strcmp(stringToUpperCase(s->name), stringToUpperCase(spot->name))==0){
 			spotList->deleteElement(i);
+            delete [] s->name;
+            if(s->owner != NULL)
+                delete [] s->owner;
 			delete s;
 			spotList->push_back(spot);
 			return;
@@ -1166,6 +1173,7 @@ static bool isEmailInList(SimpleVector<char*> *list, char* name) {
 static void updateTprTime(char* name, int time) {
     Spot *spot = new Spot();
     spot->name = new char[256];
+    spot->owner = NULL;
     strcpy(spot->name, name);
     spot->x = time;
     replaceOrCreateSpot(&tprSpot, spot);
@@ -1174,6 +1182,7 @@ static void updateTprTime(char* name, int time) {
 static void updateSuperBackSpot(char* name, int x, int y) {
     Spot *spot = new Spot();
     spot->name = new char[256];
+    spot->owner = NULL;
     strcpy(spot->name, stringToUpperCase(name));
     spot->x = x;
     spot->y = y;
@@ -1194,6 +1203,7 @@ static bool isConfirmed(char* name, int x, int y) {
 static void setConfirm(char* name, int x, int y) {
     Spot *spot = new Spot();
     spot->name = new char[256];
+    spot->owner = NULL;
     strcpy(spot->name, name);
     spot->x = x;
     spot->y = y;
@@ -1206,6 +1216,7 @@ static void delConfirm(char* name) {
 		
 		if(strcmp(name, s->name)==0){
 			confirmSpot.deleteElement(i);
+            delete [] s->name;
 			delete s;
 			return;
 		}
@@ -1216,6 +1227,7 @@ static void setBack(char* name, int x, int y)
 {
 	Spot *spot = new Spot();
 	spot->name = new char[256];
+    spot->owner = NULL;
 	strcpy(spot->name, stringToUpperCase(name));
 	spot->x = x;
 	spot->y = y;
@@ -1227,6 +1239,7 @@ static void setHome(char* name, int x, int y)
 {
 	Spot *spot = new Spot();
 	spot->name = new char[256];
+    spot->owner = NULL;
 	strcpy(spot->name, stringToUpperCase(name));
 	spot->x = x;
 	spot->y = y;
@@ -1262,6 +1275,10 @@ static void delSpot(SimpleVector<Spot*> *spotList, char* name)
 		Spot* s = *spotList->getElement(i);
 		if(strcmp(s->name, stringToUpperCase(name))==0){
 			spotList->deleteElement(i);
+            delete [] s->name;
+            if(s->owner != NULL)
+                delete [] s->owner;
+            delete s;
 			return;
 		}
 	}
@@ -1274,6 +1291,10 @@ static void delSpotByXY(SimpleVector<Spot*> *spotList, int x, int y)
         Spot* s = *spotList->getElement(i);
         if(s->x == x && s->y == y){
             spotList->deleteElement(i);
+            delete [] s->name;
+            if(s->owner != NULL)
+                delete [] s->owner;
+            delete s;
             return;
         }
     }
@@ -20539,7 +20560,7 @@ int main() {
                             if(spot == NULL) {
                                 Spot *spot = new Spot();
                                 spot->name = "-";
-                                spot->owner = "-";
+                                spot->owner = NULL;
                                 spot->x = m.x;
                                 spot->y = m.y;
                                 

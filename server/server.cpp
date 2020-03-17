@@ -20562,7 +20562,8 @@ int main() {
                             Spot* spot = findSpotByXY(&residenceSpot, m.x, m.y);
                             if(spot == NULL) {
                                 Spot *spot = new Spot();
-                                spot->name = "-";
+                                spot->name = new char[256];
+                                strcpy(spot->name, "-");
                                 spot->owner = NULL;
                                 spot->x = m.x;
                                 spot->y = m.y;

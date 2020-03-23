@@ -1346,21 +1346,10 @@ SimpleVector<LiveObject> tutorialLoadingPlayers;
 void parseCommand(LiveObject *player, char *text){
 	int x = 0, y = 0, id = 0;
 	int a = 10000000, b = 99999999;
-	char cmd[64], tmp[64];
+	char cmd[64];
 	char args[256];
 	
-	int pti = 0, ptt = 0;
-	while(text[ptt] != 0) {
-		if(text[ptt] == '/') {
-			tmp[pti] = '0' + text[++ptt] - 'A';
-		} else {
-			tmp[pti] = text[ptt];
-		}
-		pti++;ptt++;
-	}
-	tmp[pti] = 0;
-	
-	sscanf(tmp, ".%s %[^\n]", cmd, args);
+	sscanf(text, ".%s %[^\n]", cmd, args);
 	bool isOp = isNamingSayUpper(player->email, &opList) != NULL;
 	int shutdownMode = SettingsManager::getIntSetting( "shutdownMode", 0 );
 

@@ -494,7 +494,11 @@ static CoordinateTimeTracking lookTimeTracking;
 // about whether arrival has happened or not
 typedef struct MovementRecord {
         int x, y;
+        int sourceX, sourceY;
+        int id;
+        char deadly;
         double etaTime;
+        double totalTime;
     } MovementRecord;
 
 
@@ -6275,12 +6279,14 @@ int checkDecayObject( int inX, int inY, int inID ) {
                     
                     double speed = 4.0f;
                     
-                    
+                    char deadly = false;
                     if( newID > 0 ) {
                         ObjectRecord *newObj = getObject( newID );
                         
                         if( newObj != NULL ) {
                             speed *= newObj->speedMult;
+                            
+                            deadly = ( newObj->deadlyDistance > 0 );
                             }
                         }
                     
@@ -6288,7 +6294,11 @@ int checkDecayObject( int inX, int inY, int inID ) {
                     
                     double etaTime = Time::getCurrentTime() + moveTime;
                     
-                    MovementRecord moveRec = { newX, newY, etaTime };
+                    MovementRecord moveRec = { newX, newY, inX, inY, 
+                                               newID,
+                                               deadly, 
+                                               etaTime,
+                                               moveTime };
                     
                     liveMovementEtaTimes.insert( newX, newY, 0, 0, etaTime );
                     
@@ -10211,4 +10221,46 @@ SimpleVector<HomelandInfo> getHomelandChanges() {
             }
         }
     return list;
+    }
+
+
+
+
+int getDeadlyMovingMapObject( int inPosX, int inPosY,
+                              int *outMovingDestX, int *outMovingDestY ) {
+    
+    double curTime = Time::getCurrentTime();
+    
+    int numMoving = liveMovements.size();
+    
+    for( int i=0; i<numMoving; i++ ) {
+        MovementRecord *m = liveMovements.getElement( i );
+        
+        if( ! m->deadly ) {
+            continue;
+            }
+        double progress = 
+            ( m->totalTime - ( m->etaTime - curTime )  )
+            / m->totalTime;
+        
+        if( progress < 0 ||
+            progress > 1 ) {
+            continue;
+            }
+        int curPosX = lrint( ( m->x - m->sourceX ) * progress + m->sourceX );
+        int curPosY = lrint( ( m->y - m->sourceY ) * progress + m->sourceY );
+        
+        if( curPosX != inPosX ||
+            curPosY != inPosY ) {
+            continue;
+            }
+        
+        // hit position
+        *outMovingDestX = m->x;
+        *outMovingDestY = m->y;
+        return m->id;
+        }
+    
+
+    return 0;
     }

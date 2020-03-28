@@ -2286,8 +2286,8 @@ void parseCommand(LiveObject *player, char *text){
                 delSpot(&signSpot, name);
                 writeSpotList("signSpot", &signSpot);
                 sprintf(s, "[防伪签名]标志 '%s' 已删除，%.2f 钢押金已退回", name, CLAIM_SIGN_PRICE);
-                float money = getPlayerMoney(spot->owner);
-                setPlayerMoney(spot->owner, money + CLAIM_SIGN_PRICE);
+                float money = getPlayerMoney(player->email);
+                setPlayerMoney(player->email, money + CLAIM_SIGN_PRICE);
             }
         }
         sendGlobalMessage( s, player);

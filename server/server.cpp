@@ -1315,7 +1315,7 @@ static void delSpotByXY(SimpleVector<Spot*> *spotList, int x, int y)
     return;
 }
 
-static void claimSign(char* name, char* owner, int x, int y)
+static bool claimSign(char* name, char* owner, int x, int y)
 {
     char *uo = stringToUpperCase(owner);
     Spot *oldSpot = findSpot(&signSpot, name);

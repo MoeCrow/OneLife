@@ -1315,6 +1315,26 @@ static void delSpotByXY(SimpleVector<Spot*> *spotList, int x, int y)
     return;
 }
 
+static void claimSign(char* name, char* owner, int x, int y)
+{
+    char *uo = stringToUpperCase(owner);
+    Spot *oldSpot = findSpot(&signSpot, name);
+    if(oldSpot != NULL && strcmp(uo, oldSpot->owner) != 0) {
+        delete [] uo;
+        return false;
+    }
+    
+    Spot *spot = new Spot();
+    spot->name = stringToUpperCase(name);
+    spot->x = x;
+    spot->y = y;
+    spot->owner = uo;
+
+    replaceOrCreateSpot(&signSpot, spot);
+    writeSpotList("signSpot", &signSpot);
+    return true;
+}
+
 static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 {
 	Spot *spot = new Spot();
@@ -2221,6 +2241,96 @@ void parseCommand(LiveObject *player, char *text){
 		sendGlobalMessage( s, player);
 		return;
 	}
+
+    const float CLAIM_SIGN_PRICE = 100f;
+
+    if(strcmp(cmd, "SIGNC")==0){
+        char s[256], name[64];
+        if(sscanf(args, "%s", name) == 0) {
+            sprintf(s, "[防伪签名]需要一个参数 防伪标志");
+        }
+        else {
+            if(strlen(name) < 6 && !isOp) {
+                sendGlobalMessage( "[防伪签名]标志名至少4位", player);
+                return;
+            }
+
+            float money = getPlayerMoney(player->email);
+            if(money < CLAIM_SIGN_PRICE) {
+                sprintf(s, "[防伪签名]申请防伪标志需要 %.2f 钢押金", CLAIM_SIGN_PRICE);
+                return;
+            }
+            sprintf(s, "[防伪签名]标志 '%s' 成功申请，请使用.SIGN指令签名", name);
+            if(!claimSign(name, player->email, player->xs, player->ys))
+                sprintf(s, "[防伪签名]这个标志不属于你");
+            else
+                setPlayerMoney(player->email, money - CLAIM_SIGN_PRICE);
+        }
+        sendGlobalMessage( s, player);
+        return;
+    }
+
+    if(strcmp(cmd, "SIGNU")==0){
+        char s[256], name[64];
+        
+        sscanf(args, "%s", name);
+        Spot* spot = findSpot(&signSpot, name);
+        if(spot == NULL)
+            sprintf(s, "[防伪签名]没找到标志 '%s'", name);
+        else {
+            if(!isOp && !strcmpUpper(spot->owner, player->email)) {
+                sprintf(s, "[防伪签名]这个标志不属于你", name);
+            } else {
+                delSpot(&signSpot, name);
+                writeSpotList("signSpot", &signSpot);
+                sprintf(s, "[防伪签名]标志 '%s' 已删除，%.2f 钢押金已退回", name, CLAIM_SIGN_PRICE);
+                float money = getPlayerMoney(spot->owner);
+                setPlayerMoney(spot->owner, money + CLAIM_SIGN_PRICE);
+            }
+        }
+        sendGlobalMessage( s, player);
+        return;
+    }
+
+    if(strcmp(cmd, "SIGN")==0){
+        char name[64], c[64], s[256];
+
+        if(player->holdingID != 1619) {
+            sprintf(s, "[防伪签名]你必须拿着一张白纸，没有笔的那种!");
+            sendGlobalMessage( s, player);
+            return;
+        }
+        
+        if(sscanf(args, "%s %[^\n]", name, c) < 2) {
+            sprintf(s, "需要2个参数");
+        } else {
+            Spot* spot = findSpot(&signSpot, name);
+            if(spot == NULL)
+                sprintf(s, "[防伪签名]没找到标志 '%s'", name);
+            else {
+                if(!isOp && !strcmpUpper(spot->owner, player->email)) {
+                    sprintf(s, "[防伪签名]这个标志不属于你", name);
+                } else {
+                    player->holdingID = 1615;
+                    unsigned char metaData[ MAP_METADATA_LENGTH ];
+                    char paperStr[128];
+                    sprintf(paperStr, "[%s] %s", name, c);
+                    int len = strlen( paperStr );
+                    
+                    memset( metaData, 0, MAP_METADATA_LENGTH );
+                    memcpy( metaData, paperStr, len + 1 );
+                    
+                    player->holdingID = addMetadata( player->holdingID,
+                                                     metaData );
+                    
+                    sprintf(s, "[防伪签名]你签发了一张防伪纸条");
+                }
+            }
+        }
+        
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "SETWARP")==0){
         int cir = getCircle(player->xd, player->yd);

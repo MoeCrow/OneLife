@@ -2246,6 +2246,7 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SIGNC")==0){
         char s[256], name[64];
+        name[0] = 0;
         if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
             sprintf(s, "[防伪签名]需要一个参数 防伪标志");
         }
@@ -2340,8 +2341,9 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 		char s[256], name[64];
-		if(sscanf(args, "%s", name) == 0) {
-			sprintf(s, "地标名给我一个");
+        name[0] = 0;
+		if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
+			sprintf(s, "需要一个地标名");
 		}
 		else {
             if(strlen(name) < 6 && !isOp) {
@@ -2369,8 +2371,9 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SETWARPOP")==0 && isOp){
         char s[256], name[64];
-        if(sscanf(args, "%s", name) == 0) {
-            sprintf(s, "地标名给我一个");
+        name[0] = 0;
+        if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
+            sprintf(s, "需要一个地标名");
         }
         else {
             sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);

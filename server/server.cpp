@@ -2242,7 +2242,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 
-    const float CLAIM_SIGN_PRICE = 100f;
+    const float CLAIM_SIGN_PRICE = 100.f;
 
     if(strcmp(cmd, "SIGNC")==0){
         char s[256], name[64];

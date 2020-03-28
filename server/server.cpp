@@ -1037,6 +1037,7 @@ typedef struct Spot {
 } Spot;
 
 static SimpleVector<Spot*> warpSpot;
+static SimpleVector<Spot*> signSpot;
 static SimpleVector<Spot*> homeSpot;
 static SimpleVector<Spot*> backSpot;
 static SimpleVector<Spot*> residenceSpot;
@@ -1362,7 +1363,7 @@ void parseCommand(LiveObject *player, char *text){
         std::strftime(bufT, 128,"%Y-%m-%d %H:%M:%S", std::localtime(&now_time));
 
         fprintf( logCmd, "%s (%d,%d) %s %s\n",
-                player->email, player->xs, player->ys, tmp, bufT );
+                player->email, player->xs, player->ys, text, bufT );
 
         fclose(logCmd);
     }
@@ -1595,6 +1596,7 @@ void parseCommand(LiveObject *player, char *text){
     if(strcmp(cmd, "RELS")==0 && isOp){
         
         readSpotList( "warpSpot", &warpSpot);
+        readSpotList( "signSpot", &signSpot);
         readSpotList( "homeSpot", &homeSpot);
         readSpotList( "backSpot", &backSpot);
         readSpotList( "residenceSpot", &residenceSpot);
@@ -16386,6 +16388,7 @@ int main() {
     readPhrases( "delshop_perm", &shopPermList );
 	
 	readSpotList( "warpSpot", &warpSpot);
+    readSpotList( "signSpot", &signSpot);
 	readSpotList( "homeSpot", &homeSpot);
 	readSpotList( "backSpot", &backSpot);
     readSpotList( "residenceSpot", &residenceSpot);

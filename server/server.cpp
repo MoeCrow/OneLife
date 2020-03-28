@@ -2246,7 +2246,7 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SIGNC")==0){
         char s[256], name[64];
-        if(sscanf(args, "%s", name) == 0) {
+        if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
             sprintf(s, "[防伪签名]需要一个参数 防伪标志");
         }
         else {
@@ -2258,6 +2258,7 @@ void parseCommand(LiveObject *player, char *text){
             float money = getPlayerMoney(player->email);
             if(money < CLAIM_SIGN_PRICE) {
                 sprintf(s, "[防伪签名]申请防伪标志需要 %.2f 钢押金", CLAIM_SIGN_PRICE);
+                sendGlobalMessage( s, player);
                 return;
             }
             sprintf(s, "[防伪签名]标志 '%s' 成功申请，请使用.SIGN指令签名", name);

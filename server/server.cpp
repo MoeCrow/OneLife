@@ -2251,7 +2251,7 @@ void parseCommand(LiveObject *player, char *text){
             sprintf(s, "[防伪签名]需要一个参数 防伪标志");
         }
         else {
-            if(strlen(name) < 6 && !isOp) {
+            if(strlen(name) < 4 && !isOp) {
                 sendGlobalMessage( "[防伪签名]标志名至少4位", player);
                 return;
             }

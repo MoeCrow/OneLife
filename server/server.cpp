@@ -1319,7 +1319,7 @@ static bool claimSign(char* name, char* owner, int x, int y)
 {
     char *uo = stringToUpperCase(owner);
     Spot *oldSpot = findSpot(&signSpot, name);
-    if(oldSpot != NULL && strcmp(uo, oldSpot->owner) != 0) {
+    if(oldSpot != NULL) {
         delete [] uo;
         return false;
     }
@@ -2264,7 +2264,7 @@ void parseCommand(LiveObject *player, char *text){
             }
             sprintf(s, "[防伪签名]标志 '%s' 成功申请，请使用.SIGN指令签名", name);
             if(!claimSign(name, player->email, player->xs, player->ys))
-                sprintf(s, "[防伪签名]这个标志不属于你");
+                sprintf(s, "[防伪签名]这个标志已存在");
             else
                 setPlayerMoney(player->email, money - CLAIM_SIGN_PRICE);
         }

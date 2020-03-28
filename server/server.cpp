@@ -1140,7 +1140,7 @@ static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotLi
 		Spot* spot = new Spot();
 		spot->name = new char[256];
 		spot->owner = NULL;
-		if(strcmp(inSettingsName, "warpSpot")==0 || strcmp(inSettingsName, "signSpot")==0) {
+		if(strcmp(inSettingsName, "warpSpot")==0) {
 			spot->owner = new char[256];
 			sscanf(str, "%s %d %d %s", spot->name, &spot->x, &spot->y, spot->owner);
 		}

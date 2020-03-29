@@ -2262,7 +2262,7 @@ void parseCommand(LiveObject *player, char *text){
                 sendGlobalMessage( s, player);
                 return;
             }
-            sprintf(s, "[防伪签名]标志 '%s' 成功申请，请使用.SIGN指令签名", name);
+            sprintf(s, "[防伪签名]标志 '%s' 成功申请，已收取押金 %.2f 钢，请使用.SIGN指令签名", name, CLAIM_SIGN_PRICE);
             if(!claimSign(name, player->email, player->xs, player->ys))
                 sprintf(s, "[防伪签名]这个标志已存在");
             else

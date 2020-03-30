@@ -1134,6 +1134,7 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
     }
 
     int rate = getPlayerMutation(id, inPlayer->email);
+    int oldRate = rate;
 
     int bonusLevel = inPlayer->yummyBonusStore;
     if( bonusLevel >= 500000)
@@ -1155,8 +1156,8 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
     bool mutate = ((rand() % (1000000)) < rate);
 
     if(mutate) {
-        if(rate < 100000) {
-            rate += 1000;
+        if(oldRate < 100000) {
+            rate = oldRate + 1000;
             setPlayerMutation(id, inPlayer->email, rate);
         }
         inPlayer->displayID = id;

@@ -386,9 +386,11 @@ static char globalDBOpen = false;
 static DB playerDB;
 static char playerDBOpen = false;
 
+static DB mutationDB;
+static char mutationDBOpen = false;
+
 static DB metaDB;
 static char metaDBOpen = false;
-
 
 
 static int randSeed = 124567;
@@ -4135,6 +4137,24 @@ if(false)
         }
     }
 
+    error = DB_open( &mutationDB, 
+                     "mutation.db", 
+                     KISSDB_OPEN_MODE_RWCREAT,
+                     // starting size doesn't matter here
+                     20000,
+                     64, // id@email
+                     4
+                     // int mutation rate 0~10000
+                     
+                     );
+    
+    if( error ) {
+        AppLog::errorF( "Error %d opening mutation KissDB", error );
+        return false;
+        }
+    
+    mutationDBOpen = true;
+
 
     error = DB_open( &metaDB, 
                      "meta.db", 
@@ -5004,6 +5024,10 @@ void freeMap( char inSkipCleanup ) {
         playerDBOpen = false;
         }
 
+    if( mutationDBOpen ) {
+        DB_close( &mutationDB );
+        mutationDBOpen = false;
+        }
 
     if( metaDBOpen ) {
         DB_close( &metaDB );

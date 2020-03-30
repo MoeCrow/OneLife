@@ -1150,7 +1150,7 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
     else if( bonusLevel >= 1000)
         rate += 500;
     else if( bonusLevel >= 100)
-        rate += 100;
+        rate += 200;
 
     srand(time(NULL) + rand()); 
     bool mutate = ((rand() % (1000000)) < rate);

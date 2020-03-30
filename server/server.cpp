@@ -1126,6 +1126,8 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
 
     if(!isActivityOpen)
         return;
+    if(inPlayer->yummyBonusStore == 0)
+        return;
 
     int id = inObject->id;
                 

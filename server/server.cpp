@@ -1155,8 +1155,10 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
     bool mutate = ((rand() % (1000000)) < rate);
 
     if(mutate) {
-        rate += 1000;
-        setPlayerMutation(id, inPlayer->email, rate);
+        if(rate < 100000) {
+            rate += 1000;
+            setPlayerMutation(id, inPlayer->email, rate);
+        }
         inPlayer->displayID = id;
         sendGlobalMessage( "你变异了...", inPlayer);
     }

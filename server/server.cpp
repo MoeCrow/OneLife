@@ -1805,6 +1805,47 @@ void parseCommand(LiveObject *player, char *text){
         sendGlobalMessage( s, player);
         return;
     }
+
+    if(strcmp(cmd, "MUT")==0){
+        if(player->holdingID <= 0) {
+            sendGlobalMessage( "必须拿一个食物", player);
+            return;
+        }
+        ObjectRecord *o = holdingID
+        if(o->foodValue == 0) {
+            sendGlobalMessage( "必须拿一个食物", player);
+            return;
+        }
+
+        int id = o->id;
+                
+        if( inObject->isUseDummy ) {
+            id = o->useDummyParent;
+        }
+
+        int rate = getPlayerMutation(id, player->email);
+
+        int bonusLevel = player->yummyBonusStore;
+        if( bonusLevel >= 100)
+            rate += 100;
+        else if( bonusLevel >= 1000)
+            rate += 500;
+        else if( bonusLevel >= 5000)
+            rate += 1000;
+        else if( bonusLevel >= 10000)
+            rate += 2000;
+        else if( bonusLevel >= 50000)
+            rate += 3000;
+        else if( bonusLevel >= 100000)
+            rate += 4000;
+        else if( bonusLevel >= 500000)
+            rate += 5000;
+
+        char s[256];
+        sprintf(s, "这个食物的变异率: %.3f%", 0.0001f * rate);
+        sendGlobalMessage( s, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "TPR")==0){
 		if(player->heldByOther || player->holdingID < 0) {

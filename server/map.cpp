@@ -999,6 +999,75 @@ void playerDBPut( const char *inEmail, int displayID,
     DB_put( &playerDB, key, value );
 }
 
+char mutationDBGet(int inId, const char *inEmail, int* outValue) {
+    unsigned char key[64];
+    unsigned char value[4];
+    memset( key, ' ', 64 );
+    
+    int len = 64;
+
+    char *tmpKey = autoSprintf("%d@%s", inId, inEmail);
+
+    int emailLen = strlen( tmpKey );
+    
+    if( emailLen < len ) {
+        len = emailLen;
+        }
+    
+    memcpy( key, tmpKey, len );
+
+    delete [] tmpKey;
+
+    int result = DB_get( &mutationDB, key, value );
+    //if(true) return false;
+    if( result == 0 ) {
+        *outValue = valueToInt( &( value[0] ) );
+        return true;
+        }
+    else {
+        return false;
+        }
+}
+
+void mutationDBPut(int inId, const char *inEmail, int inValue) {
+    unsigned char key[64];
+    unsigned char value[4];
+    memset( key, ' ', 64 );
+    
+    int len = 64;
+
+    char *tmpKey = autoSprintf("%d@%s", inId, inEmail);
+
+    int emailLen = strlen( tmpKey );
+    
+    if( emailLen < len ) {
+        len = emailLen;
+        }
+    
+    memcpy( key, tmpKey, len );
+
+    delete [] tmpKey;
+
+    intToValue( inValue, &( value[0] ) );
+
+    DB_put( &mutationDB, key, value );
+}
+
+int getPlayerMutation(int inId, const char *inEmail) {
+    int value;
+    int result = mutationDBGet(inId, inEmail, &value);
+    if(result == 1) {
+        return value;
+    }
+    return 1000;
+}
+
+
+void setPlayerMutation(int inId, const char *inEmail, int inValue) {
+    mutationDBPut(inId, inEmail, inValue);
+}
+
+
 
 
 static void dbFloorPut( int inX, int inY, int inValue );
@@ -4144,7 +4213,7 @@ if(false)
                      20000,
                      64, // id@email
                      4
-                     // int mutation rate 0~10000
+                     // int mutation rate 0~1000000
                      
                      );
     

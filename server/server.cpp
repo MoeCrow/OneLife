@@ -1812,7 +1812,7 @@ void parseCommand(LiveObject *player, char *text){
             sendGlobalMessage( "必须拿一个食物", player);
             return;
         }
-        ObjectRecord *o = player->holdingID;
+        ObjectRecord *o = getObject(player->holdingID);
         if(o->foodValue == 0) {
             sendGlobalMessage( "必须拿一个食物", player);
             return;

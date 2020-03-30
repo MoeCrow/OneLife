@@ -1066,19 +1066,19 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
     int rate = getPlayerMutation(id, inPlayer->email);
 
     int bonusLevel = inPlayer->yummyBonusStore;
-    if( bonusLevel > 100)
+    if( bonusLevel >= 100)
         rate += 100;
-    else if( bonusLevel > 1000)
+    else if( bonusLevel >= 1000)
         rate += 500;
-    else if( bonusLevel > 5000)
+    else if( bonusLevel >= 5000)
         rate += 1000;
-    else if( bonusLevel > 10000)
+    else if( bonusLevel >= 10000)
         rate += 2000;
-    else if( bonusLevel > 50000)
+    else if( bonusLevel >= 50000)
         rate += 3000;
-    else if( bonusLevel > 100000)
+    else if( bonusLevel >= 100000)
         rate += 4000;
-    else if( bonusLevel > 500000)
+    else if( bonusLevel >= 500000)
         rate += 5000;
 
     srand(time(NULL) + rand()); 

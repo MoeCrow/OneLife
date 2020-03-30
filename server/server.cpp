@@ -1843,7 +1843,7 @@ void parseCommand(LiveObject *player, char *text){
             rate += 5000;
 
         char s[256];
-        sprintf(s, "这个食物的变异率: %.3f%", 0.0001f * rate);
+        sprintf(s, "这个食物的变异率: %.3f%%", 0.0001f * rate);
         sendGlobalMessage( s, player);
         return;
     }

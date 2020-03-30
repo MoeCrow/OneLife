@@ -1050,48 +1050,6 @@ static void setDeathReason( LiveObject *inPlayer, const char *inTag,int inOption
 static void setPlayerDisconnected( LiveObject *inPlayer, const char *inReason );
 static void makePlayerSay( LiveObject *inPlayer, char *inToSay );
 
-void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
-    //TODO use some type of crontab script
-    bool isActivityOpen = true;
-
-    if(!isActivityOpen)
-        return;
-
-    int id = inObject->id;
-                
-    if( inObject->isUseDummy ) {
-        id = inObject->useDummyParent;
-    }
-
-    int rate = getPlayerMutation(id, inPlayer->email);
-
-    int bonusLevel = inPlayer->yummyBonusStore;
-    if( bonusLevel >= 100)
-        rate += 100;
-    else if( bonusLevel >= 1000)
-        rate += 500;
-    else if( bonusLevel >= 5000)
-        rate += 1000;
-    else if( bonusLevel >= 10000)
-        rate += 2000;
-    else if( bonusLevel >= 50000)
-        rate += 3000;
-    else if( bonusLevel >= 100000)
-        rate += 4000;
-    else if( bonusLevel >= 500000)
-        rate += 5000;
-
-    srand(time(NULL) + rand()); 
-    bool mutate = ((rand() % (1000000)) < rate);
-
-    if(mutate) {
-        rate += 1000;
-        setPlayerMutation(id, inPlayer->email, rate);
-        inPlayer->displayID = id;
-        sendGlobalMessage( "你变异了...", inPlayer);
-    }
-}
-
 static void savePlayerStatus(LiveObject *player) {
 	// save player status here
 	playerDBPut(
@@ -1160,6 +1118,48 @@ char *isNamingSayUpper(char *str, SimpleVector<char*> *inPhraseList ) {
     char *r = isNamingSay(ustr, inPhraseList);
     delete [] ustr;
     return r;
+}
+
+void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
+    //TODO use some type of crontab script
+    bool isActivityOpen = true;
+
+    if(!isActivityOpen)
+        return;
+
+    int id = inObject->id;
+                
+    if( inObject->isUseDummy ) {
+        id = inObject->useDummyParent;
+    }
+
+    int rate = getPlayerMutation(id, inPlayer->email);
+
+    int bonusLevel = inPlayer->yummyBonusStore;
+    if( bonusLevel >= 100)
+        rate += 100;
+    else if( bonusLevel >= 1000)
+        rate += 500;
+    else if( bonusLevel >= 5000)
+        rate += 1000;
+    else if( bonusLevel >= 10000)
+        rate += 2000;
+    else if( bonusLevel >= 50000)
+        rate += 3000;
+    else if( bonusLevel >= 100000)
+        rate += 4000;
+    else if( bonusLevel >= 500000)
+        rate += 5000;
+
+    srand(time(NULL) + rand()); 
+    bool mutate = ((rand() % (1000000)) < rate);
+
+    if(mutate) {
+        rate += 1000;
+        setPlayerMutation(id, inPlayer->email, rate);
+        inPlayer->displayID = id;
+        sendGlobalMessage( "你变异了...", inPlayer);
+    }
 }
 
 

@@ -1088,6 +1088,7 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
         rate += 1000;
         setPlayerMutation(id, inPlayer->email, rate);
         inPlayer->displayID = id;
+        sendGlobalMessage( "你变异了...", inPlayer);
     }
 }
 
@@ -1811,7 +1812,7 @@ void parseCommand(LiveObject *player, char *text){
             sendGlobalMessage( "必须拿一个食物", player);
             return;
         }
-        ObjectRecord *o = holdingID
+        ObjectRecord *o = player->holdingID;
         if(o->foodValue == 0) {
             sendGlobalMessage( "必须拿一个食物", player);
             return;
@@ -1819,7 +1820,7 @@ void parseCommand(LiveObject *player, char *text){
 
         int id = o->id;
                 
-        if( inObject->isUseDummy ) {
+        if( o->isUseDummy ) {
             id = o->useDummyParent;
         }
 

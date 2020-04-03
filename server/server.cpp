@@ -1160,7 +1160,7 @@ void handleEatingMutation(LiveObject *inPlayer, ObjectRecord *inObject) {
 
     if(mutate) {
         if(oldRate < 100000) {
-            rate = oldRate + 1000;
+            rate = oldRate + 500;
             setPlayerMutation(id, inPlayer->email, rate);
         }
         inPlayer->displayID = id;

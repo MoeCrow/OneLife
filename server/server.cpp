@@ -1026,6 +1026,7 @@ static SimpleVector<char*> banList;
 static SimpleVector<char*> vipList;
 static SimpleVector<char*> viptprList;
 static SimpleVector<char*> shopPermList;
+static SimpleVector<char*> warpPermList;
 
 
 
@@ -1655,6 +1656,7 @@ void parseCommand(LiveObject *player, char *text){
         readPhrases( "vip", &vipList );
         readPhrases( "viptpr", &viptprList );
         readPhrases( "delshop_perm", &shopPermList );
+        readPhrases( "warp_perm", &warpPermList );
         
         sendGlobalMessage( "重载设置", player);
         return;
@@ -2424,8 +2426,10 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "SETWARP")==0){
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+
         int cir = getCircle(player->xd, player->yd);
-        if((cir < 3 || cir > 6) && !isOp) {
+        if((cir < 3 || cir > 6) && !hasPerm) {
             sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
             return;
         }
@@ -2435,12 +2439,13 @@ void parseCommand(LiveObject *player, char *text){
 			sprintf(s, "需要一个地标名");
 		}
 		else {
-            if(strlen(name) < 6 && !isOp) {
+            if(strlen(name) < 6 && !hasPerm) {
                 sendGlobalMessage( "地标名至少6位", player);
                 return;
             }
             GridPos myPos = { player->xs, player->ys };
 
+            if(!hasPerm)
             for( int i=0; i<residenceSpot.size(); i++ ) {
                 Spot* s = *residenceSpot.getElement(i);
 
@@ -2473,6 +2478,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "DELWARP")==0){
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
 		char s[256], name[64];
 		
 		sscanf(args, "%s", name);
@@ -2480,7 +2486,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);
 		else {
-			if(!isOp && !strcmpUpper(spot->owner, player->email)) {
+			if(!hasPerm && !strcmpUpper(spot->owner, player->email)) {
 				sprintf(s, "这个地标不属于你", name);
 			} else {
 				delSpot(&warpSpot, name);
@@ -16593,6 +16599,7 @@ int main() {
     readPhrases( "vip", &vipList );
     readPhrases( "viptpr", &viptprList );
     readPhrases( "delshop_perm", &shopPermList );
+    readPhrases( "warp_perm", &warpPermList );
 	
 	readSpotList( "warpSpot", &warpSpot);
     readSpotList( "signSpot", &signSpot);

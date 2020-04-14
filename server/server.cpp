@@ -15554,18 +15554,9 @@ static char isAccessBlocked( LiveObject *inPlayer,
 
 
 void sendHungryWorkSpeech( LiveObject *inPlayer ) {
-    // tell player about it with private speech
-    char *message = autoSprintf( 
-        "PS\n"
-        "%d/0 +MORE FOOD+\n#",
-        inPlayer->id );
-    
-    sendMessageToPlayer( 
-        inPlayer, 
-        message, 
-        strlen( message ) );
-    delete [] message;
-    }
+    // tell player about it with global message
+    sendGlobalMessage( "你需要吃饱才能干体力活", inPlayer );
+}
 
 
 

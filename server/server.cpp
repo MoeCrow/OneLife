@@ -25323,7 +25323,9 @@ int main() {
 
                         
                         // if they went far enough and fast enough
-                        if( nextPlayer->holdingFlightObject &&
+                        // TODO disable for now
+                        if( false &&
+                            nextPlayer->holdingFlightObject &&
                             moveSpeed >= minFlightSpeed &&
                             ! nextPlayer->pathTruncated &&
                             nextPlayer->pathLength >= 2 ) {

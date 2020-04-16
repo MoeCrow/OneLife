@@ -8101,7 +8101,9 @@ static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 	sscanf(BonusPos, "BonusYum_%d", &ExtraBonus);
 	if (ExtraBonus > 0) {
 		return ExtraBonus;
+	}
 	else
+	{
 		return 0;
 	}
 }

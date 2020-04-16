@@ -10797,6 +10797,7 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
 	newObject.holdingID = 0;
     newObject.numContained = 0;
     newObject.containedIDs = NULL;
+	newObject.yummyBonusLevel = 0;
 	newObject.subContainedIDs = NULL;
 	newObject.containedEtaDecays = NULL;
     newObject.subContainedEtaDecays = NULL;

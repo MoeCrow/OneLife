@@ -10785,6 +10785,7 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
             getObject( forceSpawnInfo.frontShoeID, true );
         newObject.clothing.backShoe = 
             getObject( forceSpawnInfo.backShoeID, true );
+		newObject.yummyBonusLevel = 0;
 
         delete [] forceSpawnInfo.firstName;
         delete [] forceSpawnInfo.lastName;

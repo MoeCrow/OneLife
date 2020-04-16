@@ -8102,10 +8102,7 @@ static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 	if (ExtraBonus > 0) {
 		return ExtraBonus;
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 

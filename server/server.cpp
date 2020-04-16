@@ -960,6 +960,7 @@ typedef struct LiveObject {
         // how many bonus from yummy food is stored
         // these are used first before food is decremented
         int yummyBonusStore;
+		int yummyBonusLevel;
         
 
         ClothingSet clothing;
@@ -8093,6 +8094,20 @@ static char isYummy( LiveObject *inPlayer, int inObjectID ) {
     return true;
     }
 
+static char getYumBonus(LiveObject *inPlayer, int inObjectID ){
+	ObjectRecord* o = getObject(inObjectID);
+	char* BonusPos = strstr(o->description, "BonusYum_");
+	int ExtraBonus;
+	sscanf(BonusPos, "BonusYum_%f", ExtraBonus);
+	if (ExtraBonus > 0) {
+		return ExtraBonus;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 
 
 static void updateYum( LiveObject *inPlayer, int inFoodEatenID,
@@ -8141,9 +8156,9 @@ static void updateYum( LiveObject *inPlayer, int inFoodEatenID,
         
         // apply foodScaleFactor here to scale value of YUM along with
         // the global scale of other foods.
-        
+		inPlayer->yummyBonusLevel += getYumBonus(inPlayer, inFoodEatenID);
         inPlayer->yummyBonusStore += 
-            ceil( getFoodScaleFactor( inPlayer ) * currentBonus );
+            ceil( getFoodScaleFactor( inPlayer ) * (currentBonus + inPlayer->yummyBonusLevel);
         }
     
     }
@@ -10053,6 +10068,7 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
     newObject.justAteID = 0;
     
     newObject.yummyBonusStore = 0;
+	newObject.yummyBonusLevel = 0;
 
     newObject.clothing = getEmptyClothingSet();
 

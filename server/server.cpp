@@ -8094,7 +8094,7 @@ static char isYummy( LiveObject *inPlayer, int inObjectID ) {
     return true;
     }
 
-static char getYumBonus(LiveObject *inPlayer, int inObjectID ){
+static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 	ObjectRecord* o = getObject(inObjectID);
 	char* BonusPos = strstr(o->description, "BonusYum_");
 	int ExtraBonus;

@@ -8098,7 +8098,7 @@ static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 	ObjectRecord* o = getObject(inObjectID);
 	char* BonusPos = strstr(o->description, "BonusYum_");
 	int ExtraBonus;
-	sscanf(BonusPos, "BonusYum_%f", ExtraBonus);
+	sscanf(BonusPos, "BonusYum_%d", ExtraBonus);
 	if (ExtraBonus > 0) {
 		return ExtraBonus;
 	}
@@ -8158,7 +8158,7 @@ static void updateYum( LiveObject *inPlayer, int inFoodEatenID,
         // the global scale of other foods.
 		inPlayer->yummyBonusLevel += getYumBonus(inPlayer, inFoodEatenID);
         inPlayer->yummyBonusStore += 
-            ceil( getFoodScaleFactor( inPlayer ) * (currentBonus + inPlayer->yummyBonusLevel);
+            ceil( getFoodScaleFactor( inPlayer ) * (currentBonus + inPlayer->yummyBonusLevel));
         }
     
     }

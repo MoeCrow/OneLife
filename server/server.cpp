@@ -28273,7 +28273,7 @@ int main() {
                         nextPlayer->foodStore = cap;
                         }
                     
-                    int yumMult = nextPlayer->yummyFoodChain.size() - 1;
+                    int yumMult = nextPlayer->yummyFoodChain.size() - 1 + nextPlayer->yummyBonusLevel ;
                     
                     if( yumMult < 0 ) {
                         yumMult = 0;

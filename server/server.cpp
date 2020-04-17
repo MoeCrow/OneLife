@@ -8097,10 +8097,12 @@ static char isYummy( LiveObject *inPlayer, int inObjectID ) {
 static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 	ObjectRecord* o = getObject(inObjectID);
 	char* BonusPos = strstr(o->description, "BonusYum_");
-	int ExtraBonus;
-	sscanf(BonusPos, "BonusYum_%d", &ExtraBonus);
-	if (ExtraBonus > 0) {
-		return ExtraBonus;
+	if (BonusPos != NULL){
+		int ExtraBonus;
+		sscanf(BonusPos, "BonusYum_%d", &ExtraBonus);
+		if (ExtraBonus > 0) {
+			return ExtraBonus;
+		}
 	}
 	return 0;
 }

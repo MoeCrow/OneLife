@@ -8171,8 +8171,8 @@ static void updateYum( LiveObject *inPlayer, int inFoodEatenID,
         // apply foodScaleFactor here to scale value of YUM along with
         // the global scale of other foods.
 		if (isBonus(inPlayer,inFoodEatenID)) {
+			inPlayer->yummyBonusChain.push_back(inFoodEatenID);
 			inPlayer->yummyBonusLevel += getYumBonus(inPlayer, inFoodEatenID);
-			inPlayer->yummyFoodChain.push_back(inFoodEatenID);
 		}
         inPlayer->yummyBonusStore += 
             ceil( getFoodScaleFactor( inPlayer ) * (currentBonus + inPlayer->yummyBonusLevel));

@@ -956,6 +956,7 @@ typedef struct LiveObject {
         
         // chain of non-repeating foods eaten
         SimpleVector<int> yummyFoodChain;
+		SimpleVector<int> yummyBonusChain;
         
         // how many bonus from yummy food is stored
         // these are used first before food is decremented
@@ -8094,6 +8095,20 @@ static char isYummy( LiveObject *inPlayer, int inObjectID ) {
     return true;
     }
 
+static char isBonus(LiveObject* inPlayer, int inObjectID) {
+	ObjectRecord* o = getObject(inObjectID);
+	if (o->isUseDummy) {
+		inObjectID = o->useDummyParent;
+		o = getObject(inObjectID);
+	}
+	for (int i = 0; i < inPlayer->yummyBonusChain.size(); i++) {
+		if (inObjectID == inPlayer->yummyBonusChain.getElementDirect(i)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 	ObjectRecord* o = getObject(inObjectID);
 	char* BonusPos = strstr(o->description, "BonusYum_");
@@ -8101,6 +8116,7 @@ static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 		int ExtraBonus;
 		sscanf(BonusPos, "BonusYum_%d", &ExtraBonus);
 		if (ExtraBonus > 0) {
+			inPlayer->yummyFoodChain.push_back(inObjectID);
 			return ExtraBonus;
 		}
 	}
@@ -8155,7 +8171,9 @@ static void updateYum( LiveObject *inPlayer, int inFoodEatenID,
         
         // apply foodScaleFactor here to scale value of YUM along with
         // the global scale of other foods.
-		inPlayer->yummyBonusLevel += getYumBonus(inPlayer, inFoodEatenID);
+		if (isBonus(inPlayer,inFoodEatenID) {
+			inPlayer->yummyBonusLevel += getYumBonus(inPlayer, inFoodEatenID);
+		}
         inPlayer->yummyBonusStore += 
             ceil( getFoodScaleFactor( inPlayer ) * (currentBonus + inPlayer->yummyBonusLevel));
         }

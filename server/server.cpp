@@ -8116,7 +8116,6 @@ static int getYumBonus(LiveObject *inPlayer, int inObjectID ){
 		int ExtraBonus;
 		sscanf(BonusPos, "BonusYum_%d", &ExtraBonus);
 		if (ExtraBonus > 0) {
-			inPlayer->yummyFoodChain.push_back(inObjectID);
 			return ExtraBonus;
 		}
 	}
@@ -8173,6 +8172,7 @@ static void updateYum( LiveObject *inPlayer, int inFoodEatenID,
         // the global scale of other foods.
 		if (isBonus(inPlayer,inFoodEatenID)) {
 			inPlayer->yummyBonusLevel += getYumBonus(inPlayer, inFoodEatenID);
+			inPlayer->yummyFoodChain.push_back(inFoodEatenID);
 		}
         inPlayer->yummyBonusStore += 
             ceil( getFoodScaleFactor( inPlayer ) * (currentBonus + inPlayer->yummyBonusLevel));

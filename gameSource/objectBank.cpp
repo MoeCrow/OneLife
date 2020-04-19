@@ -614,7 +614,7 @@ static void setupTapout( ObjectRecord *inR ) {
 
 			tapoutRecords.push_back(r);
 		}
-		return
+		return;
 	}
 
 	inR->isTapOutTrigger = false;

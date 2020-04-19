@@ -1860,8 +1860,8 @@ void initObjectBankFinish() {
                         dummyO->thisUseDummyIndex = d - 1;
 
 						if (dummyO->isTapOutTrigger) {
-							TapoutRecord *r;
-							TapoutRecord *r1 = getTapoutRecord(mainID);
+							TapoutRecord r;
+							TapoutRecord r1 = *getTapoutRecord(mainID);
 
 							r.triggerID = dummyID;
 							r.gridSpacingX = r1.gridSpacingX;

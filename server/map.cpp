@@ -7474,19 +7474,6 @@ static void runTapoutOperation( int inX, int inY,
                     newTarget = t->newTarget;
                     }
                 }
-
-            if( newTarget != -1 ) {
-                if( inPlayerHasHomeland ) {
-                    // block creation of objects that require +primaryHomeland
-                    // player already has a homeland
-                    ObjectRecord *nt = getObject( newTarget );
-                    
-                    if( strstr( nt->description, 
-                                "+primaryHomeland" ) != NULL ) {
-                        newTarget = -1;
-                        }
-                    }
-                }
             
             if( newTarget != -1 ) {
                 setMapObjectRaw( x, y, newTarget );

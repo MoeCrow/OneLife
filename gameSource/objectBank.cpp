@@ -1860,8 +1860,8 @@ void initObjectBankFinish() {
                         dummyO->thisUseDummyIndex = d - 1;
 
 						if (dummyO->isTapOutTrigger) {
-							TapoutRecord *r;
-							TapoutRecord *r1 = getTapoutRecord(mainID);
+							TapoutRecord r;
+							TapoutRecord r1 = getTapoutRecord(mainID);
 
 							r.triggerID = dummyID;
 							r.gridSpacingX = r1.gridSpacingX;
@@ -2774,6 +2774,7 @@ int reAddObject( ObjectRecord *inObject,
 
     int id = addObject( desc,
                         inObject->containable,
+						inObject->isTapOutTrigger,
                         inObject->containSize,
                         inObject->vertContainRotationOffset,
                         inObject->permanent,
@@ -2842,7 +2843,6 @@ int reAddObject( ObjectRecord *inObject,
                         inObject->spriteUseVanish,
                         inObject->spriteUseAppear,
                         inNoWriteToFile,
-						inObject->isTapOutTrigger,
                         inReplaceID );
 
     delete [] biomeString;
@@ -3124,7 +3124,6 @@ int addObject( const char *inDescription,
                char *inSpriteUseVanish,
                char *inSpriteUseAppear,
                char inNoWriteToFile,
-			   char inisTapoutTrigger,
                int inReplaceID ) {
     
     if( inSlotTimeStretch < 0.0001 ) {
@@ -3490,7 +3489,6 @@ int addObject( const char *inDescription,
     
     r->id = newID;
     r->description = stringDuplicate( inDescription );
-	r->isTapOutTrigger = inisTapoutTrigger;
 
     r->containable = inContainable;
     r->containSize = inContainSize;

@@ -597,6 +597,11 @@ static void setupWall( ObjectRecord *inR ) {
 static void setupTapout( ObjectRecord *inR ) {
     inR->isTapOutTrigger = false;
     
+    if( inR->isUseDummy || inR->isVariableDummy ) {
+        // only parent object counts tapouts
+        return;
+        }
+    
 
     char *triggerPos = strstr( inR->description, "+tapoutTrigger" );
                 

@@ -21080,6 +21080,8 @@ int main() {
                                             sprintf(s, "你兑换了餐券，获得 %d 食物溢出点", (int)cqM);
                                             sendGlobalMessage( s, nextPlayer);
                                             delete [] chequeStr;
+
+                                            savePlayerStatus(nextPlayer);
                                             continue;
                                         }
                                     }
@@ -21090,6 +21092,8 @@ int main() {
                             char s[256];
                             sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
                             sendGlobalMessage( s, nextPlayer);
+
+                            savePlayerStatus(nextPlayer);
                             continue;
                         }
 

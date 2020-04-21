@@ -597,23 +597,7 @@ static void setupWall( ObjectRecord *inR ) {
 static void setupTapout( ObjectRecord *inR ) {
 	if (inR->isUseDummy || inR->isVariableDummy) {
 		// only parent object counts tapouts
-		if (inR->isTapOutTrigger) {
-			TapoutRecord r;
-			TapoutRecord r1 = *getTapoutRecord(inR->useDummyParent);
-
-			r.triggerID = inR->id;
-			r.gridSpacingX = r1.gridSpacingX;
-			r.gridSpacingY = r1.gridSpacingY;
-			r.limitX = r1.limitX;
-			r.limitY = r1.limitY;
-
-			r.buildCountLimit = r1.buildCountLimit;
-			r.buildCount = 0;
-			r.postBuildLimitX = r1.postBuildLimitX;
-			r.postBuildLimitY = r1.postBuildLimitY;
-
-			tapoutRecords.push_back(r);
-		}
+		return;
 	}
 
 	inR->isTapOutTrigger = false;
@@ -1875,7 +1859,23 @@ void initObjectBankFinish() {
                         dummyO->useDummyParent = mainID;
                         dummyO->thisUseDummyIndex = d - 1;
 
+						if (dummyO->isTapOutTrigger) {
+							TapoutRecord r;
+							TapoutRecord r1 = *getTapoutRecord(mainID);
 
+							r.triggerID = dummyID;
+							r.gridSpacingX = r1.gridSpacingX;
+							r.gridSpacingY = r1.gridSpacingY;
+							r.limitX = r1.limitX;
+							r.limitY = r1.limitY;
+
+							r.buildCountLimit = r1.buildCountLimit;
+							r.buildCount = 0;
+							r.postBuildLimitX = r1.postBuildLimitX;
+							r.postBuildLimitY = r1.postBuildLimitY;
+
+							tapoutRecords.push_back(r);
+						}
                         
                         if( o->creationSoundInitialOnly && d != 1 ) {
                             // only keep creation sound for last dummy

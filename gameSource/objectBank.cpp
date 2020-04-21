@@ -598,26 +598,23 @@ static void setupTapout( ObjectRecord *inR ) {
 	if (inR->isUseDummy || inR->isVariableDummy) {
 		// only parent object counts tapouts
 		if (inR->isTapOutTrigger) {
-			int MainID = inR->useDummyParent;
-			if (MainID != 0) {
-				TapoutRecord r;
-				TapoutRecord r1 = *getTapoutRecord();
+			TapoutRecord r;
+			TapoutRecord r1 = *getTapoutRecord(inR->useDummyParent);
 
-				r.triggerID = inR->id;
-				r.gridSpacingX = r1.gridSpacingX;
-				r.gridSpacingY = r1.gridSpacingY;
-				r.limitX = r1.limitX;
-				r.limitY = r1.limitY;
+			r.triggerID = inR->id;
+			r.gridSpacingX = r1.gridSpacingX;
+			r.gridSpacingY = r1.gridSpacingY;
+			r.limitX = r1.limitX;
+			r.limitY = r1.limitY;
 
-				r.buildCountLimit = r1.buildCountLimit;
-				r.buildCount = 0;
-				r.postBuildLimitX = r1.postBuildLimitX;
-				r.postBuildLimitY = r1.postBuildLimitY;
+			r.buildCountLimit = r1.buildCountLimit;
+			r.buildCount = 0;
+			r.postBuildLimitX = r1.postBuildLimitX;
+			r.postBuildLimitY = r1.postBuildLimitY;
 
-				tapoutRecords.push_back(r);
-			}
-			
+			tapoutRecords.push_back(r);
 		}
+		return;
 	}
 
 	inR->isTapOutTrigger = false;

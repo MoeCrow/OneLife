@@ -594,7 +594,6 @@ int addObject( const char *inDescription,
                float inUseChance,
                char *inSpriteUseVanish,
                char *inSpriteUseAppear,
-			   char inTapoutTrigger,
                char inNoWriteToFile = false,
                int inReplaceID = -1 );
 

@@ -3124,7 +3124,7 @@ int addObject( const char *inDescription,
                char *inSpriteUseVanish,
                char *inSpriteUseAppear,
                char inNoWriteToFile,
-			   char inisTapoutTrigger,
+			   char *inisTapoutTrigger,
                int inReplaceID ) {
     
     if( inSlotTimeStretch < 0.0001 ) {

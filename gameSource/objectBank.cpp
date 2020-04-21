@@ -601,7 +601,7 @@ static void setupTapout( ObjectRecord *inR ) {
 			int MainID = inR->useDummyParent;
 			if (MainID != 0) {
 				TapoutRecord r;
-				TapoutRecord r1 = *getTapoutRecord(MainID);
+				TapoutRecord r1 = *getTapoutRecord();
 
 				r.triggerID = inR->id;
 				r.gridSpacingX = r1.gridSpacingX;

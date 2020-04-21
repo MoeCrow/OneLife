@@ -595,12 +595,7 @@ static void setupWall( ObjectRecord *inR ) {
 
 
 static void setupTapout( ObjectRecord *inR ) {
-	if (inR->isUseDummy || inR->isVariableDummy) {
-		// only parent object counts tapouts
-		return;
-	}
-
-	inR->isTapOutTrigger = false;
+    inR->isTapOutTrigger = false;
     
 
     char *triggerPos = strstr( inR->description, "+tapoutTrigger" );
@@ -1858,24 +1853,6 @@ void initObjectBankFinish() {
                         dummyO->isUseDummy = true;
                         dummyO->useDummyParent = mainID;
                         dummyO->thisUseDummyIndex = d - 1;
-
-						if (dummyO->isTapOutTrigger) {
-							TapoutRecord r;
-							TapoutRecord r1 = getTapoutRecord(mainID);
-
-							r.triggerID = dummyID;
-							r.gridSpacingX = r1.gridSpacingX;
-							r.gridSpacingY = r1.gridSpacingY;
-							r.limitX = r1.limitX;
-							r.limitY = r1.limitY;
-
-							r.buildCountLimit = r1.buildCountLimit;
-							r.buildCount = 0;
-							r.postBuildLimitX = r1.postBuildLimitX;
-							r.postBuildLimitY = r1.postBuildLimitY;
-
-							tapoutRecords.push_back(r);
-						}
                         
                         if( o->creationSoundInitialOnly && d != 1 ) {
                             // only keep creation sound for last dummy
@@ -2774,7 +2751,6 @@ int reAddObject( ObjectRecord *inObject,
 
     int id = addObject( desc,
                         inObject->containable,
-						inObject->isTapOutTrigger,
                         inObject->containSize,
                         inObject->vertContainRotationOffset,
                         inObject->permanent,

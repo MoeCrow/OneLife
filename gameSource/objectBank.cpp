@@ -2841,8 +2841,8 @@ int reAddObject( ObjectRecord *inObject,
                         inObject->useChance,
                         inObject->spriteUseVanish,
                         inObject->spriteUseAppear,
-						inObject->isTapOutTrigger,
                         inNoWriteToFile,
+						inObject->isTapOutTrigger,
                         inReplaceID );
 
     delete [] biomeString;
@@ -3123,8 +3123,8 @@ int addObject( const char *inDescription,
                float inUseChance,
                char *inSpriteUseVanish,
                char *inSpriteUseAppear,
-			   char inTapoutTrigger,
                char inNoWriteToFile,
+			   char inisTapoutTrigger,
                int inReplaceID ) {
     
     if( inSlotTimeStretch < 0.0001 ) {
@@ -3490,7 +3490,7 @@ int addObject( const char *inDescription,
     
     r->id = newID;
     r->description = stringDuplicate( inDescription );
-	r->isTapOutTrigger = inTapoutTrigger;
+	r->isTapOutTrigger = inisTapoutTrigger;
 
     r->containable = inContainable;
     r->containSize = inContainSize;

@@ -1418,7 +1418,7 @@ static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 	return true;
 }
 
-void createShop(int x, int y, LiveObject *player) {
+void createShop(char *args, int x, int y, LiveObject *player) {
     char s[256];
     char shopType;
     float price;
@@ -2153,7 +2153,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "SHOP")==0){
-		createShop(player->xs, player->ys - 1, player);
+		createShop(args, player->xs, player->ys - 1, player);
 		return;
 	}
 	

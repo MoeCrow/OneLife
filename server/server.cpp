@@ -2506,6 +2506,11 @@ void parseCommand(LiveObject *player, char *text){
                     homeSpot.deleteElement(i);
                     i--;
                     countS++;
+
+                    delete [] s->name;
+                    if(s->owner != NULL)
+                        delete [] s->owner;
+                    delete s;
                 }
             }
 
@@ -2517,6 +2522,11 @@ void parseCommand(LiveObject *player, char *text){
                     warpSpot.deleteElement(i);
                     i--;
                     countS++;
+
+                    delete [] s->name;
+                    if(s->owner != NULL)
+                        delete [] s->owner;
+                    delete s;
                 }
             }
 

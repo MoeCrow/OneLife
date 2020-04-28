@@ -1418,6 +1418,53 @@ static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
 	return true;
 }
 
+void createShop(int x, int y, LiveObject *player) {
+    char s[256];
+    char shopType;
+    float price;
+    int data = 0;
+    int snum = sscanf(args, "%d %f %d", &shopType, &price, &data);
+    if( snum < 2) {
+        sprintf(s, "至少需要2个参数，比如打 .SHOP 0 1.5");
+    } else {
+        
+
+        if(price < 0) {
+            sprintf(s, "价格必须为正");
+        } else {
+            char tEmail[50];
+            
+
+            int target = getMapObject( x, y );
+
+            if(getShop(x, y, tEmail, &shopType, &price, &data)){
+                sprintf(s, "(%d,%d)的商店存在", x, y);
+            } else {
+                if ( shopType < 0 || shopType > 4 ) {
+                    sprintf(s, "类型错误，必须在0~4之间");
+                } else {
+                    if(shopType == 3) {
+                        if(snum < 3) {
+                            sendGlobalMessage( "收购商店需要3个参数，比如收购碗 .SHOP 3 1.5 235", player);
+                            return;
+                        }
+
+                        ObjectRecord *o = getObject( data );
+                        if( o == NULL && data != 0) {
+                            sendGlobalMessage( "你不能收购不存在的物体", player);
+                            return;
+                        }
+                    }
+
+                    setShop(x, y, player->email, shopType, price, data);
+                    sprintf(s, "商店已成功创建在 %d %d ！", x, y);
+                }
+            }
+        }
+    }
+    sendGlobalMessage( s, player);
+}
+
 
 inline int max(int x, int y){return x>y?x:y;}
 inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
@@ -2106,51 +2153,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "SHOP")==0){
-		char s[256];
-		char shopType;
-		float price;
-        int data = 0;
-        int snum = sscanf(args, "%d %f %d", &shopType, &price, &data);
-		if( snum < 2) {
-			sprintf(s, "至少需要2个参数，比如打 .SHOP 0 1.5");
-		} else {
-            
-
-			if(price < 0) {
-				sprintf(s, "价格必须为正");
-			} else {
-				char tEmail[50];
-				x = player->xs;
-				y = player->ys - 1;
-
-                int target = getMapObject( x, y );
-
-				if(getShop(x, y, tEmail, &shopType, &price, &data)){
-					sprintf(s, "(%d,%d)的商店存在", x, y);
-				} else {
-					if ( shopType < 0 || shopType > 4 ) {
-						sprintf(s, "类型错误，必须在0~4之间");
-					} else {
-                        if(shopType == 3) {
-                            if(snum < 3) {
-                                sendGlobalMessage( "收购商店需要3个参数，比如收购碗 .SHOP 3 1.5 235", player);
-                                return;
-                            }
-
-                            ObjectRecord *o = getObject( data );
-                            if( o == NULL && data != 0) {
-                                sendGlobalMessage( "你不能收购不存在的物体", player);
-                                return;
-                            }
-                        }
-
-						setShop(x, y, player->email, shopType, price, data);
-						sprintf(s, "商店已成功创建在 %d %d ！", x, y);
-					}
-				}
-			}
-		}
-		sendGlobalMessage( s, player);
+		createShop(player->xs, player->ys - 1, player);
 		return;
 	}
 	

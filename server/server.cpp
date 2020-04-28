@@ -2520,6 +2520,11 @@ void parseCommand(LiveObject *player, char *text){
                 }
             }
 
+            if(countS > 0) {
+                writeSpotList("homeSpot", &homeSpot);
+                writeSpotList("warpSpot", &warpSpot);
+            }
+
             char s[256];
             sprintf(s, "清空 %d 个坐标", countS);
             sendGlobalMessage( s, player);

@@ -2017,7 +2017,7 @@ void parseCommand(LiveObject *player, char *text){
         if(sscanf(args, "%d", &range)==0)
             range = 50;
 
-        if(range > 100)
+        if( !isOp && range > 100)
             range = 100;
 
         GridPos myPos = { player->xs, player->ys };      
@@ -2490,6 +2490,41 @@ void parseCommand(LiveObject *player, char *text){
         }
         sendGlobalMessage( s, player);
         return;
+    }
+
+    if(strcmp(cmd, "PURGE")==0){
+        int countS = 0;
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+        if(hasPerm){
+            GridPos myPos = { player->xs, player->ys };      
+
+            for( int i=0; i<homeSpot.size(); i++ ) {
+                Spot* s = *homeSpot.getElement(i);
+
+                GridPos nowPos = {s->x, s->y};
+                if(distance(myPos, nowPos) < 1){
+                    homeSpot.deleteElement(i);
+                    i--;
+                    countS++;
+                }
+            }
+
+            for( int i=0; i<warpSpot.size(); i++ ) {
+                Spot* s = *warpSpot.getElement(i);
+
+                GridPos nowPos = {s->x, s->y};
+                if(distance(myPos, nowPos) < 1){
+                    warpSpot.deleteElement(i);
+                    i--;
+                    countS++;
+                }
+            }
+
+            char s[256];
+            sprintf(s, "清空 %d 个坐标", countS);
+            sendGlobalMessage( s, player);
+            return;
+        }        
     }
 	
 	if(strcmp(cmd, "DELWARP")==0){

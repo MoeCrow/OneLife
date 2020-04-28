@@ -2152,10 +2152,32 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 	
-	if(strcmp(cmd, "SHOP")==0){
+	if(strcmp(cmd, "SHOP")==0 || strcmp(cmd, "SHOPS")==0){
 		createShop(args, player->xs, player->ys - 1, player);
 		return;
 	}
+
+    if(strcmp(cmd, "SHOPN")==0){
+        createShop(args, player->xs, player->ys + 1, player);
+        return;
+    }
+
+    if(strcmp(cmd, "SHOPW")==0){
+        createShop(args, player->xs - 1, player->ys, player);
+        return;
+    }
+
+    if(strcmp(cmd, "SHOPE")==0){
+        createShop(args, player->xs + 1, player->ys, player);
+        return;
+    }
+
+    if(strcmp(cmd, "SHOPH")==0){
+        createShop(args, player->xs, player->ys, player);
+        return;
+    }
+
+
 	
 	if(strcmp(cmd, "DELSHOP")==0){
         bool hasPerm = isOp || isEmailInList(&shopPermList, player->email);

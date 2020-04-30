@@ -21195,17 +21195,22 @@ int main() {
                         if(checkTarget >= 2959 && checkTarget <= 2961) {
                             ObjectRecord *holdO = getObject( nextPlayer->holdingID );
                             if(holdO != NULL && strstr( holdO->description,"+unclaimwand" ) != NULL) {
-                                GridPos myPos = { m.x, m.y };   
+                                GridPos myPos = { m.x, m.y };
+
+                                bool errorFlag = false;
                                 for( int i=0; i<residenceSpot.size(); i++ ) {
                                     Spot* s = *residenceSpot.getElement(i);
 
                                     GridPos nowPos = {s->x, s->y};
                                     if(getSquareDistance(myPos, nowPos) <= 50){
                                         sendGlobalMessage( "半径50格内有激活的领地石，拆除失败", nextPlayer);
-                                        continue;
+                                        errorFlag = true;
+                                        break;
                                     }
                                 }
 
+                                if(errorFlag)
+                                    continue;
                                 setMapObject( m.x, m.y, 0 );
                                 sendGlobalMessage( "拆除成功", nextPlayer);
                                 continue;

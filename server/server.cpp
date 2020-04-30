@@ -21201,13 +21201,13 @@ int main() {
 
                                     GridPos nowPos = {s->x, s->y};
                                     if(getSquareDistance(myPos, nowPos) <= 50){
-                                        sendGlobalMessage( "半径50格内有激活的领地石，拆除失败", player);
+                                        sendGlobalMessage( "半径50格内有激活的领地石，拆除失败", nextPlayer);
                                         continue;
                                     }
                                 }
 
                                 setMapObject( m.x, m.y, 0 );
-                                sendGlobalMessage( "拆除成功", player);
+                                sendGlobalMessage( "拆除成功", nextPlayer);
                                 continue;
                             }
                         }

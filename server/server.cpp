@@ -21194,6 +21194,19 @@ int main() {
 
                         if(checkTarget != 0 && strstr( getObject( checkTarget )->description,"+residence" ) != NULL) {
                             Spot* spot = findSpotByXY(&residenceSpot, m.x, m.y);
+
+                            ObjectRecord *holdO = getObject( nextPlayer->holdingID );
+                            if(holdO != NULL && strstr( holdO->description,"+unclaimwand" ) != NULL) {
+                                if(spot != NULL) {
+                                    delSpotByXY(&residenceSpot, m.x, m.y);
+                                    writeSpotList("residenceSpot", &residenceSpot);
+                                }
+
+                                setMapObject( m.x, m.y, 2685 );
+                                sendGlobalMessage( "领地石已拆除", nextPlayer);
+                                continue;
+                            }
+
                             if(spot == NULL) {
                                 Spot *spot = new Spot();
                                 spot->name = new char[256];

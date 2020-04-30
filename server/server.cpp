@@ -1465,6 +1465,26 @@ void createShop(char *args, int x, int y, LiveObject *player) {
     sendGlobalMessage( s, player);
 }
 
+void deleteShop(bool isOp, int x, int y, LiveObject *player) {
+    bool hasPerm = isOp || isEmailInList(&shopPermList, player->email);
+    char s[256];
+    char tEmail[50];
+    char shopType;
+    float price;
+    int data;
+    if(getShop(x, y, tEmail, &shopType, &price, &data)){
+        if(hasPerm || strcmp(player->email, tEmail) == 0) {
+            delShop(x, y);
+            sprintf(s, "成功删除商店");
+        } else {
+            sprintf(s, "这个商店不属于你");
+        }
+    } else {
+        sprintf(s, "这里没有商店");
+    }
+    sendGlobalMessage( s, player);
+}
+
 
 inline int max(int x, int y){return x>y?x:y;}
 inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
@@ -2176,31 +2196,31 @@ void parseCommand(LiveObject *player, char *text){
         createShop(args, player->xs, player->ys, player);
         return;
     }
-
-
 	
 	if(strcmp(cmd, "DELSHOP")==0){
-        bool hasPerm = isOp || isEmailInList(&shopPermList, player->email);
-		char s[256];
-		char tEmail[50];
-		char shopType;
-		float price;
-        int data;
-		x = player->xs;
-		y = player->ys - 1;
-		if(getShop(x, y, tEmail, &shopType, &price, &data)){
-			if(strcmp(player->email, tEmail) == 0 || hasPerm) {
-				delShop(x, y);
-				sprintf(s, "成功删除商店");
-			} else {
-				sprintf(s, "这个商店不属于你");
-			}
-		} else {
-			sprintf(s, "这里没有商店");
-		}
-		sendGlobalMessage( s, player);
+        deleteShop(isOp, player->xs, player->ys - 1, player);
 		return;
 	}
+
+    if(strcmp(cmd, "DELSHOPN")==0){
+        deleteShop(isOp, player->xs, player->ys + 1, player);
+        return;
+    }
+
+    if(strcmp(cmd, "DELSHOPW")==0){
+        deleteShop(isOp, player->xs - 1, player->ys, player);
+        return;
+    }
+
+    if(strcmp(cmd, "DELSHOPE")==0){
+        deleteShop(isOp, player->xs + 1, player->ys, player);
+        return;
+    }
+
+    if(strcmp(cmd, "DELSHOPH")==0){
+        deleteShop(isOp, player->xs, player->ys, player);
+        return;
+    }
 	
 	if(strcmp(cmd, "LOCK")==0){
 		if(!isOp){

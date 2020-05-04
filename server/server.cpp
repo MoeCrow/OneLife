@@ -21227,7 +21227,7 @@ int main() {
                                     writeSpotList("residenceSpot", &residenceSpot);
                                 }
 
-                                setMapObject( m.x, m.y, 2685 );
+                                setMapObject( m.x, m.y, 0 );
                                 sendGlobalMessage( "领地石已拆除", nextPlayer);
                                 continue;
                             }

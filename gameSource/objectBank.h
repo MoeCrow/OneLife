@@ -431,6 +431,9 @@ typedef struct ObjectRecord {
         
         // is this an expert-find object?
         char expertFind;
+
+		int yumParentID;
+
         
     } ObjectRecord;
 

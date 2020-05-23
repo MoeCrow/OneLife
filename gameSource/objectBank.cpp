@@ -774,6 +774,16 @@ int getMaxSpeechPipeIndex() {
     return maxSpeechPipeIndex;
     }
 
+static void setupYumParent(ObjectRecord* inR) {
+	inR->yumParentID = -1;
+
+	char* pos = strstr(inR->description, "+yum");
+
+	if (pos != NULL) {
+		sscanf(pos, "+yum%d", &(inR->yumParentID));
+	}
+}
+
 
 
 float initObjectBankStep() {
@@ -844,6 +854,7 @@ float initObjectBankStep() {
                 
                 setupExpertFind( r );
 
+				setupYumParent(r);
 
                 // do this later, after we parse floorHugging
                 // setupWall( r );
@@ -3686,6 +3697,8 @@ int addObject( const char *inDescription,
     setupExpertFind( r );
 
     setupWall( r );
+
+	setupYumParent( r );
 
     setupBlocksMoving( r );
     

@@ -2250,6 +2250,11 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "FOOD")==0){
         char s[256];
+        if(1==1) {
+            sprintf(s, "暂时不可用!");
+            sendGlobalMessage( s, player);
+            return;
+        }
         int num;
         int yum = player->yummyBonusStore;
         if(player->holdingID != 1619) {
@@ -2287,6 +2292,11 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "CHQ")==0){
 		char s[256];
+        if(1==1) {
+            sprintf(s, "暂时不可用!");
+            sendGlobalMessage( s, player);
+            return;
+        }
 		float num;
 		float money = getPlayerMoney(player->email);
 		if(player->holdingID != 1619) {
@@ -2447,6 +2457,11 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SIGN")==0){
         char name[64], c[64], s[256];
+        if(1==1) {
+            sprintf(s, "暂时不可用!");
+            sendGlobalMessage( s, player);
+            return;
+        }
 
         if(player->holdingID != 1619) {
             sprintf(s, "[防伪签名]你必须拿着一张白纸，没有笔的那种!");

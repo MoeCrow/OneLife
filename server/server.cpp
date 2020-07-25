@@ -23205,9 +23205,9 @@ int main() {
                                 // we could put on
                                 else if( obj->clothing != 'n' &&
                                          ( targetPlayer == nextPlayer
-                                           || 
+                                           || false/*
                                            computeAge( targetPlayer ) < 
-                                           babyAge) ) {
+                                           babyAge)*/ ) {
                                     
                                     // wearable, dress self or baby
                                     

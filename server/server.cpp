@@ -23207,7 +23207,7 @@ int main() {
                                          ( targetPlayer == nextPlayer
                                            || false/*
                                            computeAge( targetPlayer ) < 
-                                           babyAge)*/ ) {
+                                           babyAge*/) ) {
                                     
                                     // wearable, dress self or baby
                                     

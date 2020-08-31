@@ -23484,6 +23484,12 @@ int main() {
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
 						
+                        if( canDrop &&
+                                         m.c >= 0 && 
+                                         m.c < NUM_CLOTHING_PIECES &&
+                                         m.x == nextPlayer->xd &&
+                                         m.y == nextPlayer->yd  &&
+                                         nextPlayer->holdingID > 0 ) {} else
 						{
 							char email[50];
 							char type;

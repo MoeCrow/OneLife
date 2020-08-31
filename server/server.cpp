@@ -23484,6 +23484,14 @@ int main() {
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
 						
+                        char canDrop = true;
+                        
+                        if( nextPlayer->holdingID > 0 &&
+                            getObject( nextPlayer->holdingID )->permanent ) {
+                            canDrop = false;
+                        }
+
+
                         if( canDrop &&
                                          m.c >= 0 && 
                                          m.c < NUM_CLOTHING_PIECES &&
@@ -23510,12 +23518,7 @@ int main() {
                             }
 						}
 
-                        char canDrop = true;
                         
-                        if( nextPlayer->holdingID > 0 &&
-                            getObject( nextPlayer->holdingID )->permanent ) {
-                            canDrop = false;
-                            }
 
                         int target = getMapObject( m.x, m.y );
                         

@@ -11050,7 +11050,7 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
             //
             unsigned char metaData[ MAP_METADATA_LENGTH ];
             char paperStr[50];
-            sprintf(paperStr, "欢迎你加入服务器! QQ群:762642715");
+            sprintf(paperStr, "欢迎加入服务器!请前往6环马车跑图30分钟以上的地方定居，并围好家激活领地石");
             int len = strlen( paperStr );
             
             memset( metaData, 0, MAP_METADATA_LENGTH );

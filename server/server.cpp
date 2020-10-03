@@ -1424,14 +1424,18 @@ void createShop(char *args, int x, int y, LiveObject *player) {
     float price;
     int data = 0;
     int snum = sscanf(args, "%d %f %d", &shopType, &price, &data);
-    if( snum < 2) {
+    if( snum < 2 && shopType != 5) {
         sprintf(s, "至少需要2个参数，比如打 .SHOP 0 1.5");
     } else {
         
 
-        if(price < 0) {
+        if(price < 0 && shopType != 5) {
             sprintf(s, "价格必须为正");
         } else {
+            if(shopType == 5) {
+                price = -1f;
+            }
+
             char tEmail[50];
             
 
@@ -1440,8 +1444,8 @@ void createShop(char *args, int x, int y, LiveObject *player) {
             if(getShop(x, y, tEmail, &shopType, &price, &data)){
                 sprintf(s, "(%d,%d)的商店存在", x, y);
             } else {
-                if ( shopType < 0 || shopType > 4 ) {
-                    sprintf(s, "类型错误，必须在0~4之间");
+                if ( shopType < 0 || shopType > 5 ) {
+                    sprintf(s, "类型错误，必须在0~5之间");
                 } else {
                     if(shopType == 3) {
                         if(snum < 3) {
@@ -2072,8 +2076,7 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
         
-    }
-    
+    }    
 
 
     if(strcmp(cmd, "SPOT")==0) {
@@ -21160,6 +21163,15 @@ int main() {
                                                 continue;
                                             }
                                         }
+
+                                        if(type == 5) {
+                                            //record log
+                                            recordBoughtObject = true;
+                                            currentPrice = -999;
+                                            currentSeller = email;
+                                            currentBuyer = nextPlayer->email;
+                                            currentType = type;
+                                        }
                                     }
     								
 								} else {
@@ -23900,6 +23912,15 @@ int main() {
 							if(getShop(m.x, m.y, email, &type, &price, &data) && ! accessBlocked) {
 								char s[256];
 								if(strcmp(email, nextPlayer->email)!=0) {
+                                    if(type == 5) {
+                                        //record log
+                                        recordBoughtObject = true;
+                                        currentPrice = -999;
+                                        currentSeller = email;
+                                        currentBuyer = nextPlayer->email;
+                                        currentType = type;
+                                    }
+
                                     if(type == 3) {
                                         char s[256];
                                         sprintf(s, "[商店]别人的收购商店 收购物:%d 价格:%.2f", data, price);

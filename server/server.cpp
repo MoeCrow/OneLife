@@ -24012,9 +24012,18 @@ int main() {
 											continue;
 										}
 									} else {
-										sprintf(s, "[商店]别人的使用商店 价格:%.2f", price);
-										sendGlobalMessage(s, nextPlayer);
-										continue;
+                                        if(type == 5) {
+                                            //record log
+                                            recordBoughtObject = true;
+                                            currentPrice = -999;
+                                            currentSeller = email;
+                                            currentBuyer = nextPlayer->email;
+                                            currentType = type;
+                                        } else {
+                                            sprintf(s, "[商店]别人的使用商店 价格:%.2f", price);
+                                            sendGlobalMessage(s, nextPlayer);
+                                            continue;
+                                        }
 									}
 								} else {
                                     if(type == 5)

@@ -1433,7 +1433,7 @@ void createShop(char *args, int x, int y, LiveObject *player) {
             sprintf(s, "价格必须为正");
         } else {
             if(shopType == 5) {
-                price = -1f;
+                price = -1.f;
             }
 
             char tEmail[50];

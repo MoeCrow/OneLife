@@ -21176,6 +21176,9 @@ int main() {
     								
 								} else {
 									char s[256];
+                                    if(type == 5)
+                                        sprintf(s, "[商店]你的诱饵");
+                                    else
                                     if(type == 3)
 								        sprintf(s, "[商店]你的收购商店 收购物:%d 价格:%.2f", data, price);
                                     else
@@ -24014,7 +24017,10 @@ int main() {
 										continue;
 									}
 								} else {
-									sprintf(s, "[商店]你的商店 价格:%.2f 类型:%d", price, type);
+                                    if(type == 5)
+                                        sprintf(s, "[商店]你的诱饵");
+                                    else
+									   sprintf(s, "[商店]你的商店 价格:%.2f 类型:%d", price, type);
 									sendGlobalMessage(s, nextPlayer);
 								}
 							}

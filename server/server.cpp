@@ -15721,9 +15721,13 @@ static char isAccessBlocked( LiveObject *inPlayer,
 
 
 
-void sendHungryWorkSpeech( LiveObject *inPlayer ) {
-    // tell player about it with global message
-    sendGlobalMessage( "你需要吃饱才能干体力活", inPlayer );
+void sendHungryWorkSpeech( LiveObject *inPlayer, int hungryWorkCost ) {
+    char *message = autoSprintf( "需要消耗叠食: %d", 
+                                   hungryWorkCost );
+        
+    sendGlobalMessage( message, inPlayer );
+    
+    delete [] message;
 }
 
 
@@ -21891,7 +21895,7 @@ int main() {
                                             &hungryWorkCost ) ) {
                                         r = NULL;
                                         
-                                        sendHungryWorkSpeech( nextPlayer );
+                                        sendHungryWorkSpeech( nextPlayer, hungryWorkCost );
                                         }
                                     }
 
@@ -22063,6 +22067,10 @@ int main() {
                                         // we checked above, so player
                                         // never is taken down below 5 here
                                         nextPlayer->foodUpdate = true;
+                                        } else if(hungryWorkCost < 0) {
+                                            nextPlayer->yummyBonusStore += hungryWorkCost;
+                                            nextPlayer->foodUpdate = true;
+                                            nextPlayer->justAte = true;
                                         }
                                     
                                     

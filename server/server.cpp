@@ -22068,7 +22068,7 @@ int main() {
                                         // never is taken down below 5 here
                                         nextPlayer->foodUpdate = true;
                                         } else if(hungryWorkCost < 0) {
-                                            nextPlayer->yummyBonusStore += hungryWorkCost;
+                                            nextPlayer->yummyBonusStore -= hungryWorkCost;
                                             nextPlayer->foodUpdate = true;
                                             nextPlayer->justAte = true;
                                         }

@@ -23515,7 +23515,7 @@ int main() {
                         }
 
 
-                        if( canDrop &&
+                        /*if( canDrop &&
                                          m.c >= 0 && 
                                          m.c < NUM_CLOTHING_PIECES &&
                                          m.x == nextPlayer->xd &&
@@ -23539,7 +23539,7 @@ int main() {
                                     }
                                 }
                             }
-						}
+						}*/
 
                         
 

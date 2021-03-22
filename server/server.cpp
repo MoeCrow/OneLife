@@ -23515,7 +23515,8 @@ int main() {
                         }
 
 
-                        /*if( canDrop &&
+                        //*/
+                        if( canDrop &&
                                          m.c >= 0 && 
                                          m.c < NUM_CLOTHING_PIECES &&
                                          m.x == nextPlayer->xd &&
@@ -23533,13 +23534,13 @@ int main() {
                             if(hasShop) {
                                 if(strcmp(email, nextPlayer->email)!=0) {
                                     if(checkTarget == 0) {
-                                        delShop(m.x, m.y);
+                                        //delShop(m.x, m.y);
                                     } else {
                                         continue;
                                     }
                                 }
                             }
-						}*/
+						}//*/
 
                         
 

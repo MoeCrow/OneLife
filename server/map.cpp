@@ -4548,6 +4548,7 @@ if(false)
             numRead = fscanf( dummyFile, "(%d,%d) %c %d %d [%d %d]\n", 
                               &x, &y, &marker, &parentID, &dummyIndex,
                               &slot, &b );
+            AppLog::infoF( "dummy %d %d %d", x, y, parentID );
             if( numRead == 5 || numRead == 7 ) {
 
                 if( dbLookTimeGet( x, y ) <= 0 ) {

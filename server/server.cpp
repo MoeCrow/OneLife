@@ -1453,11 +1453,11 @@ void createShop(char *args, int x, int y, LiveObject *player) {
                             return;
                         }
 
-                        ObjectRecord *o = getObject( data );
+                        /*ObjectRecord *o = getObject( data );
                         if( o == NULL && data != 0) {
                             sendGlobalMessage( "你不能收购不存在的物体", player);
                             return;
-                        }
+                        }*/
                     }
 
                     setShop(x, y, player->email, shopType, price, data);
@@ -23515,7 +23515,7 @@ int main() {
                         }
 
 
-                        if( canDrop &&
+                        /*if( canDrop &&
                                          m.c >= 0 && 
                                          m.c < NUM_CLOTHING_PIECES &&
                                          m.x == nextPlayer->xd &&
@@ -23539,7 +23539,7 @@ int main() {
                                     }
                                 }
                             }
-						}
+						}*/
 
                         
 

@@ -23534,7 +23534,7 @@ int main() {
                             if(hasShop) {
                                 if(strcmp(email, nextPlayer->email)!=0) {
                                     if(checkTarget == 0) {
-                                        continue
+                                        continue;
                                         //delShop(m.x, m.y);
                                     } else {
                                         continue;

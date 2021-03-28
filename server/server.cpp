@@ -21206,7 +21206,7 @@ int main() {
                                     money -= 1;
                                     nextPlayer->holdingID = 326;
                                 }
-                            }
+                            }/*
                             else if(holdO != NULL && holdO->written) {
                                 char metaData[ MAP_METADATA_LENGTH ];
                                 char found = getMetadata( nextPlayer->holdingID, 
@@ -21236,7 +21236,7 @@ int main() {
                                     }
                                     delete [] chequeStr;
                                 }
-                            }
+                            }*/
 
                             char s[256];
                             sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);

@@ -21126,7 +21126,7 @@ int main() {
                                         if(type == 3) {
                                             int targetSlots = getNumContainerSlots( checkTarget );
                                             int numIn = getNumContained( m.x, m.y );
-                                            if(nextPlayer->holdingID == data && numIn < targetSlots) {
+                                            if(data != 0 && nextPlayer->holdingID == data && numIn < targetSlots) {
                                                 if(isConfirmed(nextPlayer->email, m.x, m.y)) {
                                                     float money = getPlayerMoney(nextPlayer->email);
                                                     float skMoney = getPlayerMoney(email);

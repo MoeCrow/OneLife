@@ -16860,7 +16860,10 @@ static void setRefuseFoodEmote( LiveObject *hitPlayer ) {
         }
     }
 
-
+void handle_pipe(int sig)
+{
+    //do nothing
+}
 
 
 int main() {
@@ -17107,7 +17110,12 @@ int main() {
     printf( "\n\nPress CTRL-Z to shut down server gracefully\n\n" );
 
     signal( SIGTSTP, intHandler );
-    signal(SIGPIPE, SIG_IGN);
+
+    struct sigaction sa;
+    sa.sa_handler = handle_pipe;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGPIPE,&sa,NULL);
 #endif
 
     initNames();

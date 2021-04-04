@@ -17109,13 +17109,15 @@ int main() {
 #else
     printf( "\n\nPress CTRL-Z to shut down server gracefully\n\n" );
 
-    signal( SIGTSTP, intHandler );
-
     struct sigaction sa;
-    sa.sa_handler = handle_pipe;
-    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = SIG_IGN;//设定接受到指定信号后的动作为忽略
     sa.sa_flags = 0;
-    sigaction(SIGPIPE,&sa,NULL);
+    if (sigemptyset(&sa.sa_mask) == -1 || //初始化信号集为空
+    sigaction(SIGPIPE, &sa, 0) == -1) { //屏蔽SIGPIPE信号
+        perror("failed to ignore SIGPIPE; sigaction");
+        exit(EXIT_FAILURE);
+    }
+
 #endif
 
     initNames();

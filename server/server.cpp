@@ -17118,6 +17118,8 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
+    pthread_sigmask(SIG_UNBLOCK, &set, NULL);
+
 #endif
 
     initNames();

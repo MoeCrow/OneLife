@@ -17107,6 +17107,7 @@ int main() {
     printf( "\n\nPress CTRL-Z to shut down server gracefully\n\n" );
 
     signal( SIGTSTP, intHandler );
+    signal(SIGPIPE, SIG_IGN);
 #endif
 
     initNames();

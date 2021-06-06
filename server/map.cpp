@@ -290,7 +290,7 @@ inline char shouldStale(int secPassed, int staleSec, int x, int y) {
     if(circle <= 3)
         return false;
     //return secPassed > (10 - circle) * 604800;
-    return secPassed > 30 * 604800;
+    return secPassed > 15 * 604800;
 }
 
 
@@ -2636,7 +2636,7 @@ int DB_open_timeShrunk(
                    newSize );
   
     
-    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize) {
+    if(currentSize - newSize > minimumShrinkRatio * currentSize) {
         DB tempDB;
         error = DB_open( &tempDB, 
                              dbTempName, 

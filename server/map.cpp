@@ -2628,7 +2628,7 @@ int DB_open_timeShrunk(
 
     // optimial size for DB of remaining elements
     unsigned int newSize = DB_getShrinkSize( &oldDB, nonStale );
-    int currentSize = DB_getCurrentSize( &oldDB );
+    unsigned int currentSize = DB_getCurrentSize( &oldDB );
 
     AppLog::infoF( "Shrinking hash table in %s from %d down to %d", 
                    path, 

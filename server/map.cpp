@@ -2636,7 +2636,7 @@ int DB_open_timeShrunk(
                    newSize );
   
     
-    if(currentSize - newSize > minimumShrinkRatio * currentSize) {
+    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize) {
         DB tempDB;
         error = DB_open( &tempDB, 
                              dbTempName, 

@@ -1810,18 +1810,26 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 
-    if(strcmp(cmd, "AGE")==0 && isOp) {
+    if(strcmp(cmd, "AGE")==0) {
         float age;
         if(sscanf(args, "%f", &age) != 1) {
-            sendGlobalMessage( "NEED ONE ARGS", player);
+            sendGlobalMessage( "需要1个参数", player);
             return;
         }
+        
+        char s[256];
+        int yum = player->yummyBonusStore;
+        int num = 100;
+        if(num <= yum) {
+            sprintf(s, "扣除 %d 叠食点", num);
+            player->yummyBonusStore -= num;
+            player->lifeStartTimeSeconds = Time::getCurrentTime() - age * ( 1.0 / getAgeRate() );
+            player->needsUpdate = true;
+        } else {
+            sprintf(s, "你只有 %d 叠食点", yum);
+        }
 
-        player->lifeStartTimeSeconds = Time::getCurrentTime() - age * ( 1.0 / getAgeRate() );
-        player->needsUpdate = true;
-
-
-        sendGlobalMessage( "AGE SET.", player);
+        sendGlobalMessage( s, player);
         return;
     }
 

@@ -2256,7 +2256,7 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "BAL")==0){
 		char s[256];
 		float money = getPlayerMoney(player->email);
-		sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
+		sprintf(s, "[萌萌央行]你有 %.2f 枚钢币", money);
 		sendGlobalMessage( s, player);
 		return;
 	}
@@ -21256,7 +21256,7 @@ int main() {
                             }*/
 
                             char s[256];
-                            sprintf(s, "[鸦鸦央行]你有 %.2f 枚钢币", money);
+                            sprintf(s, "[萌萌央行]你有 %.2f 枚钢币", money);
                             sendGlobalMessage( s, nextPlayer);
 
                             savePlayerStatus(nextPlayer);

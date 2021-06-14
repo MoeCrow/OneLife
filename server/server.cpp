@@ -17718,8 +17718,6 @@ int main() {
         readySock = sockPoll.wait( (int)( pollTimeout * 1000 ) );
         
         
-        
-        
         if( readySock != NULL && !readySock->isSocket ) {
             // server ready
             Socket *sock = server->acceptConnection( 0 );
@@ -17806,34 +17804,7 @@ int main() {
                                            currentPlayers, maxPlayers );
                     newConnection.shutdownMode = true;
                     }
-                else if( currentPlayers >= maxPlayers ) {
-                    // this "butDisconnected" state applies even if
-                    // we see them as connected, becasue they are clearly
-                    // reconnecting now
-                    char liveButDisconnected = false;
-                    
-                    for( int p=0; p<players.size(); p++ ) {
-                        LiveObject *o = players.getElement( p );
-                        if( ! o->error && 
-                            strcmp( o->email, 
-                                    nextConnection->email ) == 0 ) {
-                            liveButDisconnected = true;
-                            break;
-                            }
-                        }
-
-                    if(!liveButDisconnected) {
-                        AppLog::infoF( "%d of %d permitted players connected, "
-                               "deflecting new connection",
-                               currentPlayers, maxPlayers );
-                    
-                        message = autoSprintf( "SERVER_FULL\n"
-                               "%d/%d\n"
-                               "#",
-                               currentPlayers, maxPlayers );
-                        
-                        newConnection.shutdownMode = true;
-                    }
+                else if( false && currentPlayers >= maxPlayers ) {
                     
                     }         
                 else {
@@ -18039,24 +18010,50 @@ int main() {
                     nextConnection->lifeTokenSpent = true;
                     }
                 else {
-                    int spendResult = 
-                        spendLifeToken( nextConnection->email );
-                    if( spendResult == -1 ) {
-                        AppLog::info( 
-                            "Failed to spend life token for client, "
-                            "client rejected." );
+                    int maxPlayers = 
+                        SettingsManager::getIntSetting( "maxPlayers", 200 );
+                    
+                    int currentPlayers = players.size();
 
-                        const char *message = "NO_LIFE_TOKENS\n#";
-                        nextConnection->sock->send( (unsigned char*)message,
-                                                    strlen( message ), 
-                                                    false, false );
+                    if( currentPlayers >= maxPlayers ) {
+                        AppLog::infoF( "%d of %d permitted players connected, "
+                               "deflecting new connection",
+                               currentPlayers, maxPlayers );
+                    
+                        message = autoSprintf( "SERVER_FULL\n"
+                               "%d/%d\n"
+                               "#",
+                               currentPlayers, maxPlayers );
+                        
+                        nextConnection->shutdownMode = true;
+                    
+                        int numSent = 
+                            nextConnection->send( (unsigned char*)message, 
+                                        strlen( message ), 
+                                        false, false );
+                            
+                        delete [] message;
+                    }  else {
 
-                        nextConnection->error = true;
-                        nextConnection->errorCauseString =
-                            "Client life token spend failed";
-                        }
-                    else if( spendResult == 1 ) {
-                        nextConnection->lifeTokenSpent = true;
+                        int spendResult = 
+                            spendLifeToken( nextConnection->email );
+                        if( spendResult == -1 ) {
+                            AppLog::info( 
+                                "Failed to spend life token for client, "
+                                "client rejected." );
+
+                            const char *message = "NO_LIFE_TOKENS\n#";
+                            nextConnection->sock->send( (unsigned char*)message,
+                                                        strlen( message ), 
+                                                        false, false );
+
+                            nextConnection->error = true;
+                            nextConnection->errorCauseString =
+                                "Client life token spend failed";
+                            }
+                        else if( spendResult == 1 ) {
+                            nextConnection->lifeTokenSpent = true;
+                            }
                         }
                     }
                 }

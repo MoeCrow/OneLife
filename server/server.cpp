@@ -17807,16 +17807,34 @@ int main() {
                     newConnection.shutdownMode = true;
                     }
                 else if( currentPlayers >= maxPlayers ) {
-                    AppLog::infoF( "%d of %d permitted players connected, "
-                                   "deflecting new connection",
-                                   currentPlayers, maxPlayers );
+                    // this "butDisconnected" state applies even if
+                    // we see them as connected, becasue they are clearly
+                    // reconnecting now
+                    char liveButDisconnected = false;
                     
-                    message = autoSprintf( "SERVER_FULL\n"
-                                           "%d/%d\n"
-                                           "#",
-                                           currentPlayers, maxPlayers );
+                    for( int p=0; p<players.size(); p++ ) {
+                        LiveObject *o = players.getElement( p );
+                        if( ! o->error && 
+                            strcmp( o->email, 
+                                    nextConnection->email ) == 0 ) {
+                            liveButDisconnected = true;
+                            break;
+                            }
+                        }
+
+                    if(!liveButDisconnected) {
+                        AppLog::infoF( "%d of %d permitted players connected, "
+                               "deflecting new connection",
+                               currentPlayers, maxPlayers );
                     
-                    newConnection.shutdownMode = true;
+                        message = autoSprintf( "SERVER_FULL\n"
+                               "%d/%d\n"
+                               "#",
+                               currentPlayers, maxPlayers );
+                        
+                        newConnection.shutdownMode = true;
+                    }
+                    
                     }         
                 else {
                     message = autoSprintf( "SN\n"

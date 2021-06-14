@@ -18020,7 +18020,7 @@ int main() {
                                "deflecting new connection",
                                currentPlayers, maxPlayers );
                     
-                        message = autoSprintf( "SERVER_FULL\n"
+                        char *message = autoSprintf( "SERVER_FULL\n"
                                "%d/%d\n"
                                "#",
                                currentPlayers, maxPlayers );
@@ -18028,7 +18028,7 @@ int main() {
                         nextConnection->shutdownMode = true;
                     
                         int numSent = 
-                            nextConnection->send( (unsigned char*)message, 
+                            nextConnection->sock->send( (unsigned char*)message, 
                                         strlen( message ), 
                                         false, false );
                             

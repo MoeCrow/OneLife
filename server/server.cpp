@@ -16906,7 +16906,7 @@ int main() {
     // make backup and delete old backup every day
     AppLog::setLog( new FileLog( "log.txt", 86400 ) );
 
-    AppLog::setLoggingLevel( Log::DETAIL_LEVEL );
+    AppLog::setLoggingLevel( Log::ERROR_LEVEL );
     AppLog::printAllMessages( true );
 
     printf( "\n" );

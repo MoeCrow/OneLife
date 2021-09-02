@@ -286,11 +286,11 @@ inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs
 inline char shouldStale(int secPassed, int staleSec, int x, int y) {
     int circle = getCircle(x, y);
     if(circle >= 7)
-        return true;
+        return secPassed > 86400;
     if(circle <= 3)
         return false;
     //return secPassed > (10 - circle) * 604800;
-    return secPassed > 15 * 604800;
+    return secPassed > 5 * 604800;
 }
 
 

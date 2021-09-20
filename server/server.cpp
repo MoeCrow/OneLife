@@ -291,7 +291,7 @@ static char *eveName = NULL;
 // messages
 static char allowedSayCharMap[256];
 
-static const char *allowedSayChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.-,'?! ";
+static const char *allowedSayChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.-,'?! 123456789";
 
 
 static int killEmotionIndex = 2;

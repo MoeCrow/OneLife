@@ -1603,6 +1603,81 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
+    //一次生成10个相同物体
+        if(strcmp(cmd, "PPUT")==0 && isOp ){
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "需要1个参数");
+		} 
+        else {
+			if( id < 0) {
+				sendGlobalMessage( "无效物体", player);
+				return;
+			}
+            
+                for (int i = 0; i < 10; i++){
+
+                setMapObject( player->xs+i, player->ys, id );
+                
+            }
+          
+        
+			sprintf(s, "已放置");
+		}
+		sendGlobalMessage( s, player);
+
+		return;
+	}
+    //一次生成100个相同物体
+    	if(strcmp(cmd, "PPPUT")==0  && isOp){
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "需要1个参数");
+		} 
+        else {
+			if( id < 0) {
+				sendGlobalMessage( "无效物体", player);
+				return;
+			}
+            for (int j=0;j<10;j++){
+                for (int i = 0; i < 10; i++){
+
+                setMapObject( player->xs+i, player->ys+j, id );
+                
+            }
+          
+        }
+			sprintf(s, "已放置");
+		}
+		sendGlobalMessage( s, player);
+
+		return;
+	}
+	//一次生成10个不同物体，用于测试近期添加的新内容（special PPUT）
+    	if(strcmp(cmd, "SPPUT")==0 && isOp ){
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "需要1个参数");
+		} 
+        else {
+			if( id < 0) {
+				sendGlobalMessage( "无效物体", player);
+				return;
+			}
+            
+                for (int i = 0; i < 11; i++){
+
+                setMapObject( player->xs+i, player->ys, id+i );
+                
+            }
+          
+        
+			sprintf(s, "已放置");
+		}
+		sendGlobalMessage( s, player);
+
+		return;
+	}
 	if(strcmp(cmd, "FLR")==0 && isOp){
 		char s[256];
 		if(sscanf(args, "%d", &id) != 1) {
@@ -1615,6 +1690,48 @@ void parseCommand(LiveObject *player, char *text){
 			}
 			setMapFloor( player->xs, player->ys, id );
 			sprintf(s, "已放置");
+		}
+		
+		sendGlobalMessage( s, player);
+		return;
+	}
+
+// 批量放置地板
+    	if(strcmp(cmd, "FFLR")==0 && isOp){
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "需要1个参数");
+		} else {
+			ObjectRecord *o = getObject( id );
+			if( id != 0 && (o == NULL || !o->floor) ) {
+				sendGlobalMessage( "地板未找到", player);
+				return;
+			}
+            for (int i = 0; i < 10; i++){
+			setMapFloor( player->xs+i, player->ys, id );
+			
+            }
+		}
+		
+		sendGlobalMessage( s, player);
+		return;
+	}
+        if(strcmp(cmd, "FFFLR")==0 && isOp){
+		char s[256];
+		if(sscanf(args, "%d", &id) != 1) {
+			sprintf(s, "需要1个参数");
+		} else {
+			ObjectRecord *o = getObject( id );
+			if( id != 0 && (o == NULL || !o->floor) ) {
+				sendGlobalMessage( "地板未找到", player);
+				return;
+			}
+            for (int j=0;j<10;j++){
+            for (int i = 0; i < 10; i++){
+			setMapFloor( player->xs+i, player->ys+j, id );
+			
+            }
+            }
 		}
 		
 		sendGlobalMessage( s, player);
@@ -1850,6 +1967,45 @@ void parseCommand(LiveObject *player, char *text){
                 return;
             }
             biomeDBSet(player->xs, player->ys, id);
+        }
+        
+        sendGlobalMessage( "BIOME SET.", player);
+        return;
+    }
+
+
+    //批量放置地块
+    if(strcmp(cmd, "BBIO")==0 && isOp) {
+        if(sscanf(args, "%d", &id) != 1) {
+            sendGlobalMessage( "需要1个参数", player);
+            return;
+        } else {
+            if( false && id > 6 ) {
+                sendGlobalMessage( "地形未找到", player);
+                return;
+            }
+            for (int i = 0; i < 10; i++){
+            biomeDBSet(player->xs+i, player->ys, id);
+            }
+        }
+        
+        sendGlobalMessage( "BIOME SET.", player);
+        return;
+    }
+        if(strcmp(cmd, "BBBIO")==0 && isOp) {
+        if(sscanf(args, "%d", &id) != 1) {
+            sendGlobalMessage( "需要1个参数", player);
+            return;
+        } else {
+            if( false && id > 6 ) {
+                sendGlobalMessage( "地形未找到", player);
+                return;
+            }
+            for (int j=0;j<10;j++){
+            for (int i = 0; i < 10; i++){
+            biomeDBSet(player->xs+i, player->ys+j, id);
+            }
+            }
         }
         
         sendGlobalMessage( "BIOME SET.", player);

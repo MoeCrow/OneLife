@@ -2572,6 +2572,7 @@ void parseCommand(LiveObject *player, char *text){
 			player->heldOriginY = player->ys;
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
+            player->isTeleport = true;
 		}
 		sendGlobalMessage( s, player);
 		return;

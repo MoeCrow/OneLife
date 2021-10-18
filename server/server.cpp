@@ -861,7 +861,7 @@ typedef struct LiveObject {
         char firstMessageSent;
         
         char inFlight;
-        
+        char isTeleport;
 
         char dying;
         // wall clock time when they will be dead
@@ -1564,6 +1564,7 @@ void parseCommand(LiveObject *player, char *text){
 		player->heldOriginY = player->ys;
 		player->actionTarget.x = player->xs;
 		player->actionTarget.y = player->ys;
+        player->isTeleport = true;
 		return;
 	}
 	
@@ -1898,6 +1899,7 @@ void parseCommand(LiveObject *player, char *text){
             } 
             player->displayID = id;
         }
+        player->needsUpdate = true;
         sendGlobalMessage( "角色已更换", player);
         return;
     }
@@ -2059,6 +2061,7 @@ void parseCommand(LiveObject *player, char *text){
             player->heldOriginY = player->ys;
             player->actionTarget.x = player->xs;
             player->actionTarget.y = player->ys;
+            player->isTeleport = true;
             setBack(player->email, tx, ty);
             sprintf(s, "你回到了上一个郊外点");
         }
@@ -2148,6 +2151,7 @@ void parseCommand(LiveObject *player, char *text){
 		player->heldOriginY = player->ys;
 		player->actionTarget.x = player->xs;
 		player->actionTarget.y = player->ys;
+        player->isTeleport = true;
 		return;
 	}
 	
@@ -2184,6 +2188,7 @@ void parseCommand(LiveObject *player, char *text){
 			player->heldOriginY = player->ys;
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
+            player->isTeleport = true;
 			setBack(player->email, tx, ty);
 			sprintf(s, "已传送");
 		}
@@ -2827,6 +2832,7 @@ void parseCommand(LiveObject *player, char *text){
 			player->heldOriginY = player->ys;
 			player->actionTarget.x = player->xs;
 			player->actionTarget.y = player->ys;
+            player->isTeleport = true;
 		}
 
 
@@ -10940,7 +10946,7 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
     newObject.isNewCursed = false;
     newObject.firstMessageSent = false;
     newObject.inFlight = false;
-    
+    newObject.isTeleport = false;
     newObject.dying = false;
     newObject.dyingETA = 0;
     
@@ -20224,12 +20230,14 @@ int main() {
                                 nextPlayer->moveTotalSeconds = dist / 
                                     moveSpeed;
                                 
-                                if( nextPlayer->moveTotalSeconds <= 0.1 ) {
-                                    // never allow moveTotalSeconds to be
-                                    // 0, too small, or negative
-                                    // (we divide by it in certain 
-                                    // calculations)
+                                if( nextPlayer->moveTotalSeconds <= 0.1 || nextPlayer->isTeleport ) {
+
                                     nextPlayer->moveTotalSeconds = 0.1;
+
+                                    if( nextPlayer->isTeleport ) {
+
+                                        nextPlayer->isTeleport = false;
+                                        }
                                     }
                                 
                                 double secondsAlreadyDone = distAlreadyDone / 

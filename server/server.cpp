@@ -1491,7 +1491,10 @@ void deleteShop(bool isOp, int x, int y, LiveObject *player) {
     sendGlobalMessage( s, player);
 }
 
-
+char loadIntoMapFromFile( FILE *inFile, 
+                                 int inOffsetX = 0, 
+                                 int inOffsetY = 0,
+                                 double inTimeLimitSec = 0 );
 int getTweakedBaseMap( int inX, int inY );
 void getChunkMessageToFile( int inStartX, int inStartY, 
                             int inWidth, int inHeight,
@@ -1500,7 +1503,7 @@ char isMapChunkSparseFromFile( FILE *inFile,
                             int inStartX, int inStartY, 
                             int inMinNoEmptySpotAllowed,
                             char *outSeemFileNoHeader );
-
+GridPos getPlayerPos( LiveObject *inPlayer );
 
 
 

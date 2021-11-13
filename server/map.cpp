@@ -2996,7 +2996,7 @@ int cleanMap() {
 // leaves file pos at end of last line read, ready to read more lines
 // on future calls
 // returns true if there's more file to read, or false if end of file reached
-static char loadIntoMapFromFile( FILE *inFile, 
+char loadIntoMapFromFile( FILE *inFile, 
                                  int inOffsetX = 0, 
                                  int inOffsetY = 0,
                                  double inTimeLimitSec = 0 ) {

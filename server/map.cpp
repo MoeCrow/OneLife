@@ -7179,6 +7179,166 @@ unsigned char *getChunkMessage( int inStartX, int inStartY,
     }
 
 
+void getChunkMessageToFile( int inStartX, int inStartY, 
+                            int inWidth, int inHeight, 
+                            int inFileNumber ) {
+    
+    int chunkCells = inWidth * inHeight;
+    
+    int *chunk = new int[chunkCells];
+
+    int *chunkBiomes = new int[chunkCells];
+    int *chunkFloors = new int[chunkCells];
+    
+    int *containedStackSizes = new int[ chunkCells ];
+    int **containedStacks = new int*[ chunkCells ];
+
+    int **subContainedStackSizes = new int*[chunkCells];
+    int ***subContainedStacks = new int**[chunkCells];
+    
+
+    int endY = inStartY + inHeight;
+    int endX = inStartX + inWidth;
+    
+
+//1 MC消息的获取
+    for( int y=inStartY; y<endY; y++ ) {
+        int chunkY = y - inStartY;//从0起算
+        
+        for( int x=inStartX; x<endX; x++ ) {
+            int chunkX = x - inStartX;//从0起算
+            
+            int cI = chunkY * inWidth + chunkX;
+
+            lastCheckedBiome = -1;
+    //1.1 获取第cI个地块上的物体
+            chunk[cI] = getMapObject( x, y );
+
+    //1.2 获取第cI个地块上的群落
+            if( lastCheckedBiome == -1 ||
+                lastCheckedBiomeX != x ||
+                lastCheckedBiomeY != y ) {
+
+                // biome wasn't checked in order to compute getMapObject
+                // get it ourselves
+                lastCheckedBiome = biomes[getMapBiomeIndex( x, y )];
+                }
+            chunkBiomes[ cI ] = lastCheckedBiome;
+
+    //1.3 获取第cI个地块上的地板
+            chunkFloors[cI] = getMapFloor( x, y );
+            
+    //1.4 获取第cI个地块上容器中的物体
+            int numContained;
+            int *contained = NULL;
+            // 第cI个地块上有容器物体
+            if( chunk[cI] > 0 && getObject( chunk[cI] )->numSlots > 0 ) {
+                contained = getContained( x, y, &numContained );
+                }
+            // 容器中装有物体
+            if( contained != NULL ) {
+                containedStackSizes[cI] = numContained;
+                containedStacks[cI] = contained;
+                
+                subContainedStackSizes[cI] = new int[numContained];
+                subContainedStacks[cI] = new int*[numContained];
+
+                for( int i=0; i<numContained; i++ ) {
+                    subContainedStackSizes[cI][i] = 0;
+                    subContainedStacks[cI][i] = NULL;
+                    
+                    if( containedStacks[cI][i] < 0 ) {
+                        // 一个子容器
+                        containedStacks[cI][i] *= -1;
+                        
+                        int numSubContained;
+                        int *subContained = getContained( x, y, 
+                                                          &numSubContained,
+                                                          i + 1 );
+                        if( subContained != NULL ) {
+                            subContainedStackSizes[cI][i] = numSubContained;
+                            subContainedStacks[cI][i] = subContained;
+                            }
+                        }
+                    }
+                }
+            // 容器中没有物体
+            else {
+                containedStackSizes[cI] = 0;
+                containedStacks[cI] = NULL;
+                subContainedStackSizes[cI] = NULL;
+                subContainedStacks[cI] = NULL;
+                }
+            }
+        }
+
+
+//2 MC消息的组合
+    // 格式：[群落id:地板id:物体id,子物体id,子物体id:子子物体id:子子物体id,子物体id 群落id:地板id:物体id...]
+    char *fileName = autoSprintf( "mapChunkRecord%d.txt",inFileNumber );
+
+    FILE *f = fopen( fileName, "w" );
+    //如果文件不为空，则：
+    if( f != NULL ) {
+        // 文件首行:初始坐标、宽度、高度
+        fprintf( f, "@%d_%d,%d,%d\n",
+                inStartX, inStartY, inWidth, inHeight );
+
+        for( int y=inStartY; y<endY; y++ ) {
+            int chunkY = y - inStartY;
+
+            for( int x=inStartX; x<endX; x++ ) {
+                int chunkX = x - inStartX;
+
+                int i = chunkY * inWidth + chunkX;
+
+                // 组合群落、地板、物体信息
+                fprintf( f, "%d %d %d %d %d",chunkX,chunkY,
+                                        chunkBiomes[i],
+                                        hideIDForClient( chunkFloors[i] ), 
+                                        hideIDForClient( chunk[i] ) );
+                // 组合容器中的物体信息
+                if( containedStacks[i] != NULL ) {
+                    for( int c=0; c<containedStackSizes[i]; c++ ) {
+
+                        fprintf( f, ",%d",
+                                hideIDForClient( containedStacks[i][c] ) );
+
+                        if( subContainedStacks[i][c] != NULL ) {
+                            
+                            for( int s=0; s<subContainedStackSizes[i][c]; s++ ) {
+                                
+                                fprintf( f, ":%d", hideIDForClient( 
+                                                    subContainedStacks[i][c][s] ) );
+                                }
+                            delete [] subContainedStacks[i][c];
+                            }
+                        }
+
+                    delete [] subContainedStackSizes[i];
+                    delete [] subContainedStacks[i];
+
+                    delete [] containedStacks[i];
+                    }
+                fprintf( f, "\n" );
+                }
+            }
+        fclose( f );
+        }
+
+    delete [] fileName;
+
+    delete [] chunk;
+    delete [] chunkBiomes;
+    delete [] chunkFloors;
+
+    delete [] containedStackSizes;
+    delete [] containedStacks;
+
+    delete [] subContainedStackSizes;
+    delete [] subContainedStacks;
+
+    }
 
 
 

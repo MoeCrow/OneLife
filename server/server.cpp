@@ -1492,6 +1492,19 @@ void deleteShop(bool isOp, int x, int y, LiveObject *player) {
 }
 
 
+int getTweakedBaseMap( int inX, int inY );
+void getChunkMessageToFile( int inStartX, int inStartY, 
+                            int inWidth, int inHeight,
+                            int inFileNumber );
+char isMapChunkSparseFromFile( FILE *inFile, 
+                            int inStartX, int inStartY, 
+                            int inMinNoEmptySpotAllowed,
+                            char *outSeemFileNoHeader );
+
+
+
+
+
 inline int max(int x, int y){return x>y?x:y;}
 inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
 inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs(y)));}
@@ -1586,23 +1599,268 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 	
-	if(strcmp(cmd, "PUT")==0 && isOp){
-		char s[256];
-		if(sscanf(args, "%d", &id) != 1) {
-			sprintf(s, "需要1个参数");
-		} else {
-			ObjectRecord *o = getObject( id );
-			if( o == NULL && id != 0) {
-				sendGlobalMessage( "物体未找到", player);
-				return;
-			}
-			setMapObject( player->xs, player->ys, id );
-			sprintf(s, "已放置");
-		}
+
+
+//MGET格式：[宽度 高度 文件编号]
+//MGETP格式：[起点坐标x 起点坐标y 宽度 高度 文件编号]
+    if ( isOp )
+	if ( strcmp(cmd, "MGET") == 0 ||
+         strcmp(cmd, "MGETP") == 0 ){
+
+        int numRead = 0;
+
+        int startX = 0,startY = 0;
+        int width = 1,height = 1;
+        int fileNumber = 0;
+
+        char *message = NULL;
+        if ( strcmp(cmd, "MGET") == 0 ) {
+            numRead = sscanf(args, "%d %d %d", 
+                    &width, &height, &fileNumber);
+            
+            if ( numRead == 3 ) {
+
+                GridPos pos = getPlayerPos( player );
+                startX = pos.x;
+                startY = pos.y;
+                }
+            }
+        else if ( strcmp(cmd, "MGETP") == 0 ) {
+            numRead = sscanf(args, "%d %d %d %d %d", &startX, &startY, 
+                &width, &height, &fileNumber);
+                
+            }
+
+        if( numRead == 3 || 
+            numRead == 5 ) {
+            // 确保导出的区块不会过大
+            if( (width > 0 && height > 0)&&
+                (width <= 100 && height <= 100)){
+
+                //导出区块信息
+                getChunkMessageToFile( startX, startY, 
+                                       width, height,
+                                       fileNumber );
+                message = autoSprintf("%d号地图导出成功[宽度%d 高度%d]",
+                                     fileNumber, width, height );
+                }
+
+            else {
+                message = autoSprintf("宽高参数应在0-100之间");
+                }
+            }
+        else {
+            message = autoSprintf("参数格式不正确");
+            }
+
+        if ( message != NULL ){
+
+            sendGlobalMessage( message, player );
+            delete [] message;
+            }
+        return;
+        }
+
+    //MPUT格式：[文件编号]
+    //MPUTP格式：[起点坐标x 起点坐标y 文件编号]
+    if ( isOp )
+    if( strcmp(cmd, "MPUT") == 0 ||
+        strcmp(cmd, "MPUTP") == 0 ) {
+        int numRead = 0;
+
+        int offStartX = 0,offStartY = 0;
+        int fileNumber = 0;
+
+        char *message = NULL;
+
+        if ( strcmp(cmd, "MPUT") == 0 ) {
+            numRead = sscanf(args, "%d", &fileNumber);
+    
+            if ( numRead == 1 ) {
+                // 以人物所在位置为地图投放起点
+                GridPos pos = getPlayerPos( player );
+                offStartX = pos.x;
+                offStartY = pos.y;
+                }
+            }
+
+        else if ( strcmp(cmd, "MPUTP") == 0 ) {
+            numRead = sscanf(args, "%d %d %d", 
+                            &offStartX, &offStartY, &fileNumber);
+            }
+
+        if( numRead == 1 || 
+            numRead == 3 ) {
+
+            char *fileName = autoSprintf("mapChunkRecord%d.txt",fileNumber);
+
+            FILE *mapChunkFile = fopen( fileName, "r" );
+            
+            if( mapChunkFile != NULL  ) {
+                // 这里读取文件首行信息，从而检查是否有一个地块为空
+                char result = false;
+                char isMapChunkSparse = false;
+
+                char seemFileNoHeader = false;
+
+                if ( isMapChunkSparseFromFile( mapChunkFile, 
+                                         offStartX, offStartY,
+                                         10,
+                                         &seemFileNoHeader ) ) {
+
+                    isMapChunkSparse = true;             
+
+                    if( !seemFileNoHeader  ){
+
+                        result = ( loadIntoMapFromFile( mapChunkFile, 
+                                            offStartX, offStartY,
+                                            0 ) 
+                                            ==
+                                            false ); 
+                        }
+
+                    //如果需要使用MPUT导入jason格式的文件（seemFileNoHeader）
+                    else {
+                        message = autoSprintf("文件首行格式不正确，地图导入失败");
+                        }
+                }
+
+                if( result ){
+
+                    message = autoSprintf("%d号地图导入成功", fileNumber );
+                    player->firstMapSent = false;
+                    }
+                else if ( !isMapChunkSparse ) {
+
+                    message = autoSprintf("区域内存在较多物体，地图导入失败");
+                    }
+                else {
+
+                    message = autoSprintf("地图文件无法成功读取，地图导入失败");
+                    }
+
+                fclose( mapChunkFile );
+                }
+            else {
+
+                message = autoSprintf("地图文件不存在，地图导入失败");
+                }
+            delete [] fileName;
+            
+            }
+        else {
+            message = autoSprintf("参数格式不正确");
+            }
+
+        if ( message != NULL ){
+
+            sendGlobalMessage( message, player );
+            delete [] message;
+            }
+        return;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if( strcmp( cmd, "PUT" ) ==0 && isOp ) {
+
+        int numX = 1;
+        int numY = 1;
+
+        int containerID = -1;
+        char needToAddContained = false;
+
+        int numRead = sscanf( args, "%d %d %d %d", 
+                        &id, &numX, &numY, &containerID );
+
+		if( numRead == 4 ||
+            numRead == 3 ||
+            numRead == 1 ) {
+            
+            ObjectRecord *o = getObject( id );
+            if( o == NULL || id < 0  ) {
+
+                sendGlobalMessage( "物体未找到", player);
+                return;
+                }
+            if( numRead == 4 && containerID > 0 &&
+                o->numSlots > 0 ){
+
+                needToAddContained = true;
+                }
+
+            for ( int j = 0; j < numY; j++ ) {
+                for ( int i = 0; i < numX; i++ ) {
+                    if ( numX <= 100 && numY <= 100 ){
+                        if( id == 0 ){
+
+                            clearAllContained( player->xs+i, player->ys+j ,0);
+                            }
+                        
+                        setMapObject( player->xs + i, player->ys + j, id );
+
+                        if( needToAddContained ){
+
+                            for( int c = 0; c < o->numSlots; c++ ) {
+
+                                addContained( player->xs + i, player->ys + j,
+                                            containerID, 0 );
+                                }
+                            }
+                        }
+                    }
+          
+                }
+		    }
 		
-		sendGlobalMessage( s, player);
 		return;
-	}
+	    }
+
+        if( strcmp(cmd, "WPUT") == 0 ) {
+        
+        int numX = 1;
+        int numY = 1;
+
+        int containerID = -1;
+        char needToAddContained = false;
+
+        int numRead = sscanf( args, "%d %d", 
+                            &numX, &numY );
+        if( numRead == 2 ) {
+
+            for ( int j = 0; j < numY; j++ ) {
+                for ( int i = 0; i < numX; i++ ) {
+
+                    if ( numX <= 100 && numY <= 100 ){
+
+                        int wildTile = getTweakedBaseMap( player->xs+i,
+                                                            player->ys+j );
+                        setMapObject( player->xs+i, player->ys+j, wildTile );
+                        }
+                    }
+                    }
+            }
+
+        return;
+        }   
 	
     //一次生成10个相同物体
         if(strcmp(cmd, "PPUT")==0 && isOp ){
@@ -6711,6 +6969,56 @@ char isMapSpotEmpty( int inX, int inY, char inConsiderPlayers = true ) {
     
     return isMapSpotEmptyOfPlayers( inX, inY );
     }
+
+
+char isMapChunkSparseFromFile( FILE *inFile, 
+                            int inStartX, int inStartY, 
+                            int inMinNoEmptySpotAllowed,
+                            char *outSeemFileNoHeader ) {
+    //该地图文件的导出时的起始位置
+    int origStartX = 0, origStartY = 0;
+    int width = 1, height = 1;
+
+    // 读取首行
+    int numRead = fscanf( inFile, "@%d_%d,%d,%d", 
+                        &origStartX, &origStartY, &width, &height );
+
+    if( numRead == 4 ) {
+
+        int numNoEmptySpot = 0;
+
+        for( int y = inStartY; y < inStartY + height; y++ ){
+
+            for( int x = inStartX; x < inStartX + width; x++ ){
+
+                int target = getMapObjectRaw(x, y);
+                if( target != 0 ){
+
+                    numNoEmptySpot++;
+                    }
+
+                if( numNoEmptySpot > inMinNoEmptySpotAllowed ){
+
+                    return false;
+                    } 
+
+                }
+
+            }
+        }
+    // 如果文件首行没有信息，可能是标准的jason式地图文件：同样阻止这类地图通过MPUT导入
+    else {
+
+        *outSeemFileNoHeader = true;
+        }
+    return true;
+    }
+
+
+
+
+
+
 
 
 

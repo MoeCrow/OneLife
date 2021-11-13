@@ -1765,24 +1765,6 @@ void parseCommand(LiveObject *player, char *text){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     if( strcmp( cmd, "PUT" ) ==0 && isOp ) {
 
         int numX = 1;
@@ -1837,7 +1819,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	    }
 
-        if( strcmp(cmd, "WPUT") == 0 ) {
+        if( strcmp(cmd, "WPUT") == 0 && isOp) {
         
         int numX = 1;
         int numY = 1;

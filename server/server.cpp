@@ -1057,6 +1057,7 @@ static SimpleVector<Spot*> signSpot;
 static SimpleVector<Spot*> homeSpot;
 static SimpleVector<Spot*> backSpot;
 static SimpleVector<Spot*> residenceSpot;
+static SimpleVector<Spot*> guardianSpot;//守护石
 static SimpleVector<Spot*> confirmSpot;
 static SimpleVector<Spot*> tprSpot;
 static SimpleVector<Spot*> superBackSpot;
@@ -1205,7 +1206,7 @@ static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotLi
 		Spot* spot = new Spot();
 		spot->name = new char[256];
 		spot->owner = NULL;
-		if(strcmp(inSettingsName, "warpSpot")==0 || strcmp(inSettingsName, "signSpot")==0) {
+		if(strcmp(inSettingsName, "warpSpot")==0 || strcmp(inSettingsName, "signSpot")==0|| strcmp(inSettingsName,"guardianSpot")==0) {
 			spot->owner = new char[256];
 			sscanf(str, "%s %d %d %s", spot->name, &spot->x, &spot->y, spot->owner);
 		}
@@ -2118,6 +2119,7 @@ void parseCommand(LiveObject *player, char *text){
         readSpotList( "homeSpot", &homeSpot);
         readSpotList( "backSpot", &backSpot);
         readSpotList( "residenceSpot", &residenceSpot);
+        readSpotList( "guardianSpot", &guardianSpot);//守护石
         sendGlobalMessage( "重载设置", player);
         return;
     }
@@ -17488,6 +17490,7 @@ int main() {
 	readSpotList( "homeSpot", &homeSpot);
 	readSpotList( "backSpot", &backSpot);
     readSpotList( "residenceSpot", &residenceSpot);
+    readSpotList( "guardianSpot", &guardianSpot);//守护石
 	readSpotList( "deathSpot", &deathSpot);
 
     
@@ -21503,6 +21506,27 @@ int main() {
 							continue; 
 						
 						int checkTarget = getMapObject( m.x, m.y );
+                        if(checkTarget != 0){
+                            GridPos myPos = { m.x, m.y };
+                            //守护石
+                            bool errorFlag = false;
+                            for( int i=0; i<guardianSpot.size(); i++ ) {
+                                    Spot* s = *guardianSpot.getElement(i);
+                                    
+                                    GridPos nowPos = {s->x, s->y};
+                                    if(getSquareDistance(myPos, nowPos) <= 20 && s->owner != NULL){
+                                        if(!strcmpUpper(s->owner, nextPlayer->email)){
+                                        sendGlobalMessage( (char*)"半径20格内有激活的守护石，您无法使用此处的物品", nextPlayer);
+                                        errorFlag = true;
+                                        break;
+                                        }
+                                        
+                                    }
+                                }
+                            if(errorFlag)
+                                continue;
+
+                        }
 						
 						{
 							char s[256];
@@ -21794,6 +21818,54 @@ int main() {
                             }
                             continue;
                         }
+
+//触碰的是守护石
+                        if(checkTarget != 0 && strstr( getObject( checkTarget )->description,"+guardian" ) != NULL) {
+                            Spot* spot = findSpotByXY(&guardianSpot, m.x, m.y);
+
+                            ObjectRecord *holdO = getObject( nextPlayer->holdingID );
+                            if(holdO != NULL && strstr( holdO->description,"+unclaimwand" ) != NULL) {
+                                if(spot != NULL) {
+
+                                    delSpotByXY(&guardianSpot, m.x, m.y);
+                                    if(guardianSpot.getElement(0)!=NULL){
+                                        writeSpotList("guardianSpot", &guardianSpot); 
+                                    }
+                                }
+
+                                setMapObject( m.x, m.y, 0 );
+                                sendGlobalMessage( (char*)"守护石已拆除", nextPlayer);
+                                continue;
+                            }
+
+                            if(spot == NULL) {
+                                Spot *spot = new Spot();
+                                spot->name = new char[256];
+                                
+                                strcpy(spot->name, "/");
+                                
+                                spot->x = m.x;
+                                spot->y = m.y;
+                                spot->owner = new char[256];
+                                strcpy(spot->owner, nextPlayer->email);
+                                
+                                guardianSpot.push_back(spot);
+                                writeSpotList("guardianSpot", &guardianSpot);
+                                sendGlobalMessage( (char*)"守护石已激活", nextPlayer);
+                            } else {
+                                   
+                                    
+                                    delSpotByXY(&guardianSpot, m.x, m.y);
+                                    if(guardianSpot.getElement(0)!=NULL){
+                                       
+                                        writeSpotList("guardianSpot", &guardianSpot); 
+                                    } 
+                                    sendGlobalMessage( (char*)"守护石已关闭", nextPlayer);
+                                }
+                                
+                                continue;
+                            }
+
 
                         // log usingTime
                         nextPlayer->usingTime++;
@@ -24398,7 +24470,28 @@ int main() {
                         bool isBanned = isNamingSay(stringToUpperCase(nextPlayer->email), &banList) != NULL;
                         if(isBanned)
                             continue; 
+                        int checkTarget = getMapObject( m.x, m.y );
+                        if(checkTarget != 0){
+                            GridPos myPos = { m.x, m.y };
+                                //守护石[参考]
+                            bool errorFlag = false;
+                            for( int i=0; i<guardianSpot.size(); i++ ) {
+                                    Spot* s = *guardianSpot.getElement(i);
+                                    
+                                    GridPos nowPos = {s->x, s->y};
+                                    if(getSquareDistance(myPos, nowPos) <= 20 && s->owner != NULL){
+                                        if(!strcmpUpper(s->owner, nextPlayer->email)){
+                                        sendGlobalMessage( (char*)"半径20格内有激活的守护石，您无法使用此处的物品", nextPlayer);
+                                        errorFlag = true;
+                                        break;
+                                        }
+                                        
+                                    }
+                                }
+                            if(errorFlag)
+                                continue;
 
+                        }
                         // send update even if action fails (to let them
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );

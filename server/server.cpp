@@ -2137,6 +2137,10 @@ void parseCommand(LiveObject *player, char *text){
                 
             if( o->personNoSpawn) {
                 bool isVip = isNamingSayUpper(player->email, &vipList) != NULL;
+                if(!isOp && o->id == 84078){
+                    sendGlobalMessage((char*)"你不能选择测试角色",player);
+                    return;
+                }
                 if(!isOp && !isVip) {
                     sendGlobalMessage("你不能选择定制角色",player);
                     return;
@@ -21865,6 +21869,155 @@ int main() {
                                 
                                 continue;
                             }
+
+
+
+
+  
+                        // 财产围栏升级逻辑
+                        /**
+                         * 
+                         *      原始        稻草        木头        石头        钢铁
+                         * 横向：2959       83057       83054       83104      83107
+                         * 纵向：2961       83059       83056       83106      83109
+                         * 转角：2960       83058       83055       83105      83108
+                         * 
+                         * 
+                         * 原始 + 2g + 一个芦苇-124 = 稻草
+                         * 稻草 + 5g + 一箱木头-81094 = 木头
+                         * 木头 + 10g + 一摞石砖-80017 = 石头
+                         * 石头 + 20g + 一摞钢铁-81003= 钢铁
+                         */
+                        //如果玩家手持（）且其银行钢锭大于（），则扣除钢锭、改变地面物体
+                        if( nextPlayer->holdingID >= 0 && m.id > 0){
+
+                            float money = getPlayerMoney(nextPlayer->email);
+
+                            int toStrawObj = 124;
+                            float toStrawCost = 2.0f;
+                            int toWoodenObj = 81094;
+                            int toWoodenLeftObj = 1619;//使用板条箱时，留下一张白纸
+                            float toWoodenCost = 5.0f;
+                            int toStoneObj = 80017;
+                            float toStoneCost = 10.0f;
+                            int toSteelObj = 81003;
+                            float toSteelCost = 20.0f;
+
+                            //0-横向，1-纵向，2-转角
+                            SimpleVector<int> rawFenceIds;
+                            SimpleVector<int> strawFenceIds;
+                            SimpleVector<int> woodenFenceIds;
+                            SimpleVector<int> stoneFenceIds;
+                            SimpleVector<int> steelFenceIds;
+
+                            rawFenceIds.push_back(2959);
+                            rawFenceIds.push_back(2961);
+                            rawFenceIds.push_back(2960);
+
+                            strawFenceIds.push_back(83057);
+                            strawFenceIds.push_back(83059);
+                            strawFenceIds.push_back(83058);
+
+                            woodenFenceIds.push_back(83054);
+                            woodenFenceIds.push_back(83056);
+                            woodenFenceIds.push_back(83055);
+
+                            stoneFenceIds.push_back(83104);
+                            stoneFenceIds.push_back(83106);
+                            stoneFenceIds.push_back(83105);
+
+                            steelFenceIds.push_back(83107);
+                            steelFenceIds.push_back(83109);
+                            steelFenceIds.push_back(83108);
+
+                            for(int i = 0 ; i < 3 ; i++){
+                                
+                                if(nextPlayer->holdingID == toStrawObj && m.id == rawFenceIds.getElementDirect(i)){
+                                    // 玩家手持稻草，且点击了某个形态原始围栏
+                                    char s[128];
+                                    if( money >= toStrawCost ){
+
+                                        setMapObject(m.x,m.y,strawFenceIds.getElementDirect(i));
+                                        setPlayerMoney(nextPlayer->email,money - toStrawCost);
+                                        nextPlayer->holdingID = 0;
+                                        nextPlayer->holdingEtaDecay = 0;
+                                        
+                                        sprintf(s, "[商店]财产围栏升级成功，花费 %.2f 钢", toStrawCost);
+                                        sendGlobalMessage( (char*)s, nextPlayer);
+                                    }else{
+                                         sprintf(s, "[商店]升级需要花费 %.2f 钢，你只有 %.2f 钢", toStrawCost , money);
+                                         sendGlobalMessage( (char*)s, nextPlayer);
+                                    }
+                                    break;
+                                }
+                                else if(nextPlayer->holdingID == toWoodenObj && m.id == strawFenceIds.getElementDirect(i)){
+                                    // 玩家手持木头，且点击了某个形态稻草围栏
+                                    char s[128];
+                                    if( money >= toWoodenCost ){
+
+                                        setMapObject(m.x,m.y,woodenFenceIds.getElementDirect(i));
+                                        setPlayerMoney(nextPlayer->email,money - toWoodenCost);
+                                        nextPlayer->holdingID = toWoodenLeftObj;
+                                        nextPlayer->holdingEtaDecay = 0;
+                                        
+                                        sprintf(s, "[商店]财产围栏升级成功，花费 %.2f 钢", toWoodenCost);
+                                        sendGlobalMessage( (char*)s, nextPlayer);
+                                    }else{
+                                         sprintf(s, "[商店]升级需要花费 %.2f 钢，你只有 %.2f 钢", toWoodenCost , money);
+                                         sendGlobalMessage( (char*)s, nextPlayer);
+                                    }
+                                    break;
+                                }
+                                else if(nextPlayer->holdingID == toStoneObj && m.id == woodenFenceIds.getElementDirect(i)){
+                                    // 玩家手持石头，且点击了某个形态木头围栏
+                                    char s[128];
+                                    if( money >= toStoneCost ){
+
+                                        setMapObject(m.x,m.y,stoneFenceIds.getElementDirect(i));
+                                        setPlayerMoney(nextPlayer->email,money - toStoneCost);
+                                        nextPlayer->holdingID = 0;
+                                        nextPlayer->holdingEtaDecay = 0;
+                                        
+                                        sprintf(s, "[商店]财产围栏升级成功，花费 %.2f 钢", toStoneCost);
+                                        sendGlobalMessage( (char*)s, nextPlayer);
+                                    }else{
+                                         sprintf(s, "[商店]升级需要花费 %.2f 钢，你只有 %.2f 钢", toStoneCost , money);
+                                         sendGlobalMessage( (char*)s, nextPlayer);
+                                    }
+                                    break;
+                                }
+                                else if(nextPlayer->holdingID == toSteelObj && m.id == stoneFenceIds.getElementDirect(i)){
+                                    // 玩家手持不锈钢，且点击了某个形态石头围栏
+                                    char s[128];
+                                    if( money >= toSteelCost ){
+
+                                        setMapObject(m.x,m.y,steelFenceIds.getElementDirect(i));
+                                        setPlayerMoney(nextPlayer->email,money - toSteelCost);
+                                        nextPlayer->holdingID = 0;
+                                        nextPlayer->holdingEtaDecay = 0;
+                                        
+                                        sprintf(s, "[商店]财产围栏升级成功，花费 %.2f 钢", toSteelCost);
+                                        sendGlobalMessage( (char*)s, nextPlayer);
+                                    }else{
+                                         sprintf(s, "[商店]升级需要花费 %.2f 钢，你只有 %.2f 钢", toSteelCost , money);
+                                         sendGlobalMessage( (char*)s, nextPlayer);
+                                    }
+                                    break;
+                                }
+                            }
+                            
+                            
+                        }
+
+
+
+
+
+
+
+
+
+
 
 
                         // log usingTime

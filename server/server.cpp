@@ -2137,12 +2137,13 @@ void parseCommand(LiveObject *player, char *text){
                 
             if( o->personNoSpawn) {
                 bool isVip = isNamingSayUpper(player->email, &vipList) != NULL;
-                if(!isOp && o->id == 84078){
-                    sendGlobalMessage((char*)"你不能选择测试角色",player);
-                    return;
-                }
+
                 if(!isOp && !isVip) {
                     sendGlobalMessage("你不能选择定制角色",player);
+                    return;
+                }
+                if((!isOp && o->id == 84078){
+                    sendGlobalMessage((char*)"你不能选择测试角色",player);
                     return;
                 }
             } 
@@ -21889,7 +21890,7 @@ int main() {
                          * 石头 + 20g + 一摞钢铁-81003= 钢铁
                          */
                         //如果玩家手持（）且其银行钢锭大于（），则扣除钢锭、改变地面物体
-                        if( nextPlayer->holdingID >= 0 && m.id > 0){
+                        if( nextPlayer->holdingID >= 0 && checkTarget > 0){
 
                             float money = getPlayerMoney(nextPlayer->email);
 
@@ -21932,7 +21933,7 @@ int main() {
 
                             for(int i = 0 ; i < 3 ; i++){
                                 
-                                if(nextPlayer->holdingID == toStrawObj && m.id == rawFenceIds.getElementDirect(i)){
+                                if(nextPlayer->holdingID == toStrawObj && checkTarget == rawFenceIds.getElementDirect(i)){
                                     // 玩家手持稻草，且点击了某个形态原始围栏
                                     char s[128];
                                     if( money >= toStrawCost ){
@@ -21950,7 +21951,7 @@ int main() {
                                     }
                                     break;
                                 }
-                                else if(nextPlayer->holdingID == toWoodenObj && m.id == strawFenceIds.getElementDirect(i)){
+                                else if(nextPlayer->holdingID == toWoodenObj && checkTarget == strawFenceIds.getElementDirect(i)){
                                     // 玩家手持木头，且点击了某个形态稻草围栏
                                     char s[128];
                                     if( money >= toWoodenCost ){
@@ -21968,7 +21969,7 @@ int main() {
                                     }
                                     break;
                                 }
-                                else if(nextPlayer->holdingID == toStoneObj && m.id == woodenFenceIds.getElementDirect(i)){
+                                else if(nextPlayer->holdingID == toStoneObj && checkTarget == woodenFenceIds.getElementDirect(i)){
                                     // 玩家手持石头，且点击了某个形态木头围栏
                                     char s[128];
                                     if( money >= toStoneCost ){
@@ -21986,7 +21987,7 @@ int main() {
                                     }
                                     break;
                                 }
-                                else if(nextPlayer->holdingID == toSteelObj && m.id == stoneFenceIds.getElementDirect(i)){
+                                else if(nextPlayer->holdingID == toSteelObj && checkTarget == stoneFenceIds.getElementDirect(i)){
                                     // 玩家手持不锈钢，且点击了某个形态石头围栏
                                     char s[128];
                                     if( money >= toSteelCost ){

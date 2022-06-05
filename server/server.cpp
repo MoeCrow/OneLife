@@ -1840,7 +1840,7 @@ void parseCommand(LiveObject *player, char *text){
                         int wildTile = getTweakedBaseMap( player->xs+i,
                                                             player->ys+j );
                         if(getMapFloor( player->xs+i, player->ys+j)!=0){
-                            setMapFloor( player->xs+i, player->ys+j,0)
+                            setMapFloor( player->xs+i, player->ys+j,0);
                         }
                         setMapObject( player->xs+i, player->ys+j, wildTile );
                         

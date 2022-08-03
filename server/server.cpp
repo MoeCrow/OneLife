@@ -21769,7 +21769,10 @@ int main() {
                             continue;
                         }
 
-                        if(checkTarget >= 2959 && checkTarget <= 2961) {
+                        if(checkTarget >= 2959 && checkTarget <= 2961||
+                       checkTarget >= 83054 && checkTarget <= 83059||
+                       checkTarget >= 83104 && checkTarget <= 83106) {
+                            //83054-83059
                             ObjectRecord *holdO = getObject( nextPlayer->holdingID );
                             if(holdO != NULL && strstr( holdO->description,"+unclaimwand" ) != NULL) {
                                 GridPos myPos = { m.x, m.y };

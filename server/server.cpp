@@ -2938,7 +2938,7 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 	
-	if(strcmp(cmd, "SETOURWARP")==0){
+	if(strcmp(cmd, "SETWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
 
         int cir = getCircle(player->xd, player->yd);
@@ -2976,7 +2976,7 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	}
 
-    if(strcmp(cmd, "SETWARP2")==0){
+    if(strcmp(cmd, "SETOURWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
 
         int cir = getCircle(player->xd, player->yd);
@@ -24277,7 +24277,8 @@ int main() {
                         playerIndicesToSendUpdatesAbout.push_back( i );
 
                         int checkTarget = getMapObject( m.x, m.y );
-                        if(checkTarget != 0){
+                        if(checkTarget != 0 ||
+                            (checkTarget == 0 && nextPlayer->holdingID>0)){
                             GridPos myPos = { m.x, m.y };
                             //守护石
                             bool errorFlag = false;

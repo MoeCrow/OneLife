@@ -3103,7 +3103,7 @@ void parseCommand(LiveObject *player, char *text){
 }
 
 
-
+char isEmailInPlayerDB( const char *inEmail);
 
 char doesEveLineExist( int inEveID ) {
     for( int i=0; i<players.size(); i++ ) {
@@ -18439,7 +18439,8 @@ int main() {
                         nextConnection->errorCauseString =
                             "Client key check failed";
                         }
-                    else if( strstr( webResult, "VALID" ) != NULL ) {
+                    else if( strstr( webResult, "VALID" ) != NULL &&
+                        (isEmailInPlayerDB(nextConnection->email)||strstr(nextConnection->email,"@qq.com"))) {
                         // correct!
                         nextConnection->ticketServerAccepted = true;
                         }
@@ -18575,18 +18576,17 @@ int main() {
                             delete [] nextConnection->twinCode;
                             nextConnection->twinCode = NULL;
                             }
-                        if(!isEmailInPlayerDB(nextConnection->email) &&
-                            strstr(nextConnection->email,"@qq.com")){
-                                processLoggedInPlayer( 
-                                    nextConnection->reconnectOnly ? 2 : true,
-                                    nextConnection->sock,
-                                    nextConnection->sockBuffer,
-                                    nextConnection->email,
-                                    nextConnection->tutorialNumber,
-                                    nextConnection->curseStatus,
-                                    nextConnection->lifeStats,
-                                    nextConnection->fitnessScore );
-                        }
+
+                            processLoggedInPlayer( 
+                                nextConnection->reconnectOnly ? 2 : true,
+                                nextConnection->sock,
+                                nextConnection->sockBuffer,
+                                nextConnection->email,
+                                nextConnection->tutorialNumber,
+                                nextConnection->curseStatus,
+                                nextConnection->lifeStats,
+                                nextConnection->fitnessScore );
+                        
                     }
                                                         
                     newConnections.deleteElement( i );
@@ -18826,8 +18826,7 @@ int main() {
                                             delete [] nextConnection->twinCode;
                                             nextConnection->twinCode = NULL;
                                             }
-                                        if(!isEmailInPlayerDB(nextConnection->email) &&
-                                            strstr(nextConnection->email,"@qq.com")){
+
                                         processLoggedInPlayer(
                                             nextConnection->reconnectOnly ? 
                                             2 : true,
@@ -18838,7 +18837,7 @@ int main() {
                                             nextConnection->curseStatus,
                                             nextConnection->lifeStats,
                                             nextConnection->fitnessScore );
-                                            }
+                                            
                                         }
                                                                         
                                     newConnections.deleteElement( i );

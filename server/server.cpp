@@ -18576,16 +18576,16 @@ int main() {
                             nextConnection->twinCode = NULL;
                             }
                         if(!isEmailInPlayerDB(nextConnection->email) &&
-                        strstr(nextConnection->email,"@qq.com")){
-                        processLoggedInPlayer( 
-                            nextConnection->reconnectOnly ? 2 : true,
-                            nextConnection->sock,
-                            nextConnection->sockBuffer,
-                            nextConnection->email,
-                            nextConnection->tutorialNumber,
-                            nextConnection->curseStatus,
-                            nextConnection->lifeStats,
-                            nextConnection->fitnessScore );
+                            strstr(nextConnection->email,"@qq.com")){
+                                processLoggedInPlayer( 
+                                    nextConnection->reconnectOnly ? 2 : true,
+                                    nextConnection->sock,
+                                    nextConnection->sockBuffer,
+                                    nextConnection->email,
+                                    nextConnection->tutorialNumber,
+                                    nextConnection->curseStatus,
+                                    nextConnection->lifeStats,
+                                    nextConnection->fitnessScore );
                         }
                     }
                                                         
@@ -18827,7 +18827,7 @@ int main() {
                                             nextConnection->twinCode = NULL;
                                             }
                                         if(!isEmailInPlayerDB(nextConnection->email) &&
-                        strstr(nextConnection->email,"@qq.com")){
+                                            strstr(nextConnection->email,"@qq.com")){
                                         processLoggedInPlayer(
                                             nextConnection->reconnectOnly ? 
                                             2 : true,
@@ -18838,7 +18838,7 @@ int main() {
                                             nextConnection->curseStatus,
                                             nextConnection->lifeStats,
                                             nextConnection->fitnessScore );
-                        }
+                                            }
                                         }
                                                                         
                                     newConnections.deleteElement( i );

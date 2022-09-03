@@ -2938,7 +2938,7 @@ void parseCommand(LiveObject *player, char *text){
         return;
     }
 	
-	if(strcmp(cmd, "SETWARP")==0){
+	if(strcmp(cmd, "SETOURWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
 
         int cir = getCircle(player->xd, player->yd);
@@ -21569,9 +21569,9 @@ int main() {
                                     Spot* s = *guardianSpot.getElement(i);
                                     
                                     GridPos nowPos = {s->x, s->y};
-                                    if(getSquareDistance(myPos, nowPos) <= 20 && s->owner != NULL){
+                                    if(getSquareDistance(myPos, nowPos) <= 40 && s->owner != NULL){
                                         if(!strcmpUpper(s->owner, nextPlayer->email)){
-                                        sendGlobalMessage( (char*)"半径20格内有激活的守护石，您无法使用此处的物品", nextPlayer);
+                                        sendGlobalMessage( (char*)"半径40格内有激活的守护石，您无法使用此处的物品", nextPlayer);
                                         errorFlag = true;
                                         break;
                                         }
@@ -24275,6 +24275,29 @@ int main() {
                         // send update even if action fails (to let them
                         // know that action is over)
                         playerIndicesToSendUpdatesAbout.push_back( i );
+
+                        int checkTarget = getMapObject( m.x, m.y );
+                        if(checkTarget != 0){
+                            GridPos myPos = { m.x, m.y };
+                            //守护石
+                            bool errorFlag = false;
+                            for( int i=0; i<guardianSpot.size(); i++ ) {
+                                    Spot* s = *guardianSpot.getElement(i);
+                                    
+                                    GridPos nowPos = {s->x, s->y};
+                                    if(getSquareDistance(myPos, nowPos) <= 40 && s->owner != NULL){
+                                        if(!strcmpUpper(s->owner, nextPlayer->email)){
+                                        sendGlobalMessage( (char*)"半径40格内有激活的守护石，您无法使用此处的物品", nextPlayer);
+                                        errorFlag = true;
+                                        break;
+                                        }
+                                        
+                                    }
+                                }
+                            if(errorFlag)
+                                continue;
+
+                        }
 						
                         char canDrop = true;
                         
@@ -24686,9 +24709,9 @@ int main() {
                                     Spot* s = *guardianSpot.getElement(i);
                                     
                                     GridPos nowPos = {s->x, s->y};
-                                    if(getSquareDistance(myPos, nowPos) <= 20 && s->owner != NULL){
+                                    if(getSquareDistance(myPos, nowPos) <= 40 && s->owner != NULL){
                                         if(!strcmpUpper(s->owner, nextPlayer->email)){
-                                        sendGlobalMessage( (char*)"半径20格内有激活的守护石，您无法使用此处的物品", nextPlayer);
+                                        sendGlobalMessage( (char*)"半径40格内有激活的守护石，您无法使用此处的物品", nextPlayer);
                                         errorFlag = true;
                                         break;
                                         }

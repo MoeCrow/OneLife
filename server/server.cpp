@@ -1050,6 +1050,7 @@ typedef struct Spot {
 	int x;
 	int y;
 	char* owner;
+    int isPublic;
 } Spot;
 
 static SimpleVector<Spot*> warpSpot;
@@ -1401,13 +1402,15 @@ static bool claimSign(char* name, char* owner, int x, int y)
     return true;
 }
 
-static bool setWarp(char* name, char* owner, int x, int y, bool isOp)
+static bool setWarp(char* name, char* owner, int x, int y, bool isOp, int isPublic)
 {
 	Spot *spot = new Spot();
 	spot->name = stringToUpperCase(name);
 	spot->x = x;
 	spot->y = y;
 	spot->owner = stringToUpperCase(owner);
+    spot->isPublic = isPublic;
+
 	Spot *oldSpot = findSpot(&warpSpot, name);
 	if(!isOp && oldSpot != NULL && *oldSpot->owner != '\0' && strcmp(spot->owner, oldSpot->owner) != 0) {
         delete [] spot->name;
@@ -2960,26 +2963,52 @@ void parseCommand(LiveObject *player, char *text){
                 }
             }
 			sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);
-			if(!setWarp(name, player->email, player->xs, player->ys, isOp))
+			if(!setWarp(name, player->email, player->xs, player->ys, isOp, 0))
 				sprintf(s, "这个地标不属于你");
 		}
 		sendGlobalMessage( s, player);
 		return;
 	}
 
-    if(strcmp(cmd, "SETWARPOP")==0 && isOp){
-        char s[256], name[64];
+    if(strcmp(cmd, "SETWARP2")==0){
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+
+        int cir = getCircle(player->xd, player->yd);
+        if((cir < 3 || cir > 6) && !hasPerm) {
+            sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
+            return;
+        }
+		char s[256], name[64];
         name[0] = 0;
-        if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
-            sprintf(s, "需要一个地标名");
-        }
-        else {
-            sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);
-            setWarp(name, player->email, player->xs, player->ys, isOp);
-        }
-        sendGlobalMessage( s, player);
-        return;
-    }
+		if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
+			sprintf(s, "需要一个地标名");
+		}
+		else {
+            if(strlen(name) < 6 && !hasPerm) {
+                sendGlobalMessage( "地标名至少6位", player);
+                return;
+            }
+            GridPos myPos = { player->xs, player->ys };
+
+            if(!hasPerm)
+            for( int i=0; i<residenceSpot.size(); i++ ) {
+                Spot* s = *residenceSpot.getElement(i);
+
+                GridPos nowPos = {s->x, s->y};
+                if(getSquareDistance(myPos, nowPos) <= 50){
+                    sendGlobalMessage( "半径50格内有激活的领地石，设置失败", player);
+                    return;
+                }
+            }
+			sprintf(s, "地标 '%s' 已设置在 %d %d", name, player->xs, player->ys);
+			if(!setWarp(name, player->email, player->xs, player->ys, isOp,1))
+				sprintf(s, "这个地标不属于你");
+		}
+		sendGlobalMessage( s, player);
+		return;
+	}
+
+
 
     if(strcmp(cmd, "PURGE")==0){
         int countS = 0;

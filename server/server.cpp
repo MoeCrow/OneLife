@@ -3106,7 +3106,7 @@ void parseCommand(LiveObject *player, char *text){
 		Spot* spot = findSpot(&warpSpot, name);
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);
-        else if(!hasPerm && !strcmpUpper(spot->owner,player->email)){
+        else if(!spot->isPublic == 1 && !hasPerm && !strcmpUpper(spot->owner,player->email)){
             sprintf(s, "这个地标不属于你，传送失败");
         }
 		else {

@@ -1209,10 +1209,14 @@ static void readSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotLi
 		Spot* spot = new Spot();
 		spot->name = new char[256];
 		spot->owner = NULL;
-		if(strcmp(inSettingsName, "warpSpot")==0 || strcmp(inSettingsName, "signSpot")==0|| strcmp(inSettingsName,"guardianSpot")==0) {
+		if( strcmp(inSettingsName, "signSpot")==0|| strcmp(inSettingsName,"guardianSpot")==0) {
 			spot->owner = new char[256];
 			sscanf(str, "%s %d %d %s", spot->name, &spot->x, &spot->y, spot->owner);
 		}
+        else if(strcmp(inSettingsName, "warpSpot")==0 ){
+            spot->owner = new char[256];
+			sscanf(str, "%s %d %d %s %d", spot->name, &spot->x, &spot->y, spot->owner, &spot->isPublic);
+        }
 		else
 			sscanf(str, "%s %d %d", spot->name, &spot->x, &spot->y);
 		spotList->push_back(spot);

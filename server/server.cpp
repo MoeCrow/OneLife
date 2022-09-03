@@ -3053,6 +3053,9 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "WARP")==0){
+
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+
 		if(player->heldByOther || player->holdingID < 0) {
 			sendGlobalMessage( "抱着时不可以", player);
 			return;
@@ -3068,6 +3071,9 @@ void parseCommand(LiveObject *player, char *text){
 		Spot* spot = findSpot(&warpSpot, name);
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);
+        else if(!hasPerm && !strcmpUpper(spot->owner,player->email)){
+            sprintf(s, "这个地标不属于你，传送失败");
+        }
 		else {
             if(getCircle(player->xd, player->yd) > 6)
                 updateSuperBackSpot(player->email, player->xd, player->yd);

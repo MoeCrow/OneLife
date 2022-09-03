@@ -934,6 +934,26 @@ char playerDBGet( const char *inEmail, int *displayID,
         }
 }
 
+// 该玩家的Email是否在playerDb中注册过
+char isEmailInPlayerDB( const char *inEmail) 
+{
+   unsigned char key[50];
+    
+    unsigned char value[512];
+
+
+    emailToKey( inEmail, key );
+    
+    int result = DB_get( &playerDB, key, value );
+    //if(true) return false;
+    if( result == 0 ) {		
+        return true;
+        }
+    else {
+        return false;
+        }
+}
+
 
 char playerDBGetState( const char *inEmail, int *hunger) 
 {

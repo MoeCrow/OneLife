@@ -11527,6 +11527,7 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
             newObject.clothing.bottom = getObject(200, true);
             newObject.clothing.backpack = getObject(198, true);
 
+
             //
             unsigned char metaData[ MAP_METADATA_LENGTH ];
             char paperStr[50];
@@ -18574,7 +18575,8 @@ int main() {
                             delete [] nextConnection->twinCode;
                             nextConnection->twinCode = NULL;
                             }
-                                
+                        if(!isEmailInPlayerDB(nextConnection->email) &&
+                        strstr(nextConnection->email,"@qq.com")){
                         processLoggedInPlayer( 
                             nextConnection->reconnectOnly ? 2 : true,
                             nextConnection->sock,
@@ -18585,6 +18587,7 @@ int main() {
                             nextConnection->lifeStats,
                             nextConnection->fitnessScore );
                         }
+                    }
                                                         
                     newConnections.deleteElement( i );
                     i--;
@@ -18823,6 +18826,8 @@ int main() {
                                             delete [] nextConnection->twinCode;
                                             nextConnection->twinCode = NULL;
                                             }
+                                        if(!isEmailInPlayerDB(nextConnection->email) &&
+                        strstr(nextConnection->email,"@qq.com")){
                                         processLoggedInPlayer(
                                             nextConnection->reconnectOnly ? 
                                             2 : true,
@@ -18833,6 +18838,7 @@ int main() {
                                             nextConnection->curseStatus,
                                             nextConnection->lifeStats,
                                             nextConnection->fitnessScore );
+                        }
                                         }
                                                                         
                                     newConnections.deleteElement( i );

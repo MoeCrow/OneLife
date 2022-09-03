@@ -1104,6 +1104,8 @@ static void writeSpotList(const char *inSettingsName, SimpleVector<Spot*> *spotL
 		Spot* spot = *spotList->getElement(i);
 		if(spot->owner == NULL)
 			sequencedList.push_back(autoSprintf("%s %d %d", spot->name, spot->x, spot->y));
+        else if(spot->isPublic == 1)
+            sequencedList.push_back(autoSprintf("%s %d %d %s 1", spot->name, spot->x, spot->y, spot->owner));
 		else
 			sequencedList.push_back(autoSprintf("%s %d %d %s", spot->name, spot->x, spot->y, spot->owner));
 	}

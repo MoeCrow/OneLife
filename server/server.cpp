@@ -19245,7 +19245,7 @@ int main() {
             
  
             // setMapObject(-572,-591,3910);
-            setMapObject(-571,-591,3910);
+            setMapObject(-571,-591,148);
             // setMapObject(-570,-591,3910);
 
         }

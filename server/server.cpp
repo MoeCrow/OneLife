@@ -19131,21 +19131,21 @@ int main() {
         
         //---------------------
         // 临时，怪物生成点
-        double curSpawnTime = Time::getCurrentTime();
-        if(curSpawnTime - spawnIntervalSeconds > 10){
+        // double curSpawnTime = Time::getCurrentTime();
+        // if(curSpawnTime - spawnIntervalSeconds > 10){
         
-            spawnIntervalSeconds = curSpawnTime;
-            setMapObject(-593,-591,84191);
-            setMapObject(-550,-591,84191);
+        //     spawnIntervalSeconds = curSpawnTime;
+        //     setMapObject(-593,-591,84191);
+        //     setMapObject(-550,-591,84191);
 
-        }
-        if(curSpawnTime - spawnIntervalSecondsLong > 10){
+        // }
+        // if(curSpawnTime - spawnIntervalSecondsLong > 10){
         
-            spawnIntervalSecondsLong = curSpawnTime;
-            setMapObject(-591 -557,84191);
-            setMapObject(-554 -555,84191);
+        //     spawnIntervalSecondsLong = curSpawnTime;
+        //     setMapObject(-591 -557,84191);
+        //     setMapObject(-554 -555,84191);
 
-        }
+        // }
 
 
 

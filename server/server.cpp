@@ -2635,7 +2635,22 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "DELSHOP")==0){
-        deleteShop(isOp, player->xs, player->ys - 1, player);
+    
+        int numX = 1;
+        int numY = 1;
+        int numRead = sscanf( args, "%d %d", &numX, &numY );
+        if(numRead == 0){
+            deleteShop(isOp, player->xs, player->ys - 1, player);
+        }
+        if( numRead == 2 &&
+                numX <= 50 && numY <= 50) {
+
+             for ( int j = 0; j < numY; j++ ) {
+                    for ( int i = 0; i < numX; i++ ) {
+                        deleteShop(isOp, player->xs + i, player->ys + j, player);
+                        }
+                     }
+                }
 		return;
 	}
 
@@ -17415,7 +17430,7 @@ int main() {
     // make backup and delete old backup every day
     AppLog::setLog( new FileLog( "log.txt", 86400 ) );
 
-    AppLog::setLoggingLevel( Log::ERROR_LEVEL );
+    AppLog::setLoggingLevel( Log::DETAIL_LEVEL );
     AppLog::printAllMessages( true );
 
     printf( "\n" );

@@ -21814,9 +21814,9 @@ int main() {
                                     nextPlayer->holdingID = 326;
                                 }
                             } 
-                            else if(nextPlayer->holdingID == 81731){
-                                    setMapObject(m.x,m.y,0);
-                                }
+                            // else if(nextPlayer->holdingID == 81731){
+                            //         setMapObject(m.x,m.y,0);
+                            //     }
                             
                             
                             /*

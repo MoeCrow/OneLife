@@ -3124,12 +3124,13 @@ void parseCommand(LiveObject *player, char *text){
                 // 571 593
         if(spot!= NULL &&
             spot->x >= -600 && spot->x <= -543 &&
-        spot->y >= -600 && spot->y <= -550 &&
-        spot->x != -571 && spot->y != -593){
+        spot->y >= -600 && spot->y <= -550 ){
 
             // 区域内，禁止传送
+            if(!(spot->x == -571 && spot->y == -593)){
             sendGlobalMessage( "活动区域内禁止传送", player);
             return;
+            }
         }
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);

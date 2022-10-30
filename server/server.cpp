@@ -21813,10 +21813,13 @@ int main() {
                                     money -= 1;
                                     nextPlayer->holdingID = 326;
                                 }
-                                else if(nextPlayer->holdingID == 81731){
+                            } 
+                            else if(nextPlayer->holdingID == 81731){
                                     setMapObject(m.x,m.y,0);
                                 }
-                            }/*
+                            
+                            
+                            /*
                             else if(holdO != NULL && holdO->written) {
                                 char metaData[ MAP_METADATA_LENGTH ];
                                 char found = getMetadata( nextPlayer->holdingID, 

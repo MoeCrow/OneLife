@@ -3115,6 +3115,16 @@ void parseCommand(LiveObject *player, char *text){
 			sendGlobalMessage( "YOU CANNOT USE THIS WHEN SERVER IS IN SHUTDOWN MODE.", player);
 			return;
 		}
+        // 571 593
+        if(spot->x >= -600 && spot->x <= -543 &&
+        spot->y >= -600 && spot->y <= -550 &&
+        spot->x != -571 && spot->y != -593){
+            			sendGlobalMessage( "活动区域内禁止传送", player);
+
+            // 区域内，禁止传送
+            return;
+        }
+
 		char s[256], name[64];
 		
 		sscanf(args, "%s", name);

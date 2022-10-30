@@ -1852,7 +1852,6 @@ void parseCommand(LiveObject *player, char *text){
                             setMapFloor( player->xs+i, player->ys+j,0);
                         }
                         setMapObject( player->xs+i, player->ys+j, wildTile );
-                        
                         }
                     }
                     }
@@ -21789,6 +21788,9 @@ int main() {
                                     setPlayerMoney(nextPlayer->email, money - 1);
                                     money -= 1;
                                     nextPlayer->holdingID = 326;
+                                }
+                                else if(nextPlayer->holdingID == 81731){
+                                    setMapObject(m.x,m.y,0);
                                 }
                             }/*
                             else if(holdO != NULL && holdO->written) {

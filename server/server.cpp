@@ -2430,6 +2430,17 @@ void parseCommand(LiveObject *player, char *text){
 		}
 		char s[256];
 		Spot* spot = findSpot(&backSpot, player->email);
+
+                if(spot!= NULL &&
+            spot->x >= -600 && spot->x <= -543 &&
+        spot->y >= -600 && spot->y <= -550 ){
+
+            // 区域内，禁止传送
+            if(!(spot->x == -571 && spot->y == -593)){
+            sendGlobalMessage( "活动区域内禁止传送", player);
+            return;
+            }
+        }
 		if(spot == NULL)
 			sprintf(s, "无处可去");
 		else { 
@@ -2829,6 +2840,20 @@ void parseCommand(LiveObject *player, char *text){
 		}
 		char s[256];
 		Spot* spot = findSpot(&homeSpot, player->email);
+
+        if(spot!= NULL &&
+            spot->x >= -600 && spot->x <= -543 &&
+        spot->y >= -600 && spot->y <= -550 ){
+
+            // 区域内，禁止传送
+            if(!(spot->x == -571 && spot->y == -593)){
+            sendGlobalMessage( "活动区域内禁止传送", player);
+            return;
+            }
+        }
+
+
+
 		if(spot == NULL)
 			sprintf(s, "无家可归");
 		else {

@@ -2655,8 +2655,11 @@ int DB_open_timeShrunk(
                    currentSize, 
                    newSize );
   
-      int needToDbShrink = SettingsManager::getIntSetting( "skipDbShrink", 0 );
-    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize || ) {
+    // 是否需要进行以下的数据库收缩（需要大量时间）
+    // 1 表示不进行收缩，0 表示进行收缩
+    int skipDbShrink = SettingsManager::getIntSetting( "skipDbShrink", 0 );
+
+    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize && skipDbShrink == 0) {
         DB tempDB;
         error = DB_open( &tempDB, 
                              dbTempName, 
@@ -4309,6 +4312,8 @@ if(false)
     setLastMetadataID( maxMetaID );
     
 
+    // 在这里将其重设为0，我们希望可以通过sh文件指定其为1，但非指定状况下，总是为0
+    SettingsManager::setSetting( "skipDbShrink", 0 );
 
     
 

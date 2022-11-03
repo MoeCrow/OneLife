@@ -2655,8 +2655,8 @@ int DB_open_timeShrunk(
                    currentSize, 
                    newSize );
   
-    
-    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize) {
+      int needToDbShrink = SettingsManager::getIntSetting( "skipDbShrink", 0 );
+    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize || ) {
         DB tempDB;
         error = DB_open( &tempDB, 
                              dbTempName, 

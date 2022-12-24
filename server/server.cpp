@@ -2431,16 +2431,17 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		Spot* spot = findSpot(&backSpot, player->email);
 
-        //         if(spot!= NULL &&
-        //     spot->x >= -600 && spot->x <= -543 &&
-        // spot->y >= -600 && spot->y <= -550 ){
+        if(spot!= NULL &&
+            spot->x >= -539 && spot->x <= -479 &&
+        spot->y >= -601 && spot->y <= -544 ){
 
-        //     // 区域内，禁止传送
-        //     if(!(spot->x == -571 && spot->y == -593)){
-        //     sendGlobalMessage( "活动区域内禁止传送", player);
-        //     return;
-        //     }
-        // }
+            // 区域内，禁止传送
+            if(!(spot->x == -509 && spot->y == -542)){
+            sendGlobalMessage( "活动区域内禁止传送", player);
+            return;
+            }
+        }
+
 		if(spot == NULL)
 			sprintf(s, "无处可去");
 		else { 
@@ -2622,12 +2623,13 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SHOP")==0 || strcmp(cmd, "SHOPS")==0){
 
+
         if(
-            player->xs >= -600 && player->xs <= -543 &&
-        player->ys >= -600 && player->ys <= -550 ){
+            player->xs >= -539 && player->xs <= -479 &&
+        player->ys >= -601 && player->ys <= -544 ){
 
             // 区域内，禁止传送
-            if(!(player->xs == -571 && player->ys == -593)){
+            if(!(player->xs == -509 && player->ys == -542)){
             sendGlobalMessage( "活动区域内禁止设置商店", player);
             return;
             }
@@ -2660,11 +2662,11 @@ void parseCommand(LiveObject *player, char *text){
     if(strcmp(cmd, "SHOPN")==0){
 
                 if(
-            player->xs >= -600 && player->xs <= -543 &&
-        player->ys >= -600 && player->ys <= -550 ){
+            player->xs >= -539 && player->xs <= -479 &&
+        player->ys >= -601 && player->ys <= -544 ){
 
             // 区域内，禁止传送
-            if(!(player->xs == -571 && player->ys == -593)){
+            if(!(player->xs == -509 && player->ys == -542)){
             sendGlobalMessage( "活动区域内禁止设置商店", player);
             return;
             }
@@ -2675,12 +2677,12 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SHOPW")==0){
 
-        if(
-            player->xs >= -600 && player->xs <= -543 &&
-        player->ys >= -600 && player->ys <= -550 ){
+               if(
+            player->xs >= -539 && player->xs <= -479 &&
+        player->ys >= -601 && player->ys <= -544 ){
 
             // 区域内，禁止传送
-            if(!(player->xs == -571 && player->ys == -593)){
+            if(!(player->xs == -509 && player->ys == -542)){
             sendGlobalMessage( "活动区域内禁止设置商店", player);
             return;
             }
@@ -2693,12 +2695,12 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SHOPE")==0){
 
-        if(
-            player->xs >= -600 && player->xs <= -543 &&
-        player->ys >= -600 && player->ys <= -550 ){
+                if(
+            player->xs >= -539 && player->xs <= -479 &&
+        player->ys >= -601 && player->ys <= -544 ){
 
             // 区域内，禁止传送
-            if(!(player->xs == -571 && player->ys == -593)){
+            if(!(player->xs == -509 && player->ys == -542)){
             sendGlobalMessage( "活动区域内禁止设置商店", player);
             return;
             }
@@ -2712,12 +2714,12 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SHOPH")==0){
 
-        if(
-            player->xs >= -600 && player->xs <= -543 &&
-        player->ys >= -600 && player->ys <= -550 ){
+                if(
+            player->xs >= -539 && player->xs <= -479 &&
+        player->ys >= -601 && player->ys <= -544 ){
 
             // 区域内，禁止传送
-            if(!(player->xs == -571 && player->ys == -593)){
+            if(!(player->xs == -509 && player->ys == -542)){
             sendGlobalMessage( "活动区域内禁止设置商店", player);
             return;
             }
@@ -2925,16 +2927,16 @@ void parseCommand(LiveObject *player, char *text){
 		char s[256];
 		Spot* spot = findSpot(&homeSpot, player->email);
 
-        // if(spot!= NULL &&
-        //     spot->x >= -600 && spot->x <= -543 &&
-        // spot->y >= -600 && spot->y <= -550 ){
+        if(spot!= NULL &&
+            spot->x >= -539 && spot->x <= -479 &&
+        spot->y >= -601 && spot->y <= -544 ){
 
-        //     // 区域内，禁止传送
-        //     if(!(spot->x == -571 && spot->y == -593)){
-        //     sendGlobalMessage( "活动区域内禁止传送", player);
-        //     return;
-        //     }
-        // }
+            // 区域内，禁止传送
+            if(!(spot->x == -509 && spot->y == -542)){
+            sendGlobalMessage( "活动区域内禁止传送", player);
+            return;
+            }
+        }
 
 
 
@@ -3230,17 +3232,19 @@ void parseCommand(LiveObject *player, char *text){
 		
 		sscanf(args, "%s", name);
 		Spot* spot = findSpot(&warpSpot, name);
-                // 571 593
-        // if(spot!= NULL &&
-        //     spot->x >= -600 && spot->x <= -543 &&
-        // spot->y >= -600 && spot->y <= -550 ){
 
-        //     // 区域内，禁止传送
-        //     if(!(spot->x == -571 && spot->y == -593)){
-        //     sendGlobalMessage( "活动区域内禁止传送", player);
-        //     return;
-        //     }
-        // }
+                // 571 593
+        if(spot!= NULL &&
+            spot->x >= -539 && spot->x <= -479 &&
+        spot->y >= -601 && spot->y <= -544 ){
+
+            // 区域内，禁止传送
+            if(!(spot->x == -509 && spot->y == -542)){
+            sendGlobalMessage( "活动区域内禁止传送", player);
+            return;
+            }
+        }
+
 		if(spot == NULL)
 			sprintf(s, "没找到地标 '%s'", name);
         else if(!spot->isPublic == 1 && !hasPerm && !strcmpUpper(spot->owner,player->email)){

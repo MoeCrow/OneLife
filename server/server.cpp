@@ -2638,23 +2638,21 @@ void parseCommand(LiveObject *player, char *text){
 	}
 
     // 批量设置商店功能
-    if(strcmp(cmd, "SETSHOP")==0 && isOp){
+    if(strcmp(cmd, "SETSHOPSNOW")==0 && isOp){
     
-        int numX = 1;
-        int numY = 1;
-        int numRead = sscanf( args, "%d %d", &numX, &numY );
-        if(numRead == 0){
-            createShop(args, player->xs, player->ys, player);
-        }
-        if( numRead == 2 &&
-                numX <= 50 && numY <= 50) {
 
-             for ( int j = 0; j < numY; j++ ) {
-                    for ( int i = 0; i < numX; i++ ) {
-                        createShop(args, player->xs + i, player->ys + j, player);
+
+             for ( int j = 0; j < 50; j++ ) {
+                    for ( int i = 0; i < 50; i++ ) {
+                        int oID = getMapObject( player->xs + i, player->ys + j );
+                        if(oID == 3267||oID == 3266 ||oID == 3268){
+                            // 给雪墙设置
+                            createShop(args, player->xs + i, player->ys + j, player);
+
+                        }
                         }
                      }
-                }
+                
 		return;
 	}
 

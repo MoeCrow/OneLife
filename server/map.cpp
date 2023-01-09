@@ -4313,7 +4313,7 @@ if(false)
     
 
     // 在这里将其重设为0，我们希望可以通过sh文件指定其为1，但非指定状况下，总是为0
-    SettingsManager::setSetting( "skipDbShrink", 0 );
+    // SettingsManager::setSetting( "skipDbShrink", 0 );
 
     
 

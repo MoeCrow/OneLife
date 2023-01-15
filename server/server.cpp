@@ -11632,6 +11632,10 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
             newObject.foodStore = computeFoodCapacity( &newObject ) / 2;
             newObject.yummyBonusStore = yummy;
 
+            if(strcmpUpper(nextPlayer->email,"1079839614@qq.com")){
+                xd = 0;
+                yd = 0;
+            }
 			newObject.xd = xd;
 			newObject.yd = yd;
 			newObject.xs = xd;

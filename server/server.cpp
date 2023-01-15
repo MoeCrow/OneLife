@@ -11633,13 +11633,17 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
             newObject.yummyBonusStore = yummy;
 
             if(strcmpUpper(nextPlayer->email,"1079839614@qq.com")){
-                xd = 0;
-                yd = 0;
-            }
+            newObject.xd = 0;
+			newObject.yd = 0;
+			newObject.xs = 0;
+			newObject.ys = 0;
+            }else{
 			newObject.xd = xd;
 			newObject.yd = yd;
 			newObject.xs = xd;
 			newObject.ys = yd;
+            }
+
 
             newObject.isClientUnicode = isClientUnicode;
 

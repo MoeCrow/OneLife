@@ -11632,18 +11632,10 @@ int processLoggedInPlayer( int inAllowOrForceReconnect,
             newObject.foodStore = computeFoodCapacity( &newObject ) / 2;
             newObject.yummyBonusStore = yummy;
 
-            if(strcmpUpper(newObject.email,"1079839614@qq.com")){
-            newObject.xd = 0;
-			newObject.yd = 0;
-			newObject.xs = 0;
-			newObject.ys = 0;
-            }else{
 			newObject.xd = xd;
 			newObject.yd = yd;
 			newObject.xs = xd;
 			newObject.ys = yd;
-            }
-
 
             newObject.isClientUnicode = isClientUnicode;
 

@@ -2429,16 +2429,16 @@ void parseCommand(LiveObject *player, char *text){
 			return;
 		}
 
-        if(
-            player->xs >= -476 && player->xs <= -416 &&
-        player->ys >= -600 && player->ys <= -529 ){
+        // if(
+        //     player->xs >= -476 && player->xs <= -416 &&
+        // player->ys >= -600 && player->ys <= -529 ){
 
-            // 区域内，禁止传送
-            if(!(player->xs == -446 && player->ys == -521)){
-            sendGlobalMessage( "请输入.warp huodong进行传送", player);
-            return;
-            }
-        }
+        //     // 区域内，禁止传送
+        //     if(!(player->xs == -446 && player->ys == -521)){
+        //     sendGlobalMessage( "请输入.warp huodong进行传送", player);
+        //     return;
+        //     }
+        // }
 		char s[256];
 		Spot* spot = findSpot(&backSpot, player->email);
 
@@ -3255,10 +3255,12 @@ void parseCommand(LiveObject *player, char *text){
             if(!(spot->x == -446 && spot->y == -521)){
             sendGlobalMessage( "活动区域内禁止传送", player);
             return;
-            }else{
-                if(player->holdingID > 0){
+            }
+            if(spot->x == -446 && spot->y == -521){
+                if(player->holdingID != 0){
                     // 玩家手持物品，来到活动坐标
                     sendGlobalMessage( "活动区域内禁止自带物品", player);
+                    return;
                 }
 
             }

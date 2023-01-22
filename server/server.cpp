@@ -3253,17 +3253,17 @@ void parseCommand(LiveObject *player, char *text){
 
             // 区域内，禁止传送
             if(!(spot->x == -446 && spot->y == -521)){
-            sendGlobalMessage( "活动区域内禁止传送", player);
-            return;
+                sendGlobalMessage( "活动区域内禁止传送", player);
+                return;
             }
-            if(spot->x == -446 && spot->y == -521){
-                if(player->holdingID != 0){
-                    // 玩家手持物品，来到活动坐标
-                    sendGlobalMessage( "活动区域内禁止自带物品", player);
-                    return;
-                }
+            // if(spot->x == -446 && spot->y == -521){
+            //     if(player->holdingID != 0){
+            //         // 玩家手持物品，来到活动坐标
+            //         sendGlobalMessage( "活动区域内禁止自带物品", player);
+            //         return;
+            //     }
 
-            }
+            // }
         }
 
 		if(spot == NULL)

@@ -2442,6 +2442,8 @@ void parseCommand(LiveObject *player, char *text){
             }
         }
 
+        
+
 		if(spot == NULL)
 			sprintf(s, "无处可去");
 		else { 
@@ -2624,16 +2626,16 @@ void parseCommand(LiveObject *player, char *text){
 	if(strcmp(cmd, "SHOP")==0 || strcmp(cmd, "SHOPS")==0){
 
 
-        if(
-            player->xs >= -476 && player->xs <= -416 &&
-        player->ys >= -600 && player->ys <= -529 ){
+        // if(
+        //     player->xs >= -476 && player->xs <= -416 &&
+        // player->ys >= -600 && player->ys <= -529 ){
 
-            // 区域内，禁止传送
-            if(!(player->xs == -446 && player->ys == -521)){
-            sendGlobalMessage( "活动区域内禁止设置商店", player);
-            return;
-            }
-        }
+        //     // 区域内，禁止传送
+        //     if(!(player->xs == -446 && player->ys == -521)){
+        //     sendGlobalMessage( "活动区域内禁止设置商店", player);
+        //     return;
+        //     }
+        // }
 
 
 		createShop(args, player->xs, player->ys - 1, player);
@@ -2662,32 +2664,32 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SHOPN")==0){
 
-              if(
-            player->xs >= -476 && player->xs <= -416 &&
-        player->ys >= -600 && player->ys <= -529 ){
+        //       if(
+        //     player->xs >= -476 && player->xs <= -416 &&
+        // player->ys >= -600 && player->ys <= -529 ){
 
-            // 区域内，禁止传送
-            if(!(player->xs == -446 && player->ys == -521)){
-            sendGlobalMessage( "活动区域内禁止设置商店", player);
-            return;
-            }
-        }
+        //     // 区域内，禁止传送
+        //     if(!(player->xs == -446 && player->ys == -521)){
+        //     sendGlobalMessage( "活动区域内禁止设置商店", player);
+        //     return;
+        //     }
+        // }
         createShop(args, player->xs, player->ys + 1, player);
         return;
     }
 
     if(strcmp(cmd, "SHOPW")==0){
 
-            if(
-            player->xs >= -476 && player->xs <= -416 &&
-        player->ys >= -600 && player->ys <= -529 ){
+        //     if(
+        //     player->xs >= -476 && player->xs <= -416 &&
+        // player->ys >= -600 && player->ys <= -529 ){
 
-            // 区域内，禁止传送
-            if(!(player->xs == -446 && player->ys == -521)){
-            sendGlobalMessage( "活动区域内禁止设置商店", player);
-            return;
-            }
-        }
+        //     // 区域内，禁止传送
+        //     if(!(player->xs == -446 && player->ys == -521)){
+        //     sendGlobalMessage( "活动区域内禁止设置商店", player);
+        //     return;
+        //     }
+        // }
 
 
         createShop(args, player->xs - 1, player->ys, player);
@@ -2696,16 +2698,16 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SHOPE")==0){
 
-               if(
-            player->xs >= -476 && player->xs <= -416 &&
-        player->ys >= -600 && player->ys <= -529 ){
+        //        if(
+        //     player->xs >= -476 && player->xs <= -416 &&
+        // player->ys >= -600 && player->ys <= -529 ){
 
-            // 区域内，禁止传送
-            if(!(player->xs == -446 && player->ys == -521)){
-            sendGlobalMessage( "活动区域内禁止设置商店", player);
-            return;
-            }
-        }
+        //     // 区域内，禁止传送
+        //     if(!(player->xs == -446 && player->ys == -521)){
+        //     sendGlobalMessage( "活动区域内禁止设置商店", player);
+        //     return;
+        //     }
+        // }
 
 
 
@@ -2715,16 +2717,16 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "SHOPH")==0){
 
-              if(
-            player->xs >= -476 && player->xs <= -416 &&
-        player->ys >= -600 && player->ys <= -529 ){
+        //       if(
+        //     player->xs >= -476 && player->xs <= -416 &&
+        // player->ys >= -600 && player->ys <= -529 ){
 
-            // 区域内，禁止传送
-            if(!(player->xs == -446 && player->ys == -521)){
-            sendGlobalMessage( "活动区域内禁止设置商店", player);
-            return;
-            }
-        }
+        //     // 区域内，禁止传送
+        //     if(!(player->xs == -446 && player->ys == -521)){
+        //     sendGlobalMessage( "活动区域内禁止设置商店", player);
+        //     return;
+        //     }
+        // }
 
 
 

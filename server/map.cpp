@@ -290,7 +290,7 @@ inline char shouldStale(int secPassed, int staleSec, int x, int y) {
     if(circle <= 3)
         return false;
     //return secPassed > (10 - circle) * 604800;
-    return secPassed > 3 * 604800;
+    return secPassed > 4 * 604800;
 }
 
 

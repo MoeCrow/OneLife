@@ -286,11 +286,11 @@ inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs
 inline char shouldStale(int secPassed, int staleSec, int x, int y) {
     int circle = getCircle(x, y);
     if(circle >= 7)
-        return secPassed > 86400;
+        return secPassed > 0;
     if(circle <= 3)
         return false;
     //return secPassed > (10 - circle) * 604800;
-    return secPassed > 5 * 604800;
+    return secPassed > 4 * 604800;
 }
 
 
@@ -2658,8 +2658,8 @@ int DB_open_timeShrunk(
     // 是否需要进行以下的数据库收缩（需要大量时间）
     // 1 表示不进行收缩，0 表示进行收缩
     int skipDbShrink = SettingsManager::getIntSetting( "skipDbShrink", 0 );
-
-    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize && skipDbShrink == 0) {
+// if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize && skipDbShrink == 0) {
+    if(currentSize - newSize > 0 * minimumShrinkRatio * currentSize) {
         DB tempDB;
         error = DB_open( &tempDB, 
                              dbTempName, 

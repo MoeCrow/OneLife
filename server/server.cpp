@@ -17578,7 +17578,7 @@ int main() {
     AppLog::setLog( new FileLog( "log.txt", 86400 ) );
 
     AppLog::setLoggingLevel( Log::DETAIL_LEVEL );
-    AppLog::printAllMessages( false );
+    AppLog::printAllMessages( true );
 
     printf( "\n" );
     AppLog::info( "Server starting up" );

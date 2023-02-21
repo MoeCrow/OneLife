@@ -3098,9 +3098,14 @@ char loadIntoMapFromFile( FILE *inFile,
         // set all test map directly in database
         biomeDBPut( r.x, r.y, r.biome, r.biome, 0.5 );
                 
-        dbFloorPut( r.x, r.y, r.floor );
+        if(r.floor > 0){
+            dbFloorPut( r.x, r.y, r.floor );
+        }
 
-        setMapObject( r.x, r.y, r.id );
+        if(r.id > 0){
+            setMapObject( r.x, r.y, r.id );
+        }
+        
                 
         int *contArray = r.contained.getElementArray();
                 

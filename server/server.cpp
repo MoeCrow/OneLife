@@ -2390,7 +2390,7 @@ void parseCommand(LiveObject *player, char *text){
             return;
         }
 
-        if(getCircle(player->xd, player->yd) > 6)
+        if(getCircle(player->xd, player->yd) > 7)
             updateSuperBackSpot(player->email, player->xd, player->yd);
 
         updateTprTime(player->email, time(NULL) + 600);

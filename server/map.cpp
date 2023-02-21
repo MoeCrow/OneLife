@@ -7237,7 +7237,7 @@ void getChunkMessageToFile( int inStartX, int inStartY,
 
             lastCheckedBiome = -1;
     //1.1 获取第cI个地块上的物体
-            chunk[cI] = getMapObject( x, y );
+            chunk[cI] = getMapObjectRaw( x, y );
 
     //1.2 获取第cI个地块上的群落
             if( lastCheckedBiome == -1 ||

@@ -1830,6 +1830,60 @@ void parseCommand(LiveObject *player, char *text){
 		return;
 	    }
 
+
+    if( strcmp( cmd, "SUPPUT" ) ==0 && isOp ) {
+
+        int numX = 1;
+        int numY = 1;
+
+        int containerID = -1;
+        char needToAddContained = false;
+
+        int numRead = sscanf( args, "%d %d %d %d", 
+                        &id, &numX, &numY, &containerID );
+
+		if( numRead == 4 ||
+            numRead == 3 ||
+            numRead == 1 ) {
+            
+            ObjectRecord *o = getObject( id );
+            if( o == NULL || id < 0  ) {
+
+                sendGlobalMessage( "物体未找到", player);
+                return;
+                }
+            if( numRead == 4 && containerID > 0 &&
+                o->numSlots > 0 ){
+
+                needToAddContained = true;
+                }
+
+            for ( int j = 0; j < numY; j++ ) {
+                for ( int i = 0; i < numX; i++ ) {
+                    if ( numX <= 400 && numY <= 400 ){
+                        if( id == 0 ){
+
+                            clearAllContained( player->xs+i, player->ys+j ,0);
+                            }
+                        
+                        setMapObject( player->xs + i, player->ys + j, id );
+
+                        if( needToAddContained ){
+
+                            for( int c = 0; c < o->numSlots; c++ ) {
+
+                                addContained( player->xs + i, player->ys + j,
+                                            containerID, 0 );
+                                }
+                            }
+                        }
+                    }
+          
+                }
+		    }
+		
+		return;
+	    }
         if( strcmp(cmd, "WPUT") == 0 && isOp) {
         
         int numX = 1;

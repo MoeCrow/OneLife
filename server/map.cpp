@@ -293,6 +293,8 @@ inline char shouldStale(int secPassed, int staleSec, int x, int y) {
         if(x >= 1000000 && x <= 1010000 &&
             y >= 0 && y <= 1820){
         return false;
+    }else{
+        return true;
     }
 
     }

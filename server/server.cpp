@@ -1884,6 +1884,39 @@ void parseCommand(LiveObject *player, char *text){
 		
 		return;
 	    }
+
+
+        if( strcmp( cmd, "RPUT" ) ==0 && isOp ) {
+
+
+        int scale = 0;
+
+        int numRead = sscanf( args, "%d", &scale );
+
+		if( numRead == 1 ) {
+            
+            ObjectRecord *o = getObject( id );
+            if( o == NULL || id < 0  ) {
+
+                sendGlobalMessage( "物体未找到", player);
+                return;
+                }
+
+            
+            for ( int j = 0; j < scale; j++ ) {
+                for ( int i = 0; i < scale; i++ ) {
+                
+                        
+                        setMapObject( player->xs + i, player->ys + j, 3097 );
+
+                        
+                    }
+          
+                }
+		    }
+		
+		return;
+	    }
         if( strcmp(cmd, "WPUT") == 0 && isOp) {
         
         int numX = 1;

@@ -290,8 +290,8 @@ inline char shouldStale(int secPassed, int staleSec, int x, int y) {
     if(circle <= 1)
         return false;
     if(circle == 7){
-        if(inX >= 1000000 && inX <= 1010000 &&
-            inY >= 0 && inY <= 1820){
+        if(x >= 1000000 && x <= 1010000 &&
+            y >= 0 && y <= 1820){
         return false;
     }
 
@@ -6673,7 +6673,7 @@ int getTweakedBaseMap( int inX, int inY ) {
     
     // nothing in map
     char wasGridPlacement = false;
-        if(inX >= 1000000 && inX <= 1010000 &&
+    if(inX >= 1000000 && inX <= 1010000 &&
     inY >= 0 && inY <= 1820){
         return 0;
     }

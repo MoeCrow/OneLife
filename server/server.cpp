@@ -1924,7 +1924,7 @@ void parseCommand(LiveObject *player, char *text){
                 // 右
                 setMapObject( player->xs + scale, player->ys + i, 3097 );
             }
-
+            setMapObject( player->xs + scale, player->ys + scale, 3097 );
 		    }
 		
 		return;

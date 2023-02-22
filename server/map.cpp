@@ -7323,7 +7323,7 @@ void getChunkMessageToFile( int inStartX, int inStartY,
                 int i = chunkY * inWidth + chunkX;
 
                 if(chunkFloors[i] == 0 && chunk[i] == 0){
-                    return;
+                    continue;
                 }
                 // 组合群落、地板、物体信息
                 fprintf( f, "%d %d %d %d %d",chunkX,chunkY,

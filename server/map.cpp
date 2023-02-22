@@ -285,10 +285,17 @@ inline int get_length(int x){int len=0;while(x) {x/=10;len++;}return len;}
 inline int getCircle(int x, int y) {return max(get_length(abs(x)),get_length(abs(y)));}
 inline char shouldStale(int secPassed, int staleSec, int x, int y) {
     int circle = getCircle(x, y);
-    if(circle >= 7)
+    if(circle >= 8)
         return true;
     if(circle <= 1)
         return false;
+    if(circle == 7){
+        if(inX >= 1000000 && inX <= 1010000 &&
+            inY >= 0 && inY <= 1820){
+        return false;
+    }
+
+    }
     //return secPassed > (10 - circle) * 604800;
     return secPassed > 3 * 604800;
 }
@@ -1228,7 +1235,10 @@ static int computeMapBiomeIndex( int inX, int inY,
     int secondPlace = -1;
     
     double secondPlaceGap = 0;
-
+    if(inX >= 1000000 && inX <= 1010000 &&
+    inY >= 0 && inY <= 1820){
+        return 0;
+    }
 
     int pickedBiome = biomeGetCached( inX, inY, &secondPlace, &secondPlaceGap );
         
@@ -6663,7 +6673,11 @@ int getTweakedBaseMap( int inX, int inY ) {
     
     // nothing in map
     char wasGridPlacement = false;
-        
+        if(inX >= 1000000 && inX <= 1010000 &&
+    inY >= 0 && inY <= 1820){
+        return 0;
+    }
+
     int result = getBaseMap( inX, inY, &wasGridPlacement );
 
     if( result > 0 ) {

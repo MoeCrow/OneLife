@@ -1945,7 +1945,7 @@ void parseCommand(LiveObject *player, char *text){
             for ( int j = 0; j < numY; j++ ) {
                 for ( int i = 0; i < numX; i++ ) {
 
-                    if ( numX <= 100 && numY <= 100 ){
+                    if ( numX <= 400 && numY <= 400 ){
 
                         int wildTile = getTweakedBaseMap( player->xs+i,
                                                             player->ys+j );

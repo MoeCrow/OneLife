@@ -1902,17 +1902,29 @@ void parseCommand(LiveObject *player, char *text){
                 return;
                 }
 
-            
-            for ( int j = 0; j < scale; j++ ) {
-                for ( int i = 0; i < scale; i++ ) {
-                
-                        
-                        setMapObject( player->xs + i, player->ys + j, 3097 );
+            // x:0-scale
+            // y:0-scale
+            // x:
+            for ( int i = 0; i < scale; i++ ) {
+                // 下
+                setMapObject( player->xs + i, player->ys, 3097 );
+            }
 
-                        
-                    }
-          
-                }
+            for ( int i = 0; i < scale; i++ ) {
+                // 左
+                setMapObject( player->xs, player->ys + i, 3097 );
+            }
+
+            for ( int i = 0; i < scale; i++ ) {
+                // 上
+                setMapObject( player->xs + i, player->ys + scale, 3097 );
+            }
+
+            for ( int i = 0; i < scale; i++ ) {
+                // 右
+                setMapObject( player->xs + scale, player->ys + i, 3097 );
+            }
+
 		    }
 		
 		return;

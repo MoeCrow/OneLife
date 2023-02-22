@@ -1237,7 +1237,7 @@ static int computeMapBiomeIndex( int inX, int inY,
     double secondPlaceGap = 0;
     if(inX >= 1000000 && inX <= 1010000 &&
     inY >= 0 && inY <= 1820){
-        return 0;
+        return 1;
     }
 
     int pickedBiome = biomeGetCached( inX, inY, &secondPlace, &secondPlaceGap );

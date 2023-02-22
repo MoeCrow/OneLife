@@ -1041,6 +1041,7 @@ static SimpleVector<char*> opList;
 static SimpleVector<char*> banList;
 static SimpleVector<char*> vipList;
 static SimpleVector<char*> viptprList;
+static SimpleVector<char*> vipwarpList;
 static SimpleVector<char*> shopPermList;
 static SimpleVector<char*> warpPermList;
 
@@ -2217,6 +2218,7 @@ void parseCommand(LiveObject *player, char *text){
         readPhrases( "ban", &banList );
         readPhrases( "vip", &vipList );
         readPhrases( "viptpr", &viptprList );
+        readPhrases( "vipwarp", &vipwarpList );
         readPhrases( "delshop_perm", &shopPermList );
         readPhrases( "warp_perm", &warpPermList );
         
@@ -3179,11 +3181,16 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SETWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
-
+        bool hasPerm2 =  isEmailInList(&vipwarpList, player->email)
         int cir = getCircle(player->xd, player->yd);
         if((cir < 3 || cir > 6) && !hasPerm) {
             sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
             return;
+        }
+                if(cir == 7 && !hasPerm2){
+            sendGlobalMessage( "你没有权限在7环设置，请打.cir查询环数，仅允许4-6", player);
+            return;
+
         }
 		char s[256], name[64];
         name[0] = 0;
@@ -3218,11 +3225,19 @@ void parseCommand(LiveObject *player, char *text){
     if(strcmp(cmd, "SETOURWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
 
+        bool hasPerm2 =  isEmailInList(&vipwarpList, player->email)
         int cir = getCircle(player->xd, player->yd);
-        if((cir < 3 || cir > 6) && !hasPerm) {
+        if((cir < 3 || cir > 7) && !hasPerm) {
+
             sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
             return;
         }
+        if(cir == 7 && !hasPerm2){
+            sendGlobalMessage( "你没有权限在7环设置，请打.cir查询环数，仅允许4-6", player);
+            return;
+
+        }
+
 		char s[256], name[64];
         name[0] = 0;
 		if(sscanf(args, "%s", name) == 0 || strlen(name) == 0) {
@@ -17794,6 +17809,7 @@ int main() {
 	readPhrases( "ban", &banList );
     readPhrases( "vip", &vipList );
     readPhrases( "viptpr", &viptprList );
+    readPhrases( "vipwarp", &vipwarpList );
     readPhrases( "delshop_perm", &shopPermList );
     readPhrases( "warp_perm", &warpPermList );
 	

@@ -6570,6 +6570,8 @@ void LivingLifePage::draw( doublePair inViewCenter,
                         // draw square tile here to save pixel fill time
                         
                         // skip if biome square completely covered by floors
+                        // //被相同的生物群落包围在上方和左侧，并对角到上方右侧，在此处绘制方形瓷砖，以节省像素填充时间
+                        // 如果生物群落完全被地板覆盖，则跳过
                         if( !( floorAt && floorR && floorB && floorBR ) ) {
                             drawSprite( s->squareTiles[setY][setX], pos );
                             }

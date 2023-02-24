@@ -2998,12 +2998,11 @@ void parseCommand(LiveObject *player, char *text){
 	}
 	
 	if(strcmp(cmd, "SETHOME")==0){
-        bool hasPerm2 =  isEmailInList(&vipwarpList, player->email);
+        bool hasPerm2 = isNamingSayUpper(player->email, &vipwarpList) != NULL;
         int cir = getCircle(player->xd, player->yd);
         if(cir == 7 && !hasPerm2){
             sendGlobalMessage( "你没有权限在7环设置，请打.cir查询环数，仅允许4-6", player);
             return;
-
         }
         if(cir < 4 || cir > 7) {
             sendGlobalMessage( "这里不允许设置，请打.cir查询环数，仅允许4-6", player);
@@ -3189,7 +3188,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "SETWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
-        bool hasPerm2 =  isEmailInList(&vipwarpList, player->email);
+        bool hasPerm2 = isNamingSayUpper(player->email, &vipwarpList) != NULL;
         int cir = getCircle(player->xd, player->yd);
         if(cir == 7 && !hasPerm2){
             sendGlobalMessage( "你没有权限在7环设置，请打.cir查询环数，仅允许4-6", player);
@@ -3234,7 +3233,7 @@ void parseCommand(LiveObject *player, char *text){
     if(strcmp(cmd, "SETOURWARP")==0){
         bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
 
-        bool hasPerm2 =  isEmailInList(&vipwarpList, player->email);
+        bool hasPerm2 = isNamingSayUpper(player->email, &vipwarpList) != NULL;
         int cir = getCircle(player->xd, player->yd);
 
         if(cir == 7 && !hasPerm2){

@@ -1720,7 +1720,7 @@ void parseCommand(LiveObject *player, char *text){
 
                 if ( isMapChunkSparseFromFile( mapChunkFile, 
                                          offStartX, offStartY,
-                                         10,
+                                         300,
                                          &seemFileNoHeader ) ) {
 
                     isMapChunkSparse = true;             

@@ -26690,9 +26690,9 @@ int main() {
                         nextPlayer->ys = nextPlayer->yd;                        
 
                         // printf( "Player %d's move is done at %d,%d\n",
-                                nextPlayer->id,
-                                nextPlayer->xs,
-                                nextPlayer->ys );
+                                // nextPlayer->id,
+                                // nextPlayer->xs,
+                                // nextPlayer->ys );
 
                         if( nextPlayer->pathTruncated ) {
                             // truncated, but never told them about it

@@ -2560,7 +2560,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "无处可去");
 		else { 
-            if(getCircle(player->xd, player->yd) > 6)
+            if(getCircle(player->xd, player->yd) > 7)
                 updateSuperBackSpot(player->email, player->xd, player->yd);
 
 			int tx = player->xs;
@@ -3066,7 +3066,7 @@ void parseCommand(LiveObject *player, char *text){
 		if(spot == NULL)
 			sprintf(s, "无家可归");
 		else {
-            if(getCircle(player->xd, player->yd) > 6)
+            if(getCircle(player->xd, player->yd) > 7)
                 updateSuperBackSpot(player->email, player->xd, player->yd);
 
             sprintf(s, "已传送");
@@ -3397,7 +3397,7 @@ void parseCommand(LiveObject *player, char *text){
             sprintf(s, "这个地标不属于你，传送失败");
         }
 		else {
-            if(getCircle(player->xd, player->yd) > 6)
+            if(getCircle(player->xd, player->yd) > 7)
                 updateSuperBackSpot(player->email, player->xd, player->yd);
 
             sprintf(s, "已传送");
@@ -4089,7 +4089,7 @@ static double getPathSpeedModifier( GridPos *inPathPos, int inPathLength ) {
             }
         }
     // same floor whole way
-    printf( "Speed modifier = %f\n", speedMult );
+    // printf( "Speed modifier = %f\n", speedMult );
     return speedMult;
     }
 
@@ -26689,7 +26689,7 @@ int main() {
                         nextPlayer->xs = nextPlayer->xd;
                         nextPlayer->ys = nextPlayer->yd;                        
 
-                        printf( "Player %d's move is done at %d,%d\n",
+                        // printf( "Player %d's move is done at %d,%d\n",
                                 nextPlayer->id,
                                 nextPlayer->xs,
                                 nextPlayer->ys );

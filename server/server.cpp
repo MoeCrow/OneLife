@@ -1930,6 +1930,50 @@ void parseCommand(LiveObject *player, char *text){
 		
 		return;
 	    }
+
+        if( strcmp( cmd, "RPUTC" ) ==0 && isOp ) {
+
+
+        int scale = 0;
+
+        int numRead = sscanf( args, "%d", &scale );
+
+		if( numRead == 1 ) {
+            
+            ObjectRecord *o = getObject( id );
+            if( o == NULL || id < 0  ) {
+
+                sendGlobalMessage( "物体未找到", player);
+                return;
+                }
+
+            // x:0-scale
+            // y:0-scale
+            // x:
+            for ( int i = 0; i < scale; i++ ) {
+                // 下
+                setMapObject( player->xs + i, player->ys, 0 );
+            }
+
+            for ( int i = 0; i < scale; i++ ) {
+                // 左
+                setMapObject( player->xs, player->ys + i, 0 );
+            }
+
+            for ( int i = 0; i < scale; i++ ) {
+                // 上
+                setMapObject( player->xs + i, player->ys + scale, 0 );
+            }
+
+            for ( int i = 0; i < scale; i++ ) {
+                // 右
+                setMapObject( player->xs + scale, player->ys + i, 0 );
+            }
+            setMapObject( player->xs + scale, player->ys + scale, 0 );
+		    }
+		
+		return;
+	    }
         if( strcmp(cmd, "WPUT") == 0 && isOp) {
         
         int numX = 1;

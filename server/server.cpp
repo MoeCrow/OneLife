@@ -2301,7 +2301,7 @@ void parseCommand(LiveObject *player, char *text){
                     sendGlobalMessage("你不能选择定制角色",player);
                     return;
                 }
-                if(!isOp && o->id == 84078){
+                if(!isOp && (o->id == 84078 || o->id == 84309)){
                     sendGlobalMessage((char*)"你不能选择测试角色",player);
                     return;
                 }

@@ -22427,7 +22427,129 @@ int main() {
 
 
 
+ //彩票机逻辑
 
+/**
+*
+*空手点击彩票机85775
+*        买到彩票85770且扣10g
+*
+*手持彩票点击兑奖机85769获得奖金
+*彩票  85763  85764  85765  85766  85767
+*奖金  10         50         500     1000   5000
+*/
+
+// 手持物品，且点击到了物品
+if( nextPlayer->holdingID >= 0 && checkTarget > 0){
+
+                            float money = getPlayerMoney(nextPlayer->email);
+
+                            int BuyObj = 0;
+                            int LotteryObj = 85770;
+                            float BuyCost = 10.0f;
+                            int LuckyObj = 85763;
+                            float LuckyCost = 10.0f;
+                            int FortunateObj =85764;
+                            float FortunateCost = 50.0f;
+                            int MoreFortunateObj = 85765;
+                            float MoreFortunateCost = 500.0f;
+                            int SuperFortunateObj = 85766;
+                            float SuperFortunateCost = 1000.0f;
+                            int StarCardObj = 85767;
+                            float StarCardCost = 5000.0f;
+                            int LotteryBoxObj = 85775;
+                            int ReedemBoxObj = 85769;
+                           {
+                                
+                                if(nextPlayer->holdingID == 0 && checkTarget == LotteryBoxObj){
+                                    // 玩家空手，且点击了彩票机
+                                    char s[128];
+                                    if( money >= BuyCost ){
+
+                                        setPlayerMoney(nextPlayer->email,money - BuyCost);
+                                        nextPlayer->holdingID = LotteryObj;
+                                        nextPlayer->holdingEtaDecay = 0;
+                                        
+                                        sprintf(s, "[萌萌彩票]你购买了一张彩票，花费 %.2f 钢", BuyCost);
+                                        sendGlobalMessage( (char*)s, nextPlayer);
+                                    }else{
+                                         sprintf(s, "[萌萌彩票]购买彩票需要花费 %.2f 钢，你只有 %.2f 钢", BuyCost , money);
+                                         sendGlobalMessage( (char*)s, nextPlayer);
+                                    }
+                                    break;
+                                }
+
+
+                                if(nextPlayer->holdingID == LuckyObj && checkTarget == ReedemBoxObj){
+                                    // 玩家手持好运彩票，且点击了兑奖机
+                                    char s[128];
+                                    setPlayerMoney(nextPlayer->email,money + LuckyCost);
+                                    nextPlayer->holdingID = 0;
+                                    nextPlayer->holdingEtaDecay = 0;
+                                    
+                                    sprintf(s, "[萌萌彩票]你兑换了一张好运彩票，获得 %.2f 钢", LuckyCost);
+                                    sendGlobalMessage( (char*)s, nextPlayer);
+                                    break;
+                                }
+
+                                
+                                if(nextPlayer->holdingID == FortunateObj && checkTarget == ReedemBoxObj){
+                                    // 玩家手持幸运彩票，且点击了兑奖机
+                                    char s[128];
+                                    setPlayerMoney(nextPlayer->email,money + FortunateCost);
+                                    nextPlayer->holdingID = 0;
+                                    nextPlayer->holdingEtaDecay = 0;
+                                    
+                                    sprintf(s, "[萌萌彩票]你兑换了一张幸运彩票，获得 %.2f 钢", FortunateCost);
+                                    sendGlobalMessage( (char*)s, nextPlayer);
+                                    break;
+                                }
+
+                                
+                                if(nextPlayer->holdingID == MoreFortunateObj && checkTarget == ReedemBoxObj){
+                                    // 玩家手持加倍幸运彩票，且点击了兑奖机
+                                    char s[128];
+
+                                    setPlayerMoney(nextPlayer->email,money + MoreFortunateCost);
+                                    nextPlayer->holdingID = 0;
+                                    nextPlayer->holdingEtaDecay = 0;
+                                    
+                                    sprintf(s, "[萌萌彩票]恭喜玩家兑换加倍幸运彩票，获得 %.2f 钢", MoreFortunateCost);
+                                    sendGlobalMessage( (char*)s, nextPlayer);
+                                    break;
+                                }
+                                
+                                if(nextPlayer->holdingID == SuperFortunateObj && checkTarget == ReedemBoxObj){
+                                    // 玩家手持超级幸运彩票，且点击了兑奖机
+                                    char s[128];
+                                    setPlayerMoney(nextPlayer->email,money + SuperFortunateCost);
+                                    nextPlayer->holdingID = 0;
+                                    nextPlayer->holdingEtaDecay = 0;
+                                    
+                                    sprintf(s, "[萌萌彩票]恭喜玩家兑换超级幸运彩票，获得 %.2f 钢", SuperFortunateCost);
+                                    sendGlobalMessage( (char*)s, nextPlayer);
+                                    break;
+                                }
+
+                                
+                                if(nextPlayer->holdingID == StarCardObj && checkTarget == ReedemBoxObj){
+                                    // 玩家手持星幸运彩票，且点击了兑奖机
+                                    char s[128];
+                                    setPlayerMoney(nextPlayer->email,money + LuckyCost);
+                                    nextPlayer->holdingID = 0;
+                                    nextPlayer->holdingEtaDecay = 0;
+                                    
+                                    sprintf(s, "[萌萌彩票]恭喜玩家兑换星幸运卡，获得 %.2f 钢", StarCardCost);
+                                    sendGlobalMessage( (char*)s, nextPlayer);
+                                    break;
+                                }
+
+                            }
+}
+
+
+
+                          
 
 
 
